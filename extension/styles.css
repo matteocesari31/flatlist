@@ -1,0 +1,191 @@
+@font-face {
+  font-family: 'Satoshi';
+  src: url('fonts/Satoshi-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  width: auto;
+  min-height: auto;
+  background: #ffffff;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  padding: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Compact "fl" button */
+.fl-button {
+  width: 48px;
+  height: 48px;
+  background: #FF5C5C;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.fl-button:hover {
+  opacity: 0.9;
+}
+
+.fl-button.hidden {
+  display: none;
+}
+
+.fl-text {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  font-variant-ligatures: common-ligatures;
+  font-feature-settings: "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Expanded content */
+.expanded-content {
+  padding: 20px;
+  width: 320px;
+  min-height: 200px;
+}
+
+.expanded-content.hidden {
+  display: none;
+}
+
+.header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 400;
+  color: #000000;
+}
+
+.header h1.logo {
+  color: #FF5C5C;
+  font-weight: 700;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #FF5C5C;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.message {
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.message.hidden {
+  display: none;
+}
+
+.auth-prompt {
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.auth-prompt.hidden {
+  display: none;
+}
+
+.auth-prompt p {
+  margin-bottom: 8px;
+  color: #4b5563;
+}
+
+.auth-prompt a {
+  color: #171717;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.hidden {
+  display: none;
+}
+

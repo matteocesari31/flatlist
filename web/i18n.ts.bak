@@ -1,0 +1,18 @@
+import { getRequestConfig } from 'next-intl/server'
+
+export type Locale = 'en' | 'it'
+
+export const locales: Locale[] = ['en', 'it']
+export const defaultLocale: Locale = 'en'
+
+export default getRequestConfig(async () => {
+  // For client-side locale detection, we use a cookie or default to 'en'
+  // This will be overridden by the client-side provider
+  const locale = defaultLocale
+
+  return {
+    locale,
+    messages: (await import(`./messages/${locale}.json`)).default
+  }
+})
+

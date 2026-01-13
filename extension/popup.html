@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>flatlist</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Compact "fl" button -->
+    <button id="expandBtn" class="fl-button">
+      <span class="fl-text">fl</span>
+    </button>
+    
+    <!-- Expanded content -->
+    <div id="expandedContent" class="expanded-content hidden">
+      <div class="header">
+        <h1 class="logo">flatlist</h1>
+      </div>
+      <div class="content">
+        <button id="saveBtn" class="save-btn">
+          <span id="btnText">Save to flatlist</span>
+          <span id="btnLoader" class="loader hidden"></span>
+        </button>
+        <div id="message" class="message hidden"></div>
+        <div id="authPrompt" class="auth-prompt hidden">
+          <p>Please sign in to flatlist to save listings.</p>
+          <a href="#" id="authLink" target="_blank">Open flatlist to sign in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="token-manager.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
+

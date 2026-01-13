@@ -1,0 +1,542 @@
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
+import { ListingWithMetadata } from '@/lib/types'
+import { createClient } from '@/lib/supabase'
+import { getUserColor } from '@/lib/user-colors'
+import { BedDouble, Bath, Building } from 'lucide-react'
+
+interface ListingCardProps {
+  listing: ListingWithMetadata
+  onClick: () => void
+  onViewDetails?: () => void
+  onSaveNote?: (listingId: string, note: string) => void
+  onDelete?: (listingId: string) => void
+  onRetryEnrichment?: (listingId: string) => void
+  catalogMembers?: Array<{ user_id: string; email: string | null }>
+}
+
+export default function ListingCard({ listing, onClick, onViewDetails, onSaveNote, onDelete, onRetryEnrichment, catalogMembers = [] }: ListingCardProps) {
+  const [messageText, setMessageText] = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [showNotesPopover, setShowNotesPopover] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const messageInputRef = useRef<HTMLInputElement>(null)
+  
+  const metadata = listing.listing_metadata?.[0]
+  const status = listing.enrichment_status
+  const notes = listing.listing_notes || []
+
+  // Get current user ID and user object
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const supabase = createClient()
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      setCurrentUserId(currentUser?.id || null)
+      setUser(currentUser)
+    }
+    getCurrentUser()
+  }, [])
+
+  // Focus input when popover opens
+  useEffect(() => {
+    if (showNotesPopover && messageInputRef.current) {
+      setTimeout(() => {
+        messageInputRef.current?.focus()
+      }, 100)
+    }
+  }, [showNotesPopover])
+
+  // Scroll to bottom when new messages are added or popover opens
+  useEffect(() => {
+    if (showNotesPopover && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
+  }, [notes.length, showNotesPopover])
+
+
+  // Extract basic info from raw_content if metadata not available
+  const extractPriceFromContent = (content: string): string | null => {
+    if (!content) return null
+    const priceRegex = /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/i
+    const match = content.match(priceRegex)
+    if (match) {
+      return match[0]
+    }
+    return null
+  }
+
+  const extractBasicInfo = () => {
+    if (metadata) return null // Use metadata if available
+    
+    const price = extractPriceFromContent(listing.raw_content)
+    const addressMatch = listing.title?.match(/(?:in|a|via|viale|piazza|piazzale)\s+([^,]+)/i)
+    const address = addressMatch ? addressMatch[1].trim() : null
+    
+    return { price, address }
+  }
+
+  const basicInfo = extractBasicInfo()
+
+  const getStatusBadge = () => {
+    switch (status) {
+      case 'processing':
+        return <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Processing...</span>
+      case 'failed':
+        return <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded">Failed</span>
+      case 'done':
+        return null
+      default:
+        return <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded">Pending</span>
+    }
+  }
+
+  const isRental = () => {
+    // First check if listing_type is explicitly set in metadata
+    if (metadata?.listing_type === 'rent') return true
+    if (metadata?.listing_type === 'sale') return false
+    
+    // Fallback to keyword detection if listing_type is not set
+    const content = (listing.raw_content || '').toLowerCase()
+    const title = (listing.title || '').toLowerCase()
+    const combined = `${content} ${title}`
+    
+    // Check for rental indicators
+    const rentalKeywords = ['affitto', 'rent', 'rental', 'noleggio', 'locazione', '/mo', '/mese', 'mensile', 'monthly']
+    const saleKeywords = ['vendita', 'sale', 'compravendita', 'acquisto', 'buy']
+    
+    const hasRentalKeyword = rentalKeywords.some(keyword => combined.includes(keyword))
+    const hasSaleKeyword = saleKeywords.some(keyword => combined.includes(keyword))
+    
+    // If explicit sale keyword, it's not a rental
+    if (hasSaleKeyword) return false
+    
+    // Only show /mo if we have explicit rental keywords
+    return hasRentalKeyword
+  }
+
+  const formatPrice = (price: number | null | string | undefined, isRent: boolean = false) => {
+    if (!price) return null
+    if (typeof price === 'string') {
+      // If already formatted string, check if it has /mo
+      if (isRent && !price.includes('/mo')) {
+        return `${price}/mo`
+      }
+      return price
+    }
+    const formatted = `€${price.toLocaleString('it-IT')}`
+    return isRent ? `${formatted}/mo` : formatted
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click
+    if (onDelete) {
+      setShowDeleteConfirm(true)
+    }
+  }
+
+  const confirmDelete = () => {
+    if (onDelete) {
+      onDelete(listing.id)
+      setShowDeleteConfirm(false)
+    }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
+
+  const handleSendMessage = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    if (!messageText.trim() || !onSaveNote) return
+    
+    const messageToSend = messageText.trim()
+    setMessageText('')
+    
+    await onSaveNote(listing.id, messageToSend)
+    
+    // Scroll to bottom after sending
+    setTimeout(() => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+      }
+    }, 100)
+  }
+
+
+
+  // Get first image for thumbnail
+  // Handle both array format and JSONB format from database
+  let imagesArray: string[] | null = null
+  if (listing.images) {
+    if (Array.isArray(listing.images)) {
+      imagesArray = listing.images
+    } else if (typeof listing.images === 'string') {
+      // If stored as JSON string, parse it
+      try {
+        imagesArray = JSON.parse(listing.images)
+      } catch {
+        imagesArray = null
+      }
+    } else if (typeof listing.images === 'object' && listing.images !== null) {
+      // If it's an object, try to convert to array
+      imagesArray = Object.values(listing.images) as string[]
+    }
+  }
+  
+  const thumbnailImage = imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
+
+  return (
+    <>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+          onClick={cancelDelete}
+        >
+          <div
+            className="bg-white rounded-[20px] max-w-md w-full p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold mb-4">Delete Listing</h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete this listing? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        onClick={onClick}
+        className="rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white relative flex flex-col"
+      >
+
+      {/* Notes Popover */}
+      {onSaveNote && showNotesPopover && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowNotesPopover(false)
+            }}
+          />
+          {/* Popover */}
+          <div
+            className="absolute top-12 right-2 z-50 w-80 bg-white shadow-2xl border border-gray-200 flex flex-col"
+            style={{ borderRadius: '20px', maxHeight: 'calc(100vh - 8rem)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button in top-right corner */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowNotesPopover(false)
+              }}
+              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
+              aria-label="Close"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Messages List */}
+            <div ref={messagesContainerRef} className="overflow-y-auto p-4 space-y-3 pt-12" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+              {notes.length === 0 ? (
+                <div className="text-center text-sm text-gray-500 py-8">
+                  Keep track of your thoughts on this listing here.
+                </div>
+              ) : (
+                notes.map((note) => {
+                  const isCurrentUserNote = note.user_id === currentUserId
+                  const userColor = getUserColor(note.user_id)
+                  
+                  return (
+                    <div
+                      key={note.id}
+                      className={`flex items-end gap-2 ${isCurrentUserNote ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {!isCurrentUserNote && (
+                        <div
+                          className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold"
+                          style={{ backgroundColor: userColor }}
+                        >
+                          {(() => {
+                            const member = catalogMembers.find(m => m.user_id === note.user_id)
+                            const email = member?.email || null
+                            return email?.charAt(0).toUpperCase() || note.user_id.charAt(0).toUpperCase()
+                          })()}
+                        </div>
+                      )}
+                      <div className={`max-w-[75%] flex flex-col ${isCurrentUserNote ? 'items-end' : 'items-start'}`}>
+                        <div
+                          className={`px-3 py-2 rounded-[20px] ${
+                            isCurrentUserNote
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap break-words">{note.note}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Message Input Area */}
+            <div className="p-3">
+              <input
+                ref={messageInputRef}
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage(e)
+                  }
+                }}
+                placeholder="Type a message..."
+                className="w-full text-sm px-4 py-2.5 border border-gray-300 focus:outline-none"
+                style={{ borderRadius: '20px' }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        </>
+      )}
+      
+      {/* Image section (on top) */}
+      <div className="px-4 pt-4">
+        {thumbnailImage ? (
+          <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden rounded-[15px]">
+            <img
+              src={thumbnailImage}
+              alt={listing.title || 'Listing image'}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-full aspect-[4/3] bg-gray-100 rounded-[15px]"></div>
+        )}
+      </div>
+
+      {/* Content section (below image) */}
+      <div className="p-4 flex flex-col">
+        {getStatusBadge() && (
+          <div className="mb-2">
+            {getStatusBadge()}
+          </div>
+        )}
+
+        {/* Show metadata if available, otherwise show basic extracted info */}
+        {(metadata || basicInfo) && (
+          <div className="space-y-2">
+            {/* Price - from metadata or extracted */}
+            {(metadata?.price || basicInfo?.price) && (
+              <div className="flex items-center justify-between">
+                <div className="text-xl font-bold">
+                  {formatPrice(metadata?.price || basicInfo?.price, isRental())}
+                  {!metadata && basicInfo?.price && (
+                    <span className="text-xs font-normal text-gray-500 ml-2">(extracted)</span>
+                  )}
+                </div>
+                {/* Action buttons aligned with price */}
+                <div className="flex gap-2">
+                  {onViewDetails && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onViewDetails()
+                      }}
+                      className="p-1.5 rounded-full text-gray-400 hover:text-[#4A4D55] transition-colors"
+                      title="View details"
+                      aria-label="View details"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                  {onSaveNote && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowNotesPopover(!showNotesPopover)
+                      }}
+                      className="relative p-1.5 rounded-full transition-colors text-gray-400 hover:text-[#4A4D55]"
+                      title="Notes"
+                      aria-label="Notes"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 relative"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                      </svg>
+                      {notes.length > 0 && (
+                        <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-[#2C7FFF] rounded-full"></span>
+                      )}
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={handleDelete}
+                      className="p-1.5 rounded-full text-gray-400 hover:text-red-600 transition-colors"
+                      title="Delete listing"
+                      aria-label="Delete listing"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Address - from metadata or extracted */}
+            {(metadata?.address || basicInfo?.address) && (
+              <div className="text-sm text-black">
+                {metadata?.address || basicInfo?.address}
+                {!metadata && basicInfo?.address && (
+                  <span className="text-xs text-gray-500 ml-1">(from title)</span>
+                )}
+              </div>
+            )}
+
+            {/* Info pills */}
+            {metadata && (
+              <div className="mt-2 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {metadata.size_sqm && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">{metadata.size_sqm} m²</span>
+                  )}
+                  {metadata.bedrooms !== null && metadata.bedrooms !== undefined && metadata.bedrooms > 0 && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                      <BedDouble className="w-3.5 h-3.5" />
+                      {metadata.bedrooms}
+                    </span>
+                  )}
+                  {metadata.bathrooms !== null && metadata.bathrooms !== undefined && metadata.bathrooms > 0 && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                      <Bath className="w-3.5 h-3.5" />
+                      {metadata.bathrooms}
+                    </span>
+                  )}
+                  {metadata.condo_fees && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                      <Building className="w-3.5 h-3.5" />
+                      {formatPrice(metadata.condo_fees)}/mo
+                    </span>
+                  )}
+                  {listing.distanceFromReference !== undefined && (
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-normal">
+                      {listing.distanceFromReference < 1 
+                        ? `${Math.round(listing.distanceFromReference * 1000)} m away`
+                        : `${listing.distanceFromReference.toFixed(1)} km away`
+                      }
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Show distance pill even without metadata */}
+            {!metadata && listing.distanceFromReference !== undefined && (
+              <div className="mt-2">
+                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-normal">
+                  {listing.distanceFromReference < 1 
+                    ? `${Math.round(listing.distanceFromReference * 1000)} m away`
+                    : `${listing.distanceFromReference.toFixed(1)} km away`
+                  }
+                </span>
+              </div>
+            )}
+
+            {/* Show enrichment status message if pending/processing */}
+            {!metadata && status !== 'failed' && (
+              <div className="text-xs text-gray-500 mt-2">
+                {status === 'processing' 
+                  ? 'AI enrichment in progress...'
+                  : 'Waiting for AI enrichment...'}
+              </div>
+            )}
+
+            {/* Show retry button if enrichment failed or done but no metadata */}
+            {(status === 'failed' || (status === 'done' && !metadata)) && onRetryEnrichment && (
+              <div className="mt-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRetryEnrichment(listing.id)
+                  }}
+                  className="text-xs px-3 py-1 bg-[#FF5C5C] text-white rounded hover:opacity-90 transition-colors"
+                >
+                  Retry Enrichment
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+    </>
+  )
+}
