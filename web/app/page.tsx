@@ -740,10 +740,6 @@ export default function Home() {
     router.push('/auth')
   }
 
-  const handleCardClick = (listing: ListingWithMetadata) => {
-    window.open(listing.source_url, '_blank')
-  }
-
   const handleViewDetails = (listing: ListingWithMetadata) => {
     setSelectedListing(listing)
   }
@@ -1637,7 +1633,6 @@ export default function Home() {
                   <ListingCard
                     key={listing.id}
                     listing={listing}
-                    onClick={() => handleCardClick(listing)}
                     onViewDetails={() => handleViewDetails(listing)}
                     onSaveNote={handleSaveNote}
                     onDelete={handleDelete}

@@ -8,7 +8,7 @@ import { BedDouble, Bath, Building } from 'lucide-react'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
-  onClick: () => void
+  onClick?: () => void
   onViewDetails?: () => void
   onSaveNote?: (listingId: string, note: string) => void
   onDelete?: (listingId: string) => void
@@ -225,7 +225,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       )}
 
       <div
-        onClick={onClick}
+        onClick={onViewDetails || onClick}
         className="rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white relative flex flex-col"
       >
 
@@ -368,32 +368,6 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                 </div>
                 {/* Action buttons aligned with price */}
                 <div className="flex gap-2">
-                  {onViewDetails && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onViewDetails()
-                      }}
-                      className="p-1.5 rounded-full text-gray-400 hover:text-[#4A4D55] transition-colors"
-                      title="View details"
-                      aria-label="View details"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </button>
-                  )}
                   {onSaveNote && (
                     <button
                       onClick={(e) => {

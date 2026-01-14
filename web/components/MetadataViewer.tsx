@@ -3,7 +3,7 @@
 import { ListingWithMetadata } from '@/lib/types'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { BedDouble, Bath, Building, MapPin } from 'lucide-react'
+import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis } from 'lucide-react'
 
 interface MetadataViewerProps {
   listing: ListingWithMetadata | null
@@ -204,6 +204,29 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
     }
   }
 
+  const getCardIcon = (cardKey: string) => {
+    switch (cardKey) {
+      case 'student_friendly':
+        return <GraduationCap className="w-4 h-4" />
+      case 'floor_type':
+        return <Square className="w-4 h-4" />
+      case 'natural_light':
+        return <Sun className="w-4 h-4" />
+      case 'noise_level':
+        return <Volume1 className="w-4 h-4" />
+      case 'renovation_state':
+        return <PaintRoller className="w-4 h-4" />
+      case 'balcony':
+        return <Fence className="w-4 h-4" />
+      case 'pet_friendly':
+        return <PawPrint className="w-4 h-4" />
+      case 'furnishing':
+        return <Armchair className="w-4 h-4" />
+      default:
+        return null
+    }
+  }
+
   // Collect all cards with their data
   const aiCards = useMemo(() => {
     if (!metadata) return []
@@ -216,13 +239,22 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
 
     if (metadata?.student_friendly !== undefined || metadata?.evidence?.student_friendly) {
       const title = formatCardTitle('student_friendly', metadata?.student_friendly)
-      const evidence = metadata?.evidence?.student_friendly || null
+      let evidence = metadata?.evidence?.student_friendly || null
+      // Remove "defaulting to true" text from evidence and trailing dashes
+      if (evidence && typeof evidence === 'string') {
+        evidence = evidence.replace(/defaulting to true/gi, '').trim()
+        // Remove trailing dashes and whitespace
+        evidence = evidence.replace(/[-–—]\s*$/, '').trim()
+        if (evidence === '') evidence = null
+      }
       cards.push({
+        key: 'student_friendly',
         title,
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('student_friendly')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -240,7 +272,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('floor_type')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -258,7 +291,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('natural_light')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -276,7 +310,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('noise_level')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -294,7 +329,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('renovation_state')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -319,7 +355,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
         additionalContent,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('furnishing')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             <div className="text-sm text-gray-500">
@@ -331,17 +368,39 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
       })
     }
 
-    // Pet friendly card
+    // Pet friendly card - show if metadata exists, default to true if not mentioned (like balcony but defaults to true)
     if (metadata?.pet_friendly !== undefined || metadata?.evidence?.pet_friendly) {
-      const title = formatCardTitle('pet_friendly', metadata?.pet_friendly)
-      const evidence = metadata?.evidence?.pet_friendly || null
+      // Default to true if not explicitly set to true or false (unlike balcony which defaults to false)
+      const petFriendlyValue = (metadata?.pet_friendly === true || metadata?.pet_friendly === false) 
+        ? metadata.pet_friendly 
+        : true
+      const title = formatCardTitle('pet_friendly', petFriendlyValue)
+      let evidence = metadata?.evidence?.pet_friendly || null
+      
+      // If no evidence and pet_friendly is null/undefined, provide default explanation (like balcony)
+      if (!evidence && (metadata?.pet_friendly === null || metadata?.pet_friendly === undefined)) {
+        evidence = "The listing doesn't mention pets"
+      }
+      
+      // Remove "defaulting to" text from evidence
+      if (evidence && typeof evidence === 'string') {
+        evidence = evidence.replace(/defaulting to (true|false)/gi, '').trim()
+        // Remove trailing dashes and whitespace
+        evidence = evidence.replace(/[-–—]\s*$/, '').trim()
+        if (evidence === '') {
+          // If evidence becomes empty after removing "defaulting to", use default explanation
+          evidence = "The listing doesn't mention pets"
+        }
+      }
+      
       cards.push({
         key: 'pet_friendly',
         title,
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('pet_friendly')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -353,14 +412,24 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
     // Balcony card
     if (metadata?.balcony !== undefined || metadata?.evidence?.balcony) {
       const title = formatCardTitle('balcony', metadata?.balcony)
-      const evidence = metadata?.evidence?.balcony || null
+      let evidence = metadata?.evidence?.balcony || null
+      // If balcony is false/null and there's no evidence, provide default explanation
+      if ((metadata?.balcony === false || metadata?.balcony === null) && !evidence) {
+        evidence = "The listing doesn't mention a balcony"
+      }
+      // Remove "defaulting to" text from evidence if present
+      if (evidence && typeof evidence === 'string') {
+        evidence = evidence.replace(/defaulting to (true|false)/gi, '').trim()
+        if (evidence === '') evidence = "The listing doesn't mention a balcony"
+      }
       cards.push({
         key: 'balcony',
         title,
         evidence,
         renderContent: () => (
           <>
-            <div className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              {getCardIcon('balcony')}
               <span className="text-sm text-black font-medium">{title}</span>
             </div>
             {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
@@ -566,9 +635,7 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                     className="p-2 text-gray-700 border border-gray-300 rounded-[20px] hover:bg-gray-50 transition-colors flex items-center justify-center"
                     title="Customize Cards"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                    </svg>
+                    <Ellipsis className="w-4 h-4" />
                   </button>
                 </div>
                 
@@ -582,15 +649,17 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                     />
                     {/* Popup - fixed positioning relative to button */}
                     <div 
-                      className="fixed z-[70] bg-white rounded-[20px] p-6 shadow-2xl border border-gray-200" 
+                      className="fixed z-[70] bg-white rounded-[20px] px-6 pt-3 pb-6 shadow-2xl border border-gray-200" 
                       style={{ 
                         top: `${popupPosition.top}px`,
                         right: `${popupPosition.right}px`,
                         minWidth: '300px'
                       }}
                     >
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold">Customize Cards</h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-xs text-gray-500">
+                            Select up to 6 cards to display
+                          </div>
                           <button
                             onClick={() => setShowCardSelector(false)}
                             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -600,9 +669,6 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
-                        </div>
-                        <div className="mb-3 text-xs text-gray-500">
-                          Select up to 6 cards to display
                         </div>
                         <div className="space-y-2">
                           {[
@@ -639,11 +705,11 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                   )}
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-9 gap-4 auto-rows-min">
+                <div className="grid grid-cols-9 gap-x-4 gap-y-1 auto-rows-min">
                   {aiCards.map(({ card, span }, idx) => (
                     <div
                       key={idx}
-                      className="bg-white border border-gray-200 rounded-[20px] p-4 flex flex-col"
+                      className="bg-white rounded-[20px] p-4 flex flex-col"
                       style={{ gridColumn: `span ${span}` }}
                     >
                       {card.renderContent()}
