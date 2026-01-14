@@ -411,16 +411,30 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
 
     // Balcony card
     if (metadata?.balcony !== undefined || metadata?.evidence?.balcony) {
-      const title = formatCardTitle('balcony', metadata?.balcony)
+      // Default to false if not explicitly set (unlike pet_friendly which defaults to true)
+      const balconyValue = metadata?.balcony !== undefined ? metadata.balcony : false
+      const title = formatCardTitle('balcony', balconyValue)
       let evidence = metadata?.evidence?.balcony || null
-      // If balcony is false/null and there's no evidence, provide default explanation
-      if ((metadata?.balcony === false || metadata?.balcony === null) && !evidence) {
+      
+      // Always use natural language for evidence - override any backend text
+      if (balconyValue === false || balconyValue === null || metadata?.balcony === null || metadata?.balcony === undefined) {
         evidence = "The listing doesn't mention a balcony"
+      } else if (balconyValue === true && !evidence) {
+        // If true but no evidence, use a generic positive message
+        evidence = "The listing mentions a balcony"
       }
-      // Remove "defaulting to" text from evidence if present
+      
+      // Clean up any "defaulting to" or broken English from backend
       if (evidence && typeof evidence === 'string') {
+        // Remove "defaulting to" text
         evidence = evidence.replace(/defaulting to (true|false)/gi, '').trim()
-        if (evidence === '') evidence = "The listing doesn't mention a balcony"
+        // Fix common broken English patterns
+        evidence = evidence.replace(/no mention of balcony/gi, "The listing doesn't mention a balcony")
+        evidence = evidence.replace(/no mentions of balcony/gi, "The listing doesn't mention a balcony")
+        evidence = evidence.replace(/no mention of a? balcony/gi, "The listing doesn't mention a balcony")
+        if (evidence === '' || evidence.toLowerCase().includes('no mention')) {
+          evidence = "The listing doesn't mention a balcony"
+        }
       }
       cards.push({
         key: 'balcony',

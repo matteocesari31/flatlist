@@ -32,6 +32,7 @@ export default function Home() {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null }>>([])
   const [showProfilePopover, setShowProfilePopover] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
@@ -1390,16 +1391,25 @@ export default function Home() {
                       </div>
                       {/* Refresh button - circular, same size as profile icons, right aligned */}
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
                           console.log('Manual refresh triggered')
                           fetchListings()
+                          // Trigger animation by updating key
+                          setRefreshKey(prev => prev + 1)
                         }}
                         className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors flex-shrink-0"
                         title="Refresh"
                       >
                         <svg
+                          key={refreshKey}
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5"
+                          style={{ 
+                            animation: 'spin-reverse 0.3s linear',
+                            transformOrigin: 'center'
+                          }}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"

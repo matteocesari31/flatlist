@@ -152,11 +152,13 @@
       }
       
       #flatlist-floating-button.saving {
-        opacity: 0.6;
+        background: #000000 !important;
+        opacity: 1;
         cursor: not-allowed;
       }
       
       #flatlist-floating-button.saved {
+        background: #10b981 !important;
         opacity: 1;
       }
       
