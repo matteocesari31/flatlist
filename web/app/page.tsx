@@ -1361,10 +1361,10 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setShowHelpPopover(!showHelpPopover)}
-                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
+                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
                   title="Help & Feedback"
                 >
-                  <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+                  <MessageCircle className="w-5 h-5" strokeWidth={2} style={{ color: '#697284' }} />
                 </button>
                 
                 {/* Help Popover */}
