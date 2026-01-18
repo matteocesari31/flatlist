@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     
     const body = await request.json()
-    const { type, message, userEmail } = body
+    const { message, userEmail } = body
 
     if (!message || !message.trim()) {
       return NextResponse.json(
@@ -18,13 +18,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const feedbackTypeLabels: Record<string, string> = {
-      question: '❓ Question',
-      suggestion: '💡 Suggestion',
-      bug: '🐛 Bug Report',
-    }
-
-    const typeLabel = feedbackTypeLabels[type] || 'Feedback'
     const senderEmail = userEmail || user?.email || 'Anonymous'
 
     // Check if Resend is configured
@@ -41,10 +34,10 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           from: 'flatlist <noreply@flatlist.app>',
           to: ['team@flatlist.app'],
-          subject: `[flatlist] ${typeLabel} from ${senderEmail}`,
+          subject: `[flatlist] Feedback from ${senderEmail}`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #333;">${typeLabel}</h2>
+              <h2 style="color: #333;">User Feedback</h2>
               <p style="color: #666; font-size: 14px;">From: <strong>${senderEmail}</strong></p>
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
               <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; line-height: 1.6;">
@@ -67,7 +60,6 @@ export async function POST(request: NextRequest) {
     } else {
       // Fallback: Log the feedback (for development or when Resend isn't configured)
       console.log('=== FEEDBACK RECEIVED ===')
-      console.log('Type:', typeLabel)
       console.log('From:', senderEmail)
       console.log('Message:', message)
       console.log('========================')

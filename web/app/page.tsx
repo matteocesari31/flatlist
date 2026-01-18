@@ -14,6 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
+import { CircleHelp } from 'lucide-react'
 
 interface SubscriptionInfo {
   plan: SubscriptionPlan
@@ -48,7 +49,6 @@ export default function Home() {
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [feedbackType, setFeedbackType] = useState<'question' | 'suggestion' | 'bug'>('question')
   const [sendingFeedback, setSendingFeedback] = useState(false)
   const [feedbackSent, setFeedbackSent] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -1365,9 +1365,7 @@ export default function Home() {
                 className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
                 title="Help & Feedback"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <CircleHelp className="w-5 h-5" strokeWidth={1.5} />
               </button>
               
               {/* Profile Button */}
@@ -1984,38 +1982,11 @@ export default function Home() {
                   Have a question, suggestion, or found a bug? Let us know!
                 </p>
 
-                {/* Message Type Selector */}
-                <div className="flex gap-2 mb-4">
-                  {[
-                    { value: 'question', label: 'Question', icon: '❓' },
-                    { value: 'suggestion', label: 'Suggestion', icon: '💡' },
-                    { value: 'bug', label: 'Bug Report', icon: '🐛' },
-                  ].map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => setFeedbackType(type.value as typeof feedbackType)}
-                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        feedbackType === type.value
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <span className="mr-1">{type.icon}</span> {type.label}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Message Input */}
                 <textarea
                   value={feedbackMessage}
                   onChange={(e) => setFeedbackMessage(e.target.value)}
-                  placeholder={
-                    feedbackType === 'question' 
-                      ? "What would you like to know?"
-                      : feedbackType === 'suggestion'
-                      ? "What feature or improvement would you suggest?"
-                      : "Please describe the bug you encountered..."
-                  }
+                  placeholder="Write your message here..."
                   className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
                   disabled={sendingFeedback}
                 />
@@ -2037,7 +2008,6 @@ export default function Home() {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
-                            type: feedbackType,
                             message: feedbackMessage,
                             userEmail: user?.email,
                           }),
