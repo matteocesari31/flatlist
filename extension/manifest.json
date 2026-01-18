@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "flatlist",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Save apartment listings with one click, then use AI to search and compare them intelligently.",
   "permissions": [
     "storage",
@@ -39,6 +39,7 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
+  "privacy_policy": "https://my.flatlist.app/privacy-policy",
   "web_accessible_resources": [
     {
       "resources": ["fonts/*.woff2", "logo.svg"],
