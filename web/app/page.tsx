@@ -41,7 +41,9 @@ export default function Home() {
   const [tempCatalogName, setTempCatalogName] = useState('')
   const [currentCatalogId, setCurrentCatalogId] = useState<string | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null }>>([])
+  const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null; role: string }>>([])
+  const [isOwner, setIsOwner] = useState(false)
+  const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
@@ -360,13 +362,17 @@ export default function Home() {
       if (catalogIdToUse) {
         const { data: members, error: membersError } = await supabase
           .from('catalog_members')
-          .select('user_id')
+          .select('user_id, role')
           .eq('catalog_id', catalogIdToUse)
 
         console.log('Catalog members query result:', { members, membersError })
 
         if (!membersError && members && members.length > 0) {
           console.log(`Found ${members.length} catalog members:`, members)
+          
+          // Check if current user is an owner
+          const currentUserMembership = members.find(m => m.user_id === currentUser.id)
+          setIsOwner(currentUserMembership?.role === 'owner')
           
           // Get emails for each member using the function
           // If the function doesn't exist or fails, we'll use user_id for display
@@ -405,7 +411,8 @@ export default function Home() {
               
               return {
                 user_id: member.user_id,
-                email: (email || (member.user_id === currentUser.id ? currentUser.email : null)) ?? null
+                email: (email || (member.user_id === currentUser.id ? currentUser.email : null)) ?? null,
+                role: member.role
               }
             })
           )
@@ -726,12 +733,16 @@ export default function Home() {
           // Refresh catalog members to update profile pictures
           const { data: members, error: membersError } = await supabase
             .from('catalog_members')
-            .select('user_id')
+            .select('user_id, role')
             .eq('catalog_id', currentCatalogId)
 
           if (!membersError && members) {
             const { data: { user: currentUser } } = await supabase.auth.getUser()
             if (currentUser) {
+              // Update isOwner status
+              const currentUserMembership = members.find(m => m.user_id === currentUser.id)
+              setIsOwner(currentUserMembership?.role === 'owner')
+              
               const membersWithEmails = await Promise.all(
                 members.map(async (member) => {
                   try {
@@ -741,12 +752,14 @@ export default function Home() {
                     const email = emailError ? null : (typeof emailData === 'string' ? emailData : null)
                     return {
                       user_id: member.user_id,
-                      email: (email || (member.user_id === currentUser.id ? currentUser.email : null)) ?? null
+                      email: (email || (member.user_id === currentUser.id ? currentUser.email : null)) ?? null,
+                      role: member.role
                     }
                   } catch (err) {
                     return {
                       user_id: member.user_id,
-                      email: (member.user_id === currentUser.id ? currentUser.email : null) ?? null
+                      email: (member.user_id === currentUser.id ? currentUser.email : null) ?? null,
+                      role: member.role
                     }
                   }
                 })
@@ -907,6 +920,48 @@ export default function Home() {
     // Remove from local state immediately for better UX
     setListings(listings.filter(l => l.id !== listingId))
     setAllListings(allListings.filter(l => l.id !== listingId))
+  }
+
+  const handleRemoveMember = async (memberUserId: string) => {
+    if (!currentCatalogId || !isOwner) return
+    
+    // Confirm before removing
+    const member = catalogMembers.find(m => m.user_id === memberUserId)
+    const confirmMessage = member?.email 
+      ? `Are you sure you want to remove ${member.email} from this catalog?`
+      : 'Are you sure you want to remove this collaborator?'
+    
+    if (!confirm(confirmMessage)) return
+    
+    setRemovingMember(memberUserId)
+    
+    try {
+      const response = await fetch('/api/remove-collaborator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          catalogId: currentCatalogId,
+          userId: memberUserId,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        alert(result.error || 'Failed to remove collaborator')
+        return
+      }
+
+      // Remove from local state immediately for better UX
+      setCatalogMembers(catalogMembers.filter(m => m.user_id !== memberUserId))
+    } catch (error: any) {
+      console.error('Error removing member:', error)
+      alert('Failed to remove collaborator. Please try again.')
+    } finally {
+      setRemovingMember(null)
+    }
   }
 
   const handleRetryEnrichment = async (listingId: string) => {
@@ -1418,12 +1473,32 @@ export default function Home() {
                                   className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-default"
                                   style={{ backgroundColor: getUserColor(member.user_id) }}
                                 >
-                                  {member.email?.charAt(0).toUpperCase() || '?'}
+                                  {removingMember === member.user_id ? (
+                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  ) : (
+                                    member.email?.charAt(0).toUpperCase() || '?'
+                                  )}
                                 </div>
+                                {/* Remove button - visible on hover for owners, hidden for self */}
+                                {isOwner && member.user_id !== user?.id && (
+                                  <button
+                                    onClick={() => handleRemoveMember(member.user_id)}
+                                    disabled={removingMember === member.user_id}
+                                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
+                                    title="Remove collaborator"
+                                  >
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                )}
                                 {/* Custom tooltip */}
                                 {member.email && (
                                   <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-white text-black text-xs rounded-lg shadow-lg border border-gray-200 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                                    {member.email}
+                                    {member.email}{member.role === 'owner' ? ' (owner)' : ''}
                                   </div>
                                 )}
                               </div>
