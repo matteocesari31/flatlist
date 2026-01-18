@@ -1,5 +1,44 @@
 // Background service worker for flatlist extension
 
+// Handle extension icon click - show the floating button on the current page
+chrome.action.onClicked.addListener(async (tab) => {
+  // Don't try to inject into chrome:// or edge:// pages
+  if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
+    console.log('Cannot inject into this page:', tab.url);
+    return;
+  }
+
+  try {
+    // First, try to send a message to show the button (if content script is already loaded)
+    try {
+      await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingButton' });
+      console.log('Sent showFloatingButton message to existing content script');
+      return;
+    } catch (e) {
+      // Content script not loaded, inject it
+      console.log('Content script not loaded, injecting...');
+    }
+
+    // Inject the floating button script
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['floating-button.js']
+    });
+
+    // Wait a moment for script to load, then trigger the button
+    setTimeout(async () => {
+      try {
+        await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingButton' });
+      } catch (e) {
+        console.log('Could not send message after injection:', e);
+      }
+    }, 100);
+
+  } catch (error) {
+    console.error('Error handling extension click:', error);
+  }
+});
+
 // Listen for messages from content scripts, popup, or web app
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'saveToken') {
@@ -35,7 +74,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getTokensFromFlatlist') {
     // Try to get tokens from flatlist domain tabs
     chrome.tabs.query({ 
-      url: ['http://localhost:3000/*', 'https://*.vercel.app/*', 'https://flatlist.app/*'] 
+      url: ['http://localhost:3000/*', 'https://*.vercel.app/*', 'https://flatlist.app/*', 'https://my.flatlist.app/*'] 
     }, async (tabs) => {
       if (tabs.length === 0) {
         sendResponse({ success: false, error: 'No flatlist tab found' });

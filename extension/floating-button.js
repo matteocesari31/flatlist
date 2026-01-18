@@ -4,6 +4,16 @@
 (function() {
   'use strict';
 
+  // Listen for messages from background script
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'showFloatingButton') {
+      // Force show the floating button regardless of page type
+      createFloatingButton();
+      sendResponse({ success: true });
+    }
+    return true;
+  });
+
   // Check if this page is a real estate website listing page
   function isListingPage() {
     const url = window.location.href.toLowerCase();
