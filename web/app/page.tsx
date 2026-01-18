@@ -518,6 +518,17 @@ export default function Home() {
       }
       setUser(user)
       
+      // Check for upgrade query parameter
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('upgrade') === 'true') {
+        // Show upgrade modal and clean up URL
+        setUpgradeModalTrigger('general')
+        setShowUpgradeModal(true)
+        // Remove the query param from URL without reload
+        const newUrl = window.location.pathname
+        window.history.replaceState({}, '', newUrl)
+      }
+      
       // Fetch subscription status
       fetchSubscription()
       
