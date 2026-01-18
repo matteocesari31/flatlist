@@ -48,6 +48,7 @@ export default function Home() {
   const [memberToRemove, setMemberToRemove] = useState<{ user_id: string; email: string | null } | null>(null)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [showHelpPopover, setShowHelpPopover] = useState(false)
+  const [emailCopied, setEmailCopied] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -1374,18 +1375,29 @@ export default function Home() {
                       onClick={() => setShowHelpPopover(false)}
                     />
                     <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-black">
                         Have questions, suggestions, or want to report a bug?
                       </p>
-                      <p className="text-sm mt-2">
+                      <p className="text-sm mt-2 text-black">
                         Write to us at{' '}
-                        <a 
-                          href="mailto:team@flatlist.app" 
-                          className="text-black font-medium hover:underline"
-                          onClick={() => setShowHelpPopover(false)}
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault()
+                            try {
+                              await navigator.clipboard.writeText('team@flatlist.app')
+                              setEmailCopied(true)
+                              setTimeout(() => {
+                                setEmailCopied(false)
+                                setShowHelpPopover(false)
+                              }, 1500)
+                            } catch (err) {
+                              console.error('Failed to copy:', err)
+                            }
+                          }}
+                          className="text-black font-medium hover:underline cursor-pointer"
                         >
-                          team@flatlist.app
-                        </a>
+                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
+                        </button>
                       </p>
                     </div>
                   </>
