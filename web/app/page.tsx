@@ -44,6 +44,7 @@ export default function Home() {
   const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null; role: string }>>([])
   const [isOwner, setIsOwner] = useState(false)
   const [removingMember, setRemovingMember] = useState<string | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<{ user_id: string; email: string | null } | null>(null)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
@@ -922,18 +923,18 @@ export default function Home() {
     setAllListings(allListings.filter(l => l.id !== listingId))
   }
 
-  const handleRemoveMember = async (memberUserId: string) => {
+  const handleRemoveMemberClick = (memberUserId: string) => {
     if (!currentCatalogId || !isOwner) return
-    
-    // Confirm before removing
     const member = catalogMembers.find(m => m.user_id === memberUserId)
-    const confirmMessage = member?.email 
-      ? `Are you sure you want to remove ${member.email} from this catalog?`
-      : 'Are you sure you want to remove this collaborator?'
+    if (member) {
+      setMemberToRemove({ user_id: member.user_id, email: member.email })
+    }
+  }
+
+  const handleConfirmRemoveMember = async () => {
+    if (!memberToRemove || !currentCatalogId) return
     
-    if (!confirm(confirmMessage)) return
-    
-    setRemovingMember(memberUserId)
+    setRemovingMember(memberToRemove.user_id)
     
     try {
       const response = await fetch('/api/remove-collaborator', {
@@ -943,7 +944,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           catalogId: currentCatalogId,
-          userId: memberUserId,
+          userId: memberToRemove.user_id,
         }),
       })
 
@@ -955,12 +956,13 @@ export default function Home() {
       }
 
       // Remove from local state immediately for better UX
-      setCatalogMembers(catalogMembers.filter(m => m.user_id !== memberUserId))
+      setCatalogMembers(catalogMembers.filter(m => m.user_id !== memberToRemove.user_id))
     } catch (error: any) {
       console.error('Error removing member:', error)
       alert('Failed to remove collaborator. Please try again.')
     } finally {
       setRemovingMember(null)
+      setMemberToRemove(null)
     }
   }
 
@@ -1485,7 +1487,7 @@ export default function Home() {
                                 {/* Remove button - visible on hover for owners, hidden for self */}
                                 {isOwner && member.user_id !== user?.id && (
                                   <button
-                                    onClick={() => handleRemoveMember(member.user_id)}
+                                    onClick={() => handleRemoveMemberClick(member.user_id)}
                                     disabled={removingMember === member.user_id}
                                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
                                     title="Remove collaborator"
@@ -1842,6 +1844,60 @@ export default function Home() {
         }}
         trigger={upgradeModalTrigger}
       />
+
+      {/* Remove Member Confirmation Modal */}
+      {memberToRemove && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+          onClick={() => setMemberToRemove(null)}
+        >
+          <div
+            className="bg-white rounded-[20px] max-w-sm w-full p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Collaborator</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to remove{' '}
+                <span className="font-medium text-gray-900">
+                  {memberToRemove.email || 'this collaborator'}
+                </span>
+                {' '}from this catalog? They will lose access to all listings.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setMemberToRemove(null)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmRemoveMember}
+                  disabled={removingMember !== null}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {removingMember ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Removing...
+                    </>
+                  ) : (
+                    'Remove'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
