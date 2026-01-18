@@ -8,6 +8,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [isError, setIsError] = useState(false)
+  const [hasInvitation, setHasInvitation] = useState(false)
 
   // Check for invitation token in URL
   useEffect(() => {
@@ -16,6 +17,7 @@ export default function AuthPage() {
     if (inviteToken) {
       // Store token to use after auth callback
       sessionStorage.setItem('pending_invite_token', inviteToken)
+      setHasInvitation(true)
     }
   }, [])
 
@@ -61,6 +63,15 @@ export default function AuthPage() {
         <div className="mb-6 text-center">
           <img src="/logo.svg" alt="flatlist" className="h-10 mx-auto" />
         </div>
+        
+        {/* Show invitation context */}
+        {hasInvitation && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-center">
+            <div className="text-sm text-blue-800 mb-1">You've been invited to collaborate!</div>
+            <div className="text-xs text-blue-600">Sign in or create an account to accept the invitation</div>
+          </div>
+        )}
+        
         <form onSubmit={handleMagicLink} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm mb-2">

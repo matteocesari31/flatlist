@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ListingWithMetadata } from '@/lib/types'
 import { createClient } from '@/lib/supabase'
 import { getUserColor } from '@/lib/user-colors'
-import { BedDouble, Bath, Building } from 'lucide-react'
+import { BedDouble, Bath, Building, FileText } from 'lucide-react'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
@@ -17,17 +17,20 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ listing, onClick, onViewDetails, onSaveNote, onDelete, onRetryEnrichment, catalogMembers = [] }: ListingCardProps) {
-  const [messageText, setMessageText] = useState('')
+  const [noteText, setNoteText] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showNotesPopover, setShowNotesPopover] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const messageInputRef = useRef<HTMLInputElement>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const noteTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const notesButtonRef = useRef<HTMLButtonElement>(null)
+  const [panelPosition, setPanelPosition] = useState<{ top: number; right: number } | null>(null)
   
   const metadata = listing.listing_metadata?.[0]
   const status = listing.enrichment_status
-  const notes = listing.listing_notes || []
+  const sharedNote = listing.listing_notes?.[0] || null
 
   // Get current user ID and user object
   useEffect(() => {
@@ -40,21 +43,65 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
     getCurrentUser()
   }, [])
 
-  // Focus input when popover opens
+  // Initialize note text from shared note
   useEffect(() => {
-    if (showNotesPopover && messageInputRef.current) {
+    setNoteText(sharedNote?.note || '')
+  }, [sharedNote?.note])
+
+  // Calculate panel position when opening
+  useEffect(() => {
+    if (showNotesPopover && notesButtonRef.current) {
+      const buttonRect = notesButtonRef.current.getBoundingClientRect()
+      // Position above the button
+      const panelHeight = 300 // Estimated panel height
+      setPanelPosition({
+        top: buttonRect.top - panelHeight - 8,
+        right: window.innerWidth - buttonRect.right
+      })
+    } else {
+      setPanelPosition(null)
+    }
+  }, [showNotesPopover])
+
+  // Focus textarea when popover opens
+  useEffect(() => {
+    if (showNotesPopover && noteTextareaRef.current) {
       setTimeout(() => {
-        messageInputRef.current?.focus()
+        noteTextareaRef.current?.focus()
       }, 100)
     }
   }, [showNotesPopover])
 
-  // Scroll to bottom when new messages are added or popover opens
+  // Auto-save with debounce
   useEffect(() => {
-    if (showNotesPopover && messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    if (!onSaveNote) return
+    
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
     }
-  }, [notes.length, showNotesPopover])
+
+    // Don't auto-save on initial load
+    if (noteText === (sharedNote?.note || '')) {
+      return
+    }
+
+    setIsSaving(true)
+    
+    // Debounce save for 1 second after user stops typing
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (onSaveNote) {
+        await onSaveNote(listing.id, noteText)
+        setIsSaving(false)
+      }
+    }, 1000)
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [noteText, listing.id, onSaveNote, sharedNote?.note])
 
 
   // Extract basic info from raw_content if metadata not available
@@ -148,21 +195,9 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
     setShowDeleteConfirm(false)
   }
 
-  const handleSendMessage = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation()
-    if (!messageText.trim() || !onSaveNote) return
-    
-    const messageToSend = messageText.trim()
-    setMessageText('')
-    
-    await onSaveNote(listing.id, messageToSend)
-    
-    // Scroll to bottom after sending
-    setTimeout(() => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
-      }
-    }, 100)
+    setNoteText(e.target.value)
   }
 
 
@@ -224,13 +259,8 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
         </div>
       )}
 
-      <div
-        onClick={onViewDetails || onClick}
-        className="rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white relative flex flex-col"
-      >
-
-      {/* Notes Popover */}
-      {onSaveNote && showNotesPopover && (
+      {/* Notes Editor Popover - Outside card to avoid layout shifts */}
+      {onSaveNote && showNotesPopover && panelPosition && (
         <>
           {/* Backdrop */}
           <div
@@ -242,11 +272,16 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
           />
           {/* Popover */}
           <div
-            className="absolute top-12 right-2 z-50 w-80 bg-white shadow-2xl border border-gray-200 flex flex-col"
-            style={{ borderRadius: '20px', maxHeight: 'calc(100vh - 8rem)' }}
+            className="fixed z-50 w-96 bg-white shadow-2xl border border-gray-200 flex flex-col"
+            style={{ 
+              borderRadius: '20px', 
+              maxHeight: 'calc(100vh - 8rem)',
+              top: `${Math.max(8, panelPosition.top)}px`,
+              right: `${panelPosition.right}px`
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button in top-right corner */}
+            {/* Close button - absolute positioned */}
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -260,74 +295,26 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
               </svg>
             </button>
 
-            {/* Messages List */}
-            <div ref={messagesContainerRef} className="overflow-y-auto p-4 space-y-3 pt-12" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
-              {notes.length === 0 ? (
-                <div className="text-center text-sm text-gray-500 py-8">
-                  Keep track of your thoughts on this listing here.
-                </div>
-              ) : (
-                notes.map((note) => {
-                  const isCurrentUserNote = note.user_id === currentUserId
-                  const userColor = getUserColor(note.user_id)
-                  
-                  return (
-                    <div
-                      key={note.id}
-                      className={`flex items-end gap-2 ${isCurrentUserNote ? 'justify-end' : 'justify-start'}`}
-                    >
-                      {!isCurrentUserNote && (
-                        <div
-                          className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold"
-                          style={{ backgroundColor: userColor }}
-                        >
-                          {(() => {
-                            const member = catalogMembers.find(m => m.user_id === note.user_id)
-                            const email = member?.email || null
-                            return email?.charAt(0).toUpperCase() || note.user_id.charAt(0).toUpperCase()
-                          })()}
-                        </div>
-                      )}
-                      <div className={`max-w-[75%] flex flex-col ${isCurrentUserNote ? 'items-end' : 'items-start'}`}>
-                        <div
-                          className={`px-3 py-2 rounded-[20px] ${
-                            isCurrentUserNote
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap break-words">{note.note}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
-
-            {/* Message Input Area */}
-            <div className="p-3">
-              <input
-                ref={messageInputRef}
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage(e)
-                  }
-                }}
-                placeholder="Type a message..."
-                className="w-full text-sm px-4 py-2.5 border border-gray-300 focus:outline-none"
-                style={{ borderRadius: '20px' }}
+            {/* Text Editor - starts at top */}
+            <div className="flex-1 p-4 pt-4 overflow-hidden">
+              <textarea
+                ref={noteTextareaRef}
+                value={noteText}
+                onChange={handleNoteChange}
+                placeholder="Add notes about this listing..."
+                className="w-full h-full text-sm text-gray-900 placeholder-gray-400 border-0 resize-none focus:outline-none"
+                style={{ minHeight: '200px' }}
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
           </div>
         </>
       )}
-      
+
+      <div
+        onClick={onViewDetails || onClick}
+        className="rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white relative flex flex-col"
+      >
       {/* Image section (on top) */}
       <div className="px-4 pt-4">
         {thumbnailImage ? (
@@ -370,6 +357,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                 <div className="flex gap-2">
                   {onSaveNote && (
                     <button
+                      ref={notesButtonRef}
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowNotesPopover(!showNotesPopover)
@@ -378,21 +366,8 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                       title="Notes"
                       aria-label="Notes"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 relative"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                      {notes.length > 0 && (
+                      <FileText className="h-5 w-5 relative" />
+                      {sharedNote && sharedNote.note && (
                         <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-[#2C7FFF] rounded-full"></span>
                       )}
                     </button>

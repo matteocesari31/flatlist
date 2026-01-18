@@ -295,6 +295,49 @@ serve(async (req) => {
       )
     }
 
+    // Check subscription and listing limit for free users
+    const FREE_LISTINGS_LIMIT = 12
+    
+    // Get user's subscription
+    const { data: subscription, error: subError } = await supabase
+      .from('user_subscriptions')
+      .select('plan, current_period_end')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    // Determine if user is premium
+    let isPremium = subscription?.plan === 'premium'
+    if (isPremium && subscription?.current_period_end) {
+      const periodEnd = new Date(subscription.current_period_end)
+      isPremium = periodEnd > new Date()
+    }
+    
+    // If user is not premium, check listing count
+    if (!isPremium) {
+      const { count: listingsCount, error: countError } = await supabase
+        .from('listings')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      
+      if (!countError && listingsCount !== null && listingsCount >= FREE_LISTINGS_LIMIT) {
+        console.log('❌ Free user has reached listing limit:', listingsCount)
+        return new Response(
+          JSON.stringify({ 
+            error: 'Listing limit reached',
+            message: `You've reached the free plan limit of ${FREE_LISTINGS_LIMIT} listings. Upgrade to Premium for unlimited listings.`,
+            currentCount: listingsCount,
+            limit: FREE_LISTINGS_LIMIT,
+            upgradeRequired: true
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      console.log('Free user listings:', listingsCount, '/', FREE_LISTINGS_LIMIT)
+    } else {
+      console.log('Premium user - no listing limit')
+    }
+
     // Insert listing
     console.log('=== INSERTING LISTING ===')
     console.log('User ID:', user.id)

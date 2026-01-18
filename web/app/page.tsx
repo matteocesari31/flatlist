@@ -10,8 +10,19 @@ import { ConfirmedLocation } from '@/lib/use-location-detection'
 import ListingCard from '@/components/ListingCard'
 import MetadataViewer from '@/components/MetadataViewer'
 import InviteCollaboratorModal from '@/components/InviteCollaboratorModal'
+import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
+import { SubscriptionPlan } from '@/lib/types'
+
+interface SubscriptionInfo {
+  plan: SubscriptionPlan
+  isPremium: boolean
+  listingsCount: number
+  listingsLimit: number
+  canInvite: boolean
+  currentPeriodEnd: string | null
+}
 
 export default function Home() {
   const [listings, setListings] = useState<ListingWithMetadata[]>([])
@@ -33,6 +44,9 @@ export default function Home() {
   const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null }>>([])
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeModalTrigger, setUpgradeModalTrigger] = useState<'invite' | 'listings' | 'general'>('general')
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
@@ -425,6 +439,37 @@ export default function Home() {
     }
   }, [currentCatalogId])
 
+  // Fetch user subscription status
+  const fetchSubscription = useCallback(async () => {
+    try {
+      const response = await fetch('/api/subscription')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscription(data)
+      } else {
+        // Default to free plan if fetch fails
+        setSubscription({
+          plan: 'free',
+          isPremium: false,
+          listingsCount: 0,
+          listingsLimit: 12,
+          canInvite: false,
+          currentPeriodEnd: null,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error)
+      setSubscription({
+        plan: 'free',
+        isPremium: false,
+        listingsCount: 0,
+        listingsLimit: 12,
+        canInvite: false,
+        currentPeriodEnd: null,
+      })
+    }
+  }, [])
+
   // Load catalog name from localStorage
   useEffect(() => {
     const savedName = localStorage.getItem('flatlist-catalog-name')
@@ -464,6 +509,9 @@ export default function Home() {
         return
       }
       setUser(user)
+      
+      // Fetch subscription status
+      fetchSubscription()
       
       // Fetch user's catalog (with error handling for missing tables)
       try {
@@ -793,51 +841,47 @@ export default function Home() {
     // Get current user
     const { data: { user: currentUser } } = await supabase.auth.getUser()
     if (!currentUser) {
-      alert('You must be logged in to send messages')
       return
     }
 
-    if (!note.trim()) {
-      return // Don't send empty messages
-    }
-
     // Optimistically update the UI immediately
-    const updateListingNotes = (prev: ListingWithMetadata[]) => {
+    const updateListingNote = (prev: ListingWithMetadata[]) => {
       return prev.map(listing => {
         if (listing.id !== listingId) return listing
         
-        const currentNotes = listing.listing_notes || []
-        
-        // Always add a new message (chat-style)
-        const newMessage = {
-          id: 'temp-' + Date.now(),
+        // Update or create the shared note (single note per listing)
+        const existingNote = listing.listing_notes?.[0]
+        const updatedNote = {
+          id: existingNote?.id || 'temp-' + Date.now(),
           listing_id: listingId,
           user_id: currentUser.id,
-          note: note.trim(),
-          created_at: new Date().toISOString(),
+          note: note,
+          created_at: existingNote?.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
         
-        return { ...listing, listing_notes: [...currentNotes, newMessage] }
+        return { ...listing, listing_notes: [updatedNote] }
       })
     }
 
     // Optimistically update both listings states
-    setListings(updateListingNotes)
-    setAllListings(updateListingNotes)
+    setListings(updateListingNote)
+    setAllListings(updateListingNote)
 
-    // Then perform the actual database operation - always insert a new message
+    // Use upsert to update existing note or create new one
     const { error } = await supabase
       .from('listing_notes')
-      .insert({
+      .upsert({
         listing_id: listingId,
         user_id: currentUser.id,
-        note: note.trim(),
+        note: note.trim() || '',
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'listing_id'
       })
 
     if (error) {
-      console.error('Error saving message:', error)
-      alert('Failed to send message. Please try again.')
+      console.error('Error saving note:', error)
       // Rollback optimistic update on error
       fetchListings()
       return
@@ -1261,9 +1305,43 @@ export default function Home() {
                     onClick={() => setShowProfilePopover(false)}
                   />
                   {/* Popover */}
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[200px]">
-                    <div className="p-3 border-b border-gray-100">
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
+                    <div className="p-4 border-b border-gray-100">
                       <div className="text-sm font-medium text-gray-900">{user?.email}</div>
+                      {/* Subscription Status */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <div>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            subscription?.isPremium 
+                              ? 'bg-black text-white' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {subscription?.isPremium ? 'Premium' : 'Free Plan'}
+                          </span>
+                          {subscription?.isPremium && subscription.currentPeriodEnd && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                            </div>
+                          )}
+                          {!subscription?.isPremium && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
+                            </div>
+                          )}
+                        </div>
+                        {!subscription?.isPremium && (
+                          <button
+                            onClick={() => {
+                              setShowProfilePopover(false)
+                              setUpgradeModalTrigger('general')
+                              setShowUpgradeModal(true)
+                            }}
+                            className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                          >
+                            Upgrade
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="p-2">
                       <button
@@ -1370,7 +1448,14 @@ export default function Home() {
                         )}
                         <div className="relative group">
                           <button
-                            onClick={() => setShowInviteModal(true)}
+                            onClick={() => {
+                              if (subscription?.canInvite) {
+                                setShowInviteModal(true)
+                              } else {
+                                setUpgradeModalTrigger('invite')
+                                setShowUpgradeModal(true)
+                              }
+                            }}
                             className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
                           >
                             <svg
@@ -1385,7 +1470,7 @@ export default function Home() {
                           </button>
                           {/* Custom tooltip */}
                           <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-white text-black text-xs rounded-lg shadow-lg border border-gray-200 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                            Add collaborator
+                            {subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
                           </div>
                         </div>
                       </div>
@@ -1671,6 +1756,17 @@ export default function Home() {
           catalogId={currentCatalogId}
         />
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => {
+          setShowUpgradeModal(false)
+          // Refresh subscription after potential checkout
+          fetchSubscription()
+        }}
+        trigger={upgradeModalTrigger}
+      />
     </div>
   )
 }

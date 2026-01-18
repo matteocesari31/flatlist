@@ -123,6 +123,35 @@ serve(async (req) => {
       )
     }
 
+    // Check if user is premium (only premium users can invite)
+    console.log('Checking user subscription...')
+    const { data: subscription, error: subError } = await supabase
+      .from('user_subscriptions')
+      .select('plan, current_period_end')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    // Determine if user is premium
+    let isPremium = subscription?.plan === 'premium'
+    if (isPremium && subscription?.current_period_end) {
+      const periodEnd = new Date(subscription.current_period_end)
+      isPremium = periodEnd > new Date()
+    }
+
+    console.log('User subscription:', { plan: subscription?.plan, isPremium })
+
+    if (!isPremium) {
+      console.error('Free user attempted to invite:', user.id)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Premium required',
+          message: 'Only Premium users can invite collaborators. Upgrade to Premium to unlock multiplayer mode.',
+          upgradeRequired: true
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Check for existing pending invitation (including expired ones that we can resend)
     console.log('Checking for existing invitations...')
     const { data: existingInvitation, error: existingInvitationError } = await supabase

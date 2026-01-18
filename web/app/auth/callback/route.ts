@@ -8,7 +8,25 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createServerSupabaseClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    // If session was created successfully, ensure user has a subscription record
+    if (data?.user && !error) {
+      // Create free subscription for new users (ignore if already exists)
+      const { error: subError } = await supabase
+        .from('user_subscriptions')
+        .upsert({
+          user_id: data.user.id,
+          plan: 'free',
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: true,
+        })
+      
+      if (subError) {
+        console.warn('Could not create subscription (may already exist):', subError.message)
+      }
+    }
   }
 
   // If there's an invitation token, redirect to acceptance page

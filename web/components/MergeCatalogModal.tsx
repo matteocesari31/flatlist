@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { SubscriptionPlan, CatalogMemberRole } from '@/lib/types'
 
 interface MergeCatalogModalProps {
   isOpen: boolean
@@ -11,6 +12,11 @@ interface MergeCatalogModalProps {
   catalogId: string
   catalogName: string
   existingListingsCount: number
+}
+
+interface SubscriptionInfo {
+  plan: SubscriptionPlan
+  isPremium: boolean
 }
 
 export default function MergeCatalogModal({
@@ -25,10 +31,14 @@ export default function MergeCatalogModal({
   const [mergeChoice, setMergeChoice] = useState<'merge' | 'separate'>('merge')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
+  const [loadingSubscription, setLoadingSubscription] = useState(true)
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      // Fetch subscription status
+      fetchSubscription()
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -36,6 +46,27 @@ export default function MergeCatalogModal({
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
+
+  const fetchSubscription = async () => {
+    setLoadingSubscription(true)
+    try {
+      const response = await fetch('/api/subscription')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscription({
+          plan: data.plan,
+          isPremium: data.isPremium,
+        })
+      } else {
+        setSubscription({ plan: 'free', isPremium: false })
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error)
+      setSubscription({ plan: 'free', isPremium: false })
+    } finally {
+      setLoadingSubscription(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -97,12 +128,19 @@ export default function MergeCatalogModal({
 
       let member
       if (!existingMember) {
-        // Insert new member
+        // Determine role based on subscription
+        // Premium users get 'editor' role (can add listings + comment)
+        // Free users get 'commenter' role (can only comment)
+        const memberRole: CatalogMemberRole = subscription?.isPremium ? 'editor' : 'commenter'
+        console.log('Assigning role based on subscription:', { isPremium: subscription?.isPremium, role: memberRole })
+
+        // Insert new member with appropriate role
         const { data: newMember, error: memberError } = await supabase
           .from('catalog_members')
           .insert({
             catalog_id: catalogId,
             user_id: currentUser.id,
+            role: memberRole,
           })
           .select()
           .maybeSingle()
@@ -190,9 +228,27 @@ export default function MergeCatalogModal({
             You've been invited to collaborate on <strong>{catalogName}</strong>.
           </p>
           {existingListingsCount > 0 && (
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 mb-2">
               You currently have {existingListingsCount} listing{existingListingsCount !== 1 ? 's' : ''} in your catalog.
             </p>
+          )}
+          
+          {/* Show permissions based on subscription */}
+          {!loadingSubscription && (
+            <div className={`p-3 rounded-lg mt-3 ${subscription?.isPremium ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${subscription?.isPremium ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'}`}>
+                  {subscription?.isPremium ? 'Premium' : 'Free Plan'}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600">
+                {subscription?.isPremium ? (
+                  <>You'll be able to <strong>add listings</strong> and <strong>comment</strong> on shared listings.</>
+                ) : (
+                  <>You'll be able to <strong>comment</strong> on shared listings. Upgrade to Premium to add your own listings.</>
+                )}
+              </p>
+            </div>
           )}
         </div>
 

@@ -1,5 +1,7 @@
 export type EnrichmentStatus = 'pending' | 'processing' | 'done' | 'failed'
 export type InvitationStatus = 'pending' | 'accepted' | 'declined'
+export type SubscriptionPlan = 'free' | 'premium'
+export type CatalogMemberRole = 'owner' | 'editor' | 'commenter'
 
 export interface Catalog {
   id: string
@@ -13,7 +15,19 @@ export interface CatalogMember {
   id: string
   catalog_id: string
   user_id: string
+  role: CatalogMemberRole
   joined_at: string
+}
+
+export interface UserSubscription {
+  id: string
+  user_id: string
+  plan: SubscriptionPlan
+  polar_customer_id: string | null
+  polar_subscription_id: string | null
+  current_period_end: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface CatalogInvitation {
