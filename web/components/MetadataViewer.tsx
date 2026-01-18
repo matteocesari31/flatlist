@@ -231,6 +231,7 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
   const aiCards = useMemo(() => {
     if (!metadata) return []
     const cards: Array<{
+      key: string
       title: string
       evidence: string | null
       additionalContent?: string
@@ -452,24 +453,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
       })
     }
 
-    // Filter cards based on user preferences and add keys to existing cards
-    const cardsWithKeys = cards.map(card => {
-      // Add key to existing cards if not present
-      if (!('key' in card)) {
-        // Determine key based on title or content
-        const titleLower = card.title.toLowerCase()
-        if (titleLower.includes('student')) return { ...card, key: 'student_friendly' }
-        if (titleLower.includes('floor')) return { ...card, key: 'floor_type' }
-        if (titleLower.includes('light')) return { ...card, key: 'natural_light' }
-        if (titleLower.includes('noise')) return { ...card, key: 'noise_level' }
-        if (titleLower.includes('renovation')) return { ...card, key: 'renovation_state' }
-        if (titleLower.includes('furnishing')) return { ...card, key: 'furnishing' }
-      }
-      return card
-    })
-
     // Filter by visibility preferences
-    const visibleCardsList = cardsWithKeys.filter(card => visibleCards.has(card.key || ''))
+    const visibleCardsList = cards.filter(card => visibleCards.has(card.key))
 
     // Limit to maximum 6 cards (2 rows of 3)
     const limitedCards = visibleCardsList.slice(0, 6)

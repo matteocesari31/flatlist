@@ -112,14 +112,15 @@ export async function createCheckoutSession(
   customerEmail: string,
   userId: string,
   successUrl: string,
-  cancelUrl?: string
+  returnUrl?: string
 ): Promise<{ checkoutUrl: string; checkoutId: string }> {
   const polar = createPolarClient()
   const productId = getPremiumProductId()
   
-  const checkout = await polar.checkouts.custom.create({
-    productId,
+  const checkout = await polar.checkouts.create({
+    products: [productId],
     successUrl,
+    returnUrl,
     customerEmail,
     metadata: {
       user_id: userId,

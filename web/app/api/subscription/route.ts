@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient as createServerClient } from '@/lib/supabase-server'
 import { UserSubscription, SubscriptionPlan } from '@/lib/types'
 
 export interface SubscriptionResponse {
