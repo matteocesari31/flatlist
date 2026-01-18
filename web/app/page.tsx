@@ -14,7 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { CircleHelp } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 
 interface SubscriptionInfo {
   plan: SubscriptionPlan
@@ -47,10 +47,7 @@ export default function Home() {
   const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [memberToRemove, setMemberToRemove] = useState<{ user_id: string; email: string | null } | null>(null)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
-  const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [sendingFeedback, setSendingFeedback] = useState(false)
-  const [feedbackSent, setFeedbackSent] = useState(false)
+  const [showHelpPopover, setShowHelpPopover] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -1360,13 +1357,40 @@ export default function Home() {
 
             <div className="flex items-center flex-shrink-0 ml-auto gap-3 relative">
               {/* Help Button */}
-              <button
-                onClick={() => setShowFeedbackModal(true)}
-                className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
-                title="Help & Feedback"
-              >
-                <CircleHelp className="w-5 h-5" strokeWidth={1.5} />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowHelpPopover(!showHelpPopover)}
+                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
+                  title="Help & Feedback"
+                >
+                  <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+                
+                {/* Help Popover */}
+                {showHelpPopover && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowHelpPopover(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
+                      <p className="text-sm text-gray-700">
+                        Have questions, suggestions, or want to report a bug?
+                      </p>
+                      <p className="text-sm mt-2">
+                        Write to us at{' '}
+                        <a 
+                          href="mailto:team@flatlist.app" 
+                          className="text-black font-medium hover:underline"
+                          onClick={() => setShowHelpPopover(false)}
+                        >
+                          team@flatlist.app
+                        </a>
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
               
               {/* Profile Button */}
               <button
@@ -1925,126 +1949,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Feedback Modal */}
-      {showFeedbackModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
-          onClick={() => {
-            if (!sendingFeedback) {
-              setShowFeedbackModal(false)
-              setFeedbackSent(false)
-              setFeedbackMessage('')
-            }
-          }}
-        >
-          <div
-            className="bg-white rounded-[20px] max-w-md w-full p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {feedbackSent ? (
-              <div className="text-center py-4">
-                <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Message Sent!</h3>
-                <p className="text-gray-600 mb-6">
-                  Thank you for your feedback. We'll get back to you soon.
-                </p>
-                <button
-                  onClick={() => {
-                    setShowFeedbackModal(false)
-                    setFeedbackSent(false)
-                    setFeedbackMessage('')
-                  }}
-                  className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">Help & Feedback</h2>
-                  <button
-                    onClick={() => setShowFeedbackModal(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                    aria-label="Close"
-                  >
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                <p className="text-gray-600 text-sm mb-4">
-                  Have a question, suggestion, or found a bug? Let us know!
-                </p>
-
-                {/* Message Input */}
-                <textarea
-                  value={feedbackMessage}
-                  onChange={(e) => setFeedbackMessage(e.target.value)}
-                  placeholder="Write your message here..."
-                  className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                  disabled={sendingFeedback}
-                />
-
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => setShowFeedbackModal(false)}
-                    className="flex-1 px-4 py-3 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-                    disabled={sendingFeedback}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!feedbackMessage.trim()) return
-                      setSendingFeedback(true)
-                      try {
-                        const response = await fetch('/api/feedback', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            message: feedbackMessage,
-                            userEmail: user?.email,
-                          }),
-                        })
-                        if (response.ok) {
-                          setFeedbackSent(true)
-                        } else {
-                          alert('Failed to send feedback. Please try again.')
-                        }
-                      } catch (error) {
-                        console.error('Error sending feedback:', error)
-                        alert('Failed to send feedback. Please try again.')
-                      } finally {
-                        setSendingFeedback(false)
-                      }
-                    }}
-                    disabled={sendingFeedback || !feedbackMessage.trim()}
-                    className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
-                  >
-                    {sendingFeedback ? (
-                      <>
-                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Sending...
-                      </>
-                    ) : (
-                      'Send Message'
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
