@@ -172,6 +172,11 @@
         opacity: 1;
       }
       
+      #flatlist-floating-button.error {
+        background: #ef4444 !important;
+        opacity: 1;
+      }
+      
       .flatlist-compact-content {
         display: flex;
         align-items: center;
@@ -367,8 +372,8 @@
         }
         
         if (!token) {
-          // Show a better error message with link to sign in
-          const errorMsg = 'Please sign in to flatlist. Open flatlist in another tab or click the extension icon to sign in.';
+          // Show a better error message with instructions
+          const errorMsg = 'Listing not saved. Open or refresh Flatlist in the browser, then refresh this page.';
           throw new Error(errorMsg);
         }
         
@@ -522,24 +527,29 @@
         button.classList.remove('saving');
         button.classList.remove('flatlist-compact');
         button.classList.add('flatlist-expanded');
+        button.classList.add('error');
         const compactContent = button.querySelector('.flatlist-compact-content');
         const expandedContent = button.querySelector('.flatlist-expanded-content');
         const buttonText = button.querySelector('.flatlist-button-text');
         if (compactContent) compactContent.classList.add('hidden');
         if (expandedContent) expandedContent.classList.remove('hidden');
         
-        // Determine error message
-        let errorMessage = 'Error';
-        if (error.message && error.message.includes('sign in') || error.message.includes('log in') || error.message.includes('Please sign in')) {
-          errorMessage = 'Log in to flatlist first';
-        } else if (error.message) {
-          errorMessage = error.message.length > 30 ? 'Error' : error.message;
+        // Determine error message with instructions
+        let errorMessage = 'Listing not saved. Open or refresh Flatlist in the browser, then refresh this page.';
+        if (error.message && !error.message.includes('sign in') && !error.message.includes('log in') && !error.message.includes('Please sign in') && !error.message.includes('Open flatlist')) {
+          // For non-auth errors, show a shorter message if it's too long
+          if (error.message.length > 50) {
+            errorMessage = 'Listing not saved. Open or refresh Flatlist in the browser, then refresh this page.';
+          } else {
+            errorMessage = error.message;
+          }
         }
         
         if (buttonText) buttonText.textContent = errorMessage;
         
-        // Reset after 3 seconds - back to logo
+        // Reset after 5 seconds - back to logo
         setTimeout(() => {
+          button.classList.remove('error');
           button.classList.remove('flatlist-expanded');
           button.classList.add('flatlist-compact');
           if (compactContent) {
@@ -547,7 +557,7 @@
             compactContent.innerHTML = `<img src="${logoUrl}" alt="flatlist" class="flatlist-logo-icon" />`;
           }
           if (expandedContent) expandedContent.classList.add('hidden');
-        }, 3000);
+        }, 5000);
       }
     });
   }
