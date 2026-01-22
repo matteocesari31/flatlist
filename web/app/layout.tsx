@@ -24,7 +24,7 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "flatlist - AI Apartment Shortlist Assistant",
+  title: "Flatlist - Smart Apartment Hunting",
   description: "Save apartment listings from anywhere, then use AI to search and compare them intelligently.",
   icons: {
     icon: '/logo.svg',
