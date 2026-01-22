@@ -1481,12 +1481,12 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">No listings yet</h2>
             <p className="text-black mb-4">
-              Use the flatlist browser extension to save apartment listings
+              Use the <a href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Flatlist Browser Extension</a> to save apartment listings
             </p>
           </div>
         ) : (
