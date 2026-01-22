@@ -1486,7 +1486,7 @@ export default function Home() {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">No listings yet</h2>
             <p className="text-black mb-4">
-              Use the <a href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Flatlist Browser Extension</a> to save apartment listings
+              Use the <a href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj" target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-700 underline">Flatlist Browser Extension</a> to save apartment listings
             </p>
           </div>
         ) : (
