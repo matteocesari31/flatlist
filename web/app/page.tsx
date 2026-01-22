@@ -1485,8 +1485,9 @@ export default function Home() {
         {allListings.length === 0 ? (
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
-            <p className="text-black mb-4">
-              Your collection is looking a little empty. Install our extension to save listings from any website in one click.
+            <p className="text-black mb-8">
+              Your collection is looking a little empty.<br />
+              Install our extension to save listings from any website in one click.
             </p>
             <a
               href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj"
