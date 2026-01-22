@@ -1484,10 +1484,18 @@ export default function Home() {
       <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">No listings yet</h2>
+            <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
             <p className="text-black mb-4">
-              Use the <a href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj" target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-700 underline">Flatlist Browser Extension</a> to save apartment listings
+              Your collection is looking a little empty. Install our extension to save listings from any website in one click.
             </p>
+            <a
+              href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-black text-white px-6 py-3 rounded-[30px] hover:bg-gray-800 transition-colors font-medium"
+            >
+              Install the Chrome Extension
+            </a>
           </div>
         ) : (
           <>
