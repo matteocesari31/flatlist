@@ -1483,7 +1483,7 @@ export default function Home() {
 
       <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
-          <div className="text-center">
+          <div className="bg-white rounded-[30px] shadow-sm p-8 text-center">
             <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
             <p className="text-black mb-8">
               Your collection is looking a little empty.<br />
