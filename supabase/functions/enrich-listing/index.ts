@@ -390,7 +390,8 @@ Return ONLY valid JSON in this exact format:
           
           const geocodeResponse = await fetch(geocodeUrl, {
             headers: {
-              'User-Agent': 'flatlist-apartment-assistant/1.0'
+              'User-Agent': 'flatlist-apartment-assistant/1.0',
+              'Accept-Language': 'en'
             }
           })
           
@@ -406,56 +407,140 @@ Return ONLY valid JSON in this exact format:
           return null
         }
         
-        // Helper to check if coordinates are in Milan area (rough bounding box)
-        const isInMilan = (lat: number, lon: number): boolean => {
-          return lat >= 45.40 && lat <= 45.55 && lon >= 9.05 && lon <= 9.35
+        // Detect country and address format from the address string
+        const detectCountry = (addr: string): 'US' | 'UK' | 'IT' | 'OTHER' => {
+          const upper = addr.toUpperCase()
+          // US: ZIP codes (5 digits), state abbreviations (CA, NY, TX, etc.), or "USA"/"United States"
+          if (/\b\d{5}(-\d{4})?\b/.test(addr) || /\b(CA|NY|TX|FL|IL|PA|OH|GA|NC|MI|NJ|VA|WA|AZ|MA|TN|IN|MO|MD|WI|CO|MN|SC|AL|LA|KY|OR|OK|CT|IA|UT|AR|NV|MS|KS|NM|NE|WV|ID|HI|NH|ME|MT|RI|DE|SD|ND|AK|DC|VT|WY)\b/.test(upper) || upper.includes('USA') || upper.includes('UNITED STATES')) {
+            return 'US'
+          }
+          // UK: Postcodes (e.g., SW1A 1AA, M1 1AA, etc.)
+          if (/\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b/i.test(addr) || upper.includes('UK') || upper.includes('UNITED KINGDOM') || upper.includes('ENGLAND') || upper.includes('SCOTLAND') || upper.includes('WALES')) {
+            return 'UK'
+          }
+          // Italy: Italian street types, city names, or "Italia"/"Italy"
+          if (/\b(Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo|Via|Viale)\b/i.test(addr) || upper.includes('ITALIA') || upper.includes('ITALY') || /\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i.test(addr)) {
+            return 'IT'
+          }
+          return 'OTHER'
         }
         
-        // Try multiple query variations to get accurate geocoding
+        // Generate query variations based on detected country
+        const generateQueryVariations = (addr: string, country: 'US' | 'UK' | 'IT' | 'OTHER'): string[] => {
+          const variations: string[] = []
+          
+          if (country === 'US') {
+            // US address format: "Street Number Street Name, City, State ZIP" or "Street Name, City, State"
+            // Try full address first
+            variations.push(addr)
+            
+            // Remove apartment/unit numbers (e.g., "#3BDDOWN", "Apt 5", "Unit 2")
+            const cleaned = addr.replace(/\s*#\s*[A-Z0-9]+\s*/gi, ' ').replace(/\s*(Apt|Apartment|Unit|Suite|Ste|#)\s*[A-Z0-9]+\s*/gi, ' ').trim()
+            if (cleaned !== addr) {
+              variations.push(cleaned)
+            }
+            
+            // Extract components: try to parse "Street, City, State ZIP"
+            const usMatch = addr.match(/^(.+?),\s*(.+?),\s*([A-Z]{2})\s+(\d{5}(-\d{4})?)$/i)
+            if (usMatch) {
+              const [, street, city, state, zip] = usMatch
+              variations.push(`${street}, ${city}, ${state} ${zip}`)
+              variations.push(`${street}, ${city}, ${state}`)
+              variations.push(`${city}, ${state} ${zip}`)
+              variations.push(`${city}, ${state}`)
+            } else {
+              // Try without ZIP
+              const usMatchNoZip = addr.match(/^(.+?),\s*(.+?),\s*([A-Z]{2})$/i)
+              if (usMatchNoZip) {
+                const [, street, city, state] = usMatchNoZip
+                variations.push(`${street}, ${city}, ${state}`)
+                variations.push(`${city}, ${state}`)
+              }
+            }
+            
+            // Add country if not present
+            if (!addr.toUpperCase().includes('USA') && !addr.toUpperCase().includes('UNITED STATES')) {
+              variations.push(`${addr}, USA`)
+            }
+          } else if (country === 'UK') {
+            // UK address format: "Street, City, Postcode" or "Street, City, County, Postcode"
+            variations.push(addr)
+            
+            // Extract postcode if present
+            const postcodeMatch = addr.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2})\b/i)
+            if (postcodeMatch) {
+              const postcode = postcodeMatch[1]
+              // Try with just postcode
+              variations.push(postcode)
+              // Try with city and postcode
+              const cityMatch = addr.match(/^(.+?),\s*(.+?)(?:,\s*[^,]+)?,\s*[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}/i)
+              if (cityMatch) {
+                variations.push(`${cityMatch[2]}, ${postcode}`)
+              }
+            }
+            
+            // Add country if not present
+            if (!addr.toUpperCase().includes('UK') && !addr.toUpperCase().includes('UNITED KINGDOM')) {
+              variations.push(`${addr}, UK`)
+            }
+          } else if (country === 'IT') {
+            // Italian address format: "Via Street Name Number, Neighborhood, City"
+            variations.push(addr)
+            
+            // Extract street part (Italian street types)
+            const streetMatch = addr.match(/^((?:Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\s+[^,]+)/i)
+            const streetOnly = streetMatch ? streetMatch[1].trim() : null
+            
+            // Remove neighborhood info
+            const cleanedAddress = addr
+              .replace(/,\s*[A-Za-z\s-]+\s*-\s*[A-Za-z\s-]+\s*,/g, ',')
+              .replace(/,\s*[A-Za-z\s-]+\s*,\s*(Milano|Roma|Firenze|Torino|Napoli)/gi, ', $1')
+            
+            if (cleanedAddress !== addr) {
+              variations.push(cleanedAddress)
+            }
+            
+            if (streetOnly) {
+              // Extract city
+              const cityMatch = addr.match(/\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i)
+              if (cityMatch) {
+                const city = cityMatch[1]
+                variations.push(`${streetOnly}, ${city}`)
+                variations.push(`${streetOnly}, ${city}, Italy`)
+              }
+            }
+            
+            // Add country if not present
+            if (!addr.includes('Italy') && !addr.includes('Italia')) {
+              variations.push(`${addr}, Italy`)
+            }
+          } else {
+            // For other countries, try the address as-is and with common country names
+            variations.push(addr)
+            // Don't add country names for unknown countries - let Nominatim figure it out
+          }
+          
+          return [...new Set(variations)] // Remove duplicates
+        }
+        
+        // Detect country and generate variations
         const address = metadata.address
+        const country = detectCountry(address)
+        console.log(`Detected country: ${country} for address: ${address}`)
         
-        // Extract just the street part (before any comma or dash with neighborhood)
-        // Handles formats like "Via Leopoldo Cicognara 2, Plebisciti - Susa, Milano"
-        const streetMatch = address.match(/^((?:Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\s+[^,]+)/i)
-        const streetOnly = streetMatch ? streetMatch[1].trim() : null
+        const queryVariations = generateQueryVariations(address, country)
+        console.log(`Generated ${queryVariations.length} query variations`)
         
-        // Also try removing neighborhood info (anything after first comma up to city name)
-        const cleanedAddress = address
-          .replace(/,\s*[A-Za-z\s-]+\s*-\s*[A-Za-z\s-]+\s*,/g, ',') // Remove "Neighborhood - Area" patterns
-          .replace(/,\s*[A-Za-z\s-]+\s*,\s*Milano/gi, ', Milano') // Remove single neighborhood before Milano
-        
-        const queryVariations = [
-          // Try cleaned address first
-          cleanedAddress.includes('Milano') ? cleanedAddress : `${cleanedAddress}, Milano`,
-          // Try street only with city
-          streetOnly ? `${streetOnly}, Milano` : null,
-          streetOnly ? `${streetOnly}, Milano, Italy` : null,
-          // Original address as-is
-          address,
-          address.includes('Milan') || address.includes('Milano') ? address : `${address}, Milano`,
-          address.includes('Italy') || address.includes('Italia') ? address : `${address}, Italy`,
-          `${address}, Milano, Italy`,
-          // If address contains street number, try without it
-          address.replace(/\s*\d+\s*$/, '') + ', Milano, Italy',
-        ].filter(Boolean) as string[]
-        
-        // Remove duplicates
-        const uniqueQueries = [...new Set(queryVariations)]
-        
-        for (const query of uniqueQueries) {
+        // Try each variation
+        for (const query of queryVariations) {
           console.log(`Trying geocode query: "${query}"`)
           const result = await tryGeocode(query)
           
           if (result) {
-            // Validate the result is in Milan area
-            if (isInMilan(result.lat, result.lon)) {
-              latitude = result.lat
-              longitude = result.lon
-              console.log(`✅ Geocoded successfully with query "${query}":`, { latitude, longitude })
-              break
-            } else {
-              console.log(`⚠️ Result outside Milan bounds (${result.lat}, ${result.lon}), trying next query...`)
-            }
+            latitude = result.lat
+            longitude = result.lon
+            console.log(`✅ Geocoded successfully with query "${query}":`, { latitude, longitude })
+            break
           }
           
           // Small delay between requests to respect rate limits

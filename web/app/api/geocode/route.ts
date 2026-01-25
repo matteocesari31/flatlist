@@ -4,87 +4,105 @@ import { NextRequest, NextResponse } from 'next/server'
 const geocodeCache = new Map<string, { latitude: number; longitude: number; name: string } | null>()
 
 // Optimize query for Nominatim - simplify verbose AI-generated location strings
+// Now handles international addresses (US, UK, Italy, etc.)
 function optimizeForNominatim(query: string): string {
-  // Words to remove (but preserve campus names and location-specific terms)
-  const stopWords = [
-    'di', 'della', 'del', 'degli', 'delle', 'dei', 'dello',
-    'station', 'stazione', 'metro', 'line', 'linea',
-    'university', 'università', 'universita',
-    'italy', 'italia', 'france', 'spain', 'germany', 'uk', 'usa'
-  ]
+  // Detect country from query
+  const upper = query.toUpperCase()
+  const isUS = /\b\d{5}(-\d{4})?\b/.test(query) || /\b(CA|NY|TX|FL|IL|PA|OH|GA|NC|MI|NJ|VA|WA|AZ|MA|TN|IN|MO|MD|WI|CO|MN|SC|AL|LA|KY|OR|OK|CT|IA|UT|AR|NV|MS|KS|NM|NE|WV|ID|HI|NH|ME|MT|RI|DE|SD|ND|AK|DC|VT|WY)\b/.test(upper) || upper.includes('USA') || upper.includes('UNITED STATES')
+  const isUK = /\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b/i.test(query) || upper.includes('UK') || upper.includes('UNITED KINGDOM')
+  const isIT = /\b(Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\b/i.test(query) || upper.includes('ITALIA') || upper.includes('ITALY') || /\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i.test(query)
   
-  // Common campus/area names to preserve (these help Nominatim find specific locations)
-  const campusIndicators = ['campus', 'sede', 'location', 'site']
-  
-  // Split into words
-  const allWords = query.toLowerCase().split(/[\s,]+/).map(w => w.trim()).filter(w => w.length > 0)
-  
-  // Find campus name (word after "campus" or similar indicators)
-  let campusName: string | null = null
-  for (let i = 0; i < allWords.length; i++) {
-    if (campusIndicators.includes(allWords[i]) && i + 1 < allWords.length) {
-      campusName = allWords[i + 1]
-      break
-    }
+  // For US addresses, keep the structure as-is (street, city, state, ZIP)
+  if (isUS) {
+    // Remove apartment/unit numbers for better geocoding
+    return query.replace(/\s*#\s*[A-Z0-9]+\s*/gi, ' ').replace(/\s*(Apt|Apartment|Unit|Suite|Ste|#)\s*[A-Z0-9]+\s*/gi, ' ').trim()
   }
   
-  // Filter words, but preserve campus names
-  const words = allWords.filter(word => {
-    const cleaned = word.trim()
-    // Keep campus names and meaningful words
-    return cleaned === campusName || (cleaned.length > 2 && !stopWords.includes(cleaned) && !campusIndicators.includes(cleaned))
-  })
+  // For UK addresses, preserve postcode and structure
+  if (isUK) {
+    return query.trim()
+  }
   
-  // Reconstruct query - prioritize: location name + campus (if present) + city
-  // For universities: try "UniversityName CampusName City" or "UniversityName City"
-  if (words.some(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))) {
-    // Extract university name, campus name, and city
-    const universityIndex = words.findIndex(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))
-    const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
-    const campusIndex = campusName ? words.findIndex(w => w === campusName) : -1
+  // For Italian addresses, use the original logic
+  if (isIT) {
+    // Words to remove (but preserve campus names and location-specific terms)
+    const stopWords = [
+      'di', 'della', 'del', 'degli', 'delle', 'dei', 'dello',
+      'station', 'stazione', 'metro', 'line', 'linea',
+      'university', 'università', 'universita',
+      'italy', 'italia'
+    ]
     
-    if (universityIndex !== -1 && cityIndex !== -1) {
-      const universityName = words[universityIndex]
-      const city = words[cityIndex]
-      
-      // If we have a campus name, include it: "UniversityName CampusName City"
-      if (campusIndex !== -1 && campusName) {
-        return `${universityName} ${campusName} ${city}`
+    // Common campus/area names to preserve
+    const campusIndicators = ['campus', 'sede', 'location', 'site']
+    
+    // Split into words
+    const allWords = query.toLowerCase().split(/[\s,]+/).map(w => w.trim()).filter(w => w.length > 0)
+    
+    // Find campus name
+    let campusName: string | null = null
+    for (let i = 0; i < allWords.length; i++) {
+      if (campusIndicators.includes(allWords[i]) && i + 1 < allWords.length) {
+        campusName = allWords[i + 1]
+        break
       }
-      // Otherwise just "UniversityName City"
-      return `${universityName} ${city}`
     }
-  }
-  
-  // For metro stations: try "StationName City" or "Piazzale StationName City"
-  if (words.some(w => w.includes('metro') || w.includes('m1') || w.includes('m2') || w.includes('m3') || w.includes('m4') || w.includes('m5'))) {
-    const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
-    const stationName = words.filter(w => 
-      w !== 'milan' && w !== 'milano' && w !== 'rome' && w !== 'roma' &&
-      !w.includes('metro') && !w.includes('m1') && !w.includes('m2') && !w.includes('m3') && !w.includes('m4') && !w.includes('m5')
-    ).join(' ')
     
-    if (cityIndex !== -1 && stationName) {
-      const city = words[cityIndex]
-      return `${stationName} ${city}`
+    // Filter words, but preserve campus names
+    const words = allWords.filter(word => {
+      const cleaned = word.trim()
+      return cleaned === campusName || (cleaned.length > 2 && !stopWords.includes(cleaned) && !campusIndicators.includes(cleaned))
+    })
+    
+    // For Italian universities
+    if (words.some(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))) {
+      const universityIndex = words.findIndex(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))
+      const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
+      const campusIndex = campusName ? words.findIndex(w => w === campusName) : -1
+      
+      if (universityIndex !== -1 && cityIndex !== -1) {
+        const universityName = words[universityIndex]
+        const city = words[cityIndex]
+        
+        if (campusIndex !== -1 && campusName) {
+          return `${universityName} ${campusName} ${city}`
+        }
+        return `${universityName} ${city}`
+      }
     }
+    
+    // For metro stations
+    if (words.some(w => w.includes('metro') || w.includes('m1') || w.includes('m2') || w.includes('m3') || w.includes('m4') || w.includes('m5'))) {
+      const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
+      const stationName = words.filter(w => 
+        w !== 'milan' && w !== 'milano' && w !== 'rome' && w !== 'roma' &&
+        !w.includes('metro') && !w.includes('m1') && !w.includes('m2') && !w.includes('m3') && !w.includes('m4') && !w.includes('m5')
+      ).join(' ')
+      
+      if (cityIndex !== -1 && stationName) {
+        const city = words[cityIndex]
+        return `${stationName} ${city}`
+      }
+    }
+    
+    // Default: keep location name + city
+    const cityIndex = words.findIndex(w => 
+      w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma' || 
+      w === 'paris' || w === 'london' || w === 'berlin' || w === 'madrid' ||
+      w === 'barcelona' || w === 'amsterdam' || w === 'vienna'
+    )
+    
+    if (cityIndex !== -1) {
+      const city = words[cityIndex]
+      const locationName = words.slice(0, cityIndex).join(' ')
+      return locationName ? `${locationName} ${city}` : city
+    }
+    
+    return words.join(' ')
   }
   
-  // Default: keep location name + city, remove country and extra words
-  const cityIndex = words.findIndex(w => 
-    w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma' || 
-    w === 'paris' || w === 'london' || w === 'berlin' || w === 'madrid' ||
-    w === 'barcelona' || w === 'amsterdam' || w === 'vienna'
-  )
-  
-  if (cityIndex !== -1) {
-    const city = words[cityIndex]
-    const locationName = words.slice(0, cityIndex).join(' ')
-    return locationName ? `${locationName} ${city}` : city
-  }
-  
-  // Fallback: return cleaned query without stop words
-  return words.join(' ')
+  // For other countries, return as-is (let Nominatim handle it)
+  return query.trim()
 }
 
 // Normalize query for processing (remove accents, lowercase, simplify)
@@ -99,63 +117,115 @@ function normalizeQuery(query: string): string {
 }
 
 // Generate alternative query formats for Nominatim to improve success rate
+// Now handles international addresses
 function generateQueryVariations(query: string): string[] {
   const variations: string[] = [query]
   
-  const normalized = normalizeQuery(query)
-  const words = normalized.split(' ').filter(w => w.length > 0)
+  // Detect country
+  const upper = query.toUpperCase()
+  const isUS = /\b\d{5}(-\d{4})?\b/.test(query) || /\b(CA|NY|TX|FL|IL|PA|OH|GA|NC|MI|NJ|VA|WA|AZ|MA|TN|IN|MO|MD|WI|CO|MN|SC|AL|LA|KY|OR|OK|CT|IA|UT|AR|NV|MS|KS|NM|NE|WV|ID|HI|NH|ME|MT|RI|DE|SD|ND|AK|DC|VT|WY)\b/.test(upper) || upper.includes('USA') || upper.includes('UNITED STATES')
+  const isUK = /\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b/i.test(query) || upper.includes('UK') || upper.includes('UNITED KINGDOM')
+  const isIT = /\b(Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\b/i.test(query) || upper.includes('ITALIA') || upper.includes('ITALY') || /\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i.test(query)
   
-  // If it looks like a university with campus
-  if (words.some(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))) {
-    const universityIndex = words.findIndex(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))
-    const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
-    
-    if (universityIndex !== -1 && cityIndex !== -1) {
-      const universityName = words[universityIndex]
-      const city = words[cityIndex]
-      const campusName = words.find((w, i) => i > universityIndex && i < cityIndex && w.length > 3)
-      
-      // Try different formats
-      if (campusName) {
-        variations.push(`${universityName} ${campusName} ${city}`)
-        variations.push(`${universityName} campus ${campusName} ${city}`)
-        variations.push(`${universityName} ${city} ${campusName}`)
+  if (isUS) {
+    // US address variations
+    // Try parsing "Street, City, State ZIP"
+    const usMatch = query.match(/^(.+?),\s*(.+?),\s*([A-Z]{2})\s+(\d{5}(-\d{4})?)$/i)
+    if (usMatch) {
+      const [, street, city, state, zip] = usMatch
+      variations.push(`${street}, ${city}, ${state} ${zip}`)
+      variations.push(`${street}, ${city}, ${state}`)
+      variations.push(`${city}, ${state} ${zip}`)
+      variations.push(`${city}, ${state}`)
+    } else {
+      // Try without ZIP
+      const usMatchNoZip = query.match(/^(.+?),\s*(.+?),\s*([A-Z]{2})$/i)
+      if (usMatchNoZip) {
+        const [, street, city, state] = usMatchNoZip
+        variations.push(`${street}, ${city}, ${state}`)
+        variations.push(`${city}, ${state}`)
       }
-      variations.push(`${universityName} ${city}`)
-      variations.push(`${universityName} di ${city}`)
     }
-  }
-  
-  // If it looks like a metro station query, try different formats
-  if (normalized.includes('metro') || normalized.includes('station') || normalized.includes('m1') || normalized.includes('m2') || normalized.includes('m3') || normalized.includes('m4') || normalized.includes('m5')) {
-    // Extract potential station name
-    const stationWords = words.filter(w => 
-      !['metro', 'station', 'milan', 'milano', 'italy', 'italia', 'm1', 'm2', 'm3', 'm4', 'm5', 'line'].includes(w)
-    )
-    if (stationWords.length > 0) {
-      const stationName = stationWords.join(' ')
+    
+    // Add country if not present
+    if (!upper.includes('USA') && !upper.includes('UNITED STATES')) {
+      variations.push(`${query}, USA`)
+    }
+  } else if (isUK) {
+    // UK address variations
+    const postcodeMatch = query.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2})\b/i)
+    if (postcodeMatch) {
+      const postcode = postcodeMatch[1]
+      variations.push(postcode)
+      const cityMatch = query.match(/^(.+?),\s*(.+?)(?:,\s*[^,]+)?,\s*[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}/i)
+      if (cityMatch) {
+        variations.push(`${cityMatch[2]}, ${postcode}`)
+      }
+    }
+    
+    // Add country if not present
+    if (!upper.includes('UK') && !upper.includes('UNITED KINGDOM')) {
+      variations.push(`${query}, UK`)
+    }
+  } else if (isIT) {
+    // Italian address variations (original logic)
+    const normalized = normalizeQuery(query)
+    const words = normalized.split(' ').filter(w => w.length > 0)
+    
+    // If it looks like a university with campus
+    if (words.some(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))) {
+      const universityIndex = words.findIndex(w => w.includes('politecnico') || w.includes('bocconi') || w.includes('cattolica'))
       const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
-      const city = cityIndex !== -1 ? words[cityIndex] : 'Milano'
       
-      // Try Piazzale/Piazza format (common for Milan metro stations)
-      variations.push(`Piazzale ${stationName} ${city}`)
-      variations.push(`Piazza ${stationName} ${city}`)
-      variations.push(`${stationName} ${city} metro`)
-      variations.push(`${stationName} ${city}`)
-      variations.push(`Via ${stationName} ${city}`)
+      if (universityIndex !== -1 && cityIndex !== -1) {
+        const universityName = words[universityIndex]
+        const city = words[cityIndex]
+        const campusName = words.find((w, i) => i > universityIndex && i < cityIndex && w.length > 3)
+        
+        if (campusName) {
+          variations.push(`${universityName} ${campusName} ${city}`)
+          variations.push(`${universityName} campus ${campusName} ${city}`)
+          variations.push(`${universityName} ${city} ${campusName}`)
+        }
+        variations.push(`${universityName} ${city}`)
+        variations.push(`${universityName} di ${city}`)
+      }
     }
-  }
-  
-  // Try without metro/station/university words (but keep campus names)
-  const simplified = normalized
-    .replace(/\b(metro|station|university|universita|stazione)\b/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  if (simplified !== normalized && simplified.length > 2) {
-    const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
-    if (cityIndex !== -1) {
-      const city = words[cityIndex]
-      variations.push(`${simplified} ${city}`)
+    
+    // If it looks like a metro station query
+    if (normalized.includes('metro') || normalized.includes('station') || normalized.includes('m1') || normalized.includes('m2') || normalized.includes('m3') || normalized.includes('m4') || normalized.includes('m5')) {
+      const stationWords = words.filter(w => 
+        !['metro', 'station', 'milan', 'milano', 'italy', 'italia', 'm1', 'm2', 'm3', 'm4', 'm5', 'line'].includes(w)
+      )
+      if (stationWords.length > 0) {
+        const stationName = stationWords.join(' ')
+        const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
+        const city = cityIndex !== -1 ? words[cityIndex] : 'Milano'
+        
+        variations.push(`Piazzale ${stationName} ${city}`)
+        variations.push(`Piazza ${stationName} ${city}`)
+        variations.push(`${stationName} ${city} metro`)
+        variations.push(`${stationName} ${city}`)
+        variations.push(`Via ${stationName} ${city}`)
+      }
+    }
+    
+    // Try without metro/station/university words
+    const simplified = normalized
+      .replace(/\b(metro|station|university|universita|stazione)\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (simplified !== normalized && simplified.length > 2) {
+      const cityIndex = words.findIndex(w => w === 'milan' || w === 'milano' || w === 'rome' || w === 'roma')
+      if (cityIndex !== -1) {
+        const city = words[cityIndex]
+        variations.push(`${simplified} ${city}`)
+      }
+    }
+    
+    // Add country if not present
+    if (!query.includes('Italy') && !query.includes('Italia')) {
+      variations.push(`${query}, Italy`)
     }
   }
   
