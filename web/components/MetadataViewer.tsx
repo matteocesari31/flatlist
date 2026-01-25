@@ -187,16 +187,42 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
       const hostname = urlObj.hostname
       // Remove www. prefix if present
       const cleanHostname = hostname.replace(/^www\./, '')
-      // Extract the main domain name and TLD (e.g., "immobiliare.it" from "www.immobiliare.it")
-      const parts = cleanHostname.split('.')
-      if (parts.length >= 2) {
-        // Get the domain name (second-to-last part) and TLD (last part)
-        const domainName = parts[parts.length - 2]
-        const tld = parts[parts.length - 1]
+      
+      // Handle multi-part TLDs (e.g., .co.uk, .com.au, .co.za)
+      const multiPartTlds = [
+        'co.uk', 'com.au', 'co.za', 'co.nz', 'com.br', 'com.mx',
+        'co.jp', 'com.cn', 'com.hk', 'co.in', 'com.sg', 'com.my',
+        'co.th', 'com.vn', 'com.ph', 'co.id', 'com.tr', 'co.kr'
+      ]
+      
+      // Check if hostname ends with a multi-part TLD
+      let domainParts: string[] = []
+      let foundMultiPartTld = false
+      
+      for (const tld of multiPartTlds) {
+        if (cleanHostname.endsWith('.' + tld)) {
+          const withoutTld = cleanHostname.slice(0, -(tld.length + 1))
+          domainParts = withoutTld.split('.')
+          domainParts.push(tld)
+          foundMultiPartTld = true
+          break
+        }
+      }
+      
+      if (!foundMultiPartTld) {
+        // Standard single-part TLD handling
+        domainParts = cleanHostname.split('.')
+      }
+      
+      if (domainParts.length >= 2) {
+        // Get the domain name (second-to-last part) and TLD (last part or multi-part)
+        const domainName = domainParts[domainParts.length - 2]
+        const tld = domainParts[domainParts.length - 1]
         // Capitalize first letter of domain name and combine with TLD
         const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1)
         return `${capitalizedDomain}.${tld}`
       }
+      
       // Fallback: capitalize first letter of the whole hostname
       return cleanHostname.charAt(0).toUpperCase() + cleanHostname.slice(1)
     } catch {

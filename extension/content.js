@@ -39,6 +39,62 @@
         return true;
       }
       
+      // Exclude ad images - check if image is inside an ad container
+      let parent = img.parentElement;
+      let depth = 0;
+      const maxDepth = 10; // Limit search depth to avoid infinite loops
+      
+      while (parent && depth < maxDepth) {
+        const parentClass = parent.className || '';
+        const parentId = parent.id || '';
+        const parentTag = parent.tagName || '';
+        const combined = `${parentClass} ${parentId} ${parentTag}`.toLowerCase();
+        
+        // Check for ad-related class/id names
+        const adIndicators = [
+          'ad', 'advertisement', 'advert', 'ads', 'banner', 'sponsor', 'sponsored',
+          'promo', 'promotion', 'marketing', 'commercial', 'ad-container', 'ad-wrapper',
+          'ad-banner', 'ad-box', 'advertisement-container', 'google-ad', 'adsense',
+          'doubleclick', 'dfp', 'ad-slot', 'ad-unit', 'ad-placeholder', 'ad-frame'
+        ];
+        
+        if (adIndicators.some(indicator => combined.includes(indicator))) {
+          return true;
+        }
+        
+        // Check for common ad-related attributes
+        if (parent.hasAttribute && (
+          parent.hasAttribute('data-ad') ||
+          parent.hasAttribute('data-ad-slot') ||
+          parent.hasAttribute('data-ad-client') ||
+          parent.hasAttribute('data-google-ad') ||
+          parent.getAttribute('id')?.toLowerCase().includes('google_ads') ||
+          parent.getAttribute('id')?.toLowerCase().includes('div-gpt-ad')
+        )) {
+          return true;
+        }
+        
+        parent = parent.parentElement;
+        depth++;
+      }
+      
+      // Exclude images with ad-related src patterns
+      const adUrlPatterns = [
+        'doubleclick', 'googleadservices', 'googlesyndication', 'adserver',
+        'advertising', 'adsystem', 'adtech', 'adform', 'adnxs', 'adsrvr',
+        'advertising.com', 'advertising.net', 'advertising.org'
+      ];
+      
+      if (adUrlPatterns.some(pattern => lowerSrc.includes(pattern))) {
+        return true;
+      }
+      
+      // Exclude images that are likely banner ads (very wide and short)
+      const aspectRatio = rect.width / rect.height;
+      if (aspectRatio > 4 && rect.height < 200) {
+        return true;
+      }
+      
       return false;
     }
     
