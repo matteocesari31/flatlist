@@ -108,10 +108,60 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
     return hasRentalKeyword
   }
 
-  const formatPrice = (price: number | null, isRent: boolean = false) => {
+  const formatPrice = (price: number | null, isRent: boolean = false, currency: string | null = null) => {
     if (!price) return 'N/A'
-    const formatted = `€${price.toLocaleString('it-IT')}`
+    
+    // Determine currency symbol/code
+    let currencySymbol = '€'
+    let locale = 'it-IT'
+    
+    if (currency) {
+      switch (currency.toUpperCase()) {
+        case 'EUR':
+          currencySymbol = '€'
+          locale = 'it-IT'
+          break
+        case 'USD':
+          currencySymbol = '$'
+          locale = 'en-US'
+          break
+        case 'GBP':
+          currencySymbol = '£'
+          locale = 'en-GB'
+          break
+        case 'CHF':
+          currencySymbol = 'CHF'
+          locale = 'de-CH'
+          break
+        case 'CAD':
+          currencySymbol = 'C$'
+          locale = 'en-CA'
+          break
+        case 'AUD':
+          currencySymbol = 'A$'
+          locale = 'en-AU'
+          break
+        default:
+          currencySymbol = currency
+          locale = 'en-US'
+      }
+    }
+    
+    const formatted = `${currencySymbol}${price.toLocaleString(locale)}`
     return isRent ? `${formatted}/mo` : formatted
+  }
+  
+  const formatSize = (sizeSqm: number | null, sizeUnit: string | null = null) => {
+    if (!sizeSqm) return null
+    
+    // If size_unit is sqft, convert back from sqm to sqft for display
+    if (sizeUnit === 'sqft') {
+      const sqft = sizeSqm / 0.092903 // Convert sqm back to sqft
+      return `${Math.round(sqft)} sq ft`
+    }
+    
+    // Default to sqm
+    return `${Math.round(sizeSqm)} m²`
   }
 
   const formatBoolean = (value: boolean | null) => {
@@ -565,7 +615,7 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                 <div className="space-y-2">
                 {metadata?.price && (
                   <div className="text-[24px] font-bold">
-                    {formatPrice(metadata.price, isRental())}
+                    {formatPrice(metadata.price, isRental(), metadata.currency)}
                   </div>
                 )}
                 {metadata?.address && (metadata?.latitude && metadata?.longitude) ? (
@@ -589,8 +639,8 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
               {/* Basic Information Pills */}
               <div className="mt-6">
                 <div className="flex flex-wrap gap-2">
-                  {metadata?.size_sqm && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm">{metadata.size_sqm} m²</span>
+                  {metadata?.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-sm">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                   )}
                   {metadata?.rooms && (
                     <span className="px-2 py-1 bg-gray-100 rounded text-sm">{metadata.rooms} {metadata.rooms > 1 ? 'rooms' : 'room'}</span>
@@ -610,7 +660,7 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                   {metadata?.condo_fees && (
                     <span className="px-2 py-1 bg-gray-100 rounded text-sm flex items-center gap-1">
                       <Building className="w-4 h-4" />
-                      {formatPrice(metadata.condo_fees)}/mo
+                      {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
                     </span>
                   )}
                   {/* Vibe Tags */}

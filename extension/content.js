@@ -9,10 +9,23 @@
     const content = document.body.innerText || '';
     const title = document.title || document.querySelector('h1')?.textContent || '';
     
-    // Extract price using regex patterns
-    const priceRegex = /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/gi;
-    const priceMatches = content.match(priceRegex);
-    const price = priceMatches ? priceMatches[0] : null;
+    // Extract price using regex patterns (multiple currencies)
+    const pricePatterns = [
+      /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/gi, // Euro
+      /\$\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*\$?/gi, // Dollar
+      /£\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*£/gi, // Pound
+      /CHF\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*CHF/gi, // Swiss Franc
+      /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*(?:EUR|USD|GBP|CAD|AUD|CHF)/gi // Currency codes
+    ];
+    
+    let price = null;
+    for (const pattern of pricePatterns) {
+      const matches = content.match(pattern);
+      if (matches && matches[0]) {
+        price = matches[0];
+        break;
+      }
+    }
     
     // Extract first 1-2 images above the fold
     const images = [];

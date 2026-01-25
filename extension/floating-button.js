@@ -18,28 +18,85 @@
   function isListingPage() {
     const url = window.location.href.toLowerCase();
     
-    // List of known real estate website domains
+    // List of known real estate website domains (international)
     const realEstateDomains = [
+      // Italy
       'immobiliare.it',
       'casa.it',
       'idealista.it',
       'subito.it',
       'bakeca.it',
+      'tecnocasa.it',
+      'casa.it',
+      // UK
       'rightmove.co.uk',
       'zoopla.co.uk',
+      'onthemarket.com',
+      'primelocation.com',
+      'zoopla',
+      'rightmove',
+      // USA
       'realtor.com',
       'zillow.com',
       'apartments.com',
+      'trulia.com',
+      'redfin.com',
+      'apartmentfinder.com',
+      'rent.com',
+      'apartmentguide.com',
+      'hotpads.com',
+      'padmapper.com',
+      'realtor',
+      'zillow',
+      'apartments',
+      'trulia',
+      'redfin',
+      'hotpads',
+      'padmapper',
+      // Canada
+      'realtor.ca',
+      'rew.ca',
+      'point2homes.com',
+      'kijiji.ca',
+      // Australia
+      'realestate.com.au',
+      'domain.com.au',
+      'allhomes.com.au',
+      // France
+      'seloger.com',
+      'pap.fr',
+      'leboncoin.fr',
+      'logic-immo.com',
+      'paruvendu.fr',
+      // Germany
+      'immobilienscout24.de',
+      'immowelt.de',
+      'immowelt',
+      'immobilienscout24',
+      // Spain
+      'idealista.com',
+      'fotocasa.es',
+      'habitaclia.com',
+      // Netherlands
+      'funda.nl',
+      'pararius.com',
+      // Switzerland
+      'homegate.ch',
+      'immoscout24.ch',
+      // Portugal
+      'idealista.pt',
+      'imovirtual.com',
+      // Other European
+      'immowelt.at', // Austria
+      'immobiliare.ro', // Romania
+      'otodom.pl', // Poland
+      'sreality.cz', // Czech Republic
+      // Generic patterns (fallback)
       'immobiliare',
-      'casa.it',
       'idealista',
       'subito',
       'bakeca',
-      'rightmove',
-      'zoopla',
-      'realtor',
-      'zillow',
-      'apartments'
+      'casa'
     ];
     
     // Check if we're on a real estate domain
@@ -54,29 +111,52 @@
     const bodyText = document.body.innerText || '';
     const title = document.title || '';
     
-    // Check for price indicators (more specific)
-    const hasPrice = /€\s*\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*€/i.test(bodyText);
+    // Check for price indicators (multiple currencies)
+    const pricePatterns = [
+      /€\s*\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*€/i, // Euro
+      /\$\s*\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*\$?/i, // Dollar
+      /£\s*\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*£/i, // Pound
+      /CHF\s*\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*CHF/i, // Swiss Franc
+      /\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*(?:EUR|USD|GBP|CAD|AUD|CHF)/i // Currency codes
+    ];
+    const hasPrice = pricePatterns.some(pattern => pattern.test(bodyText));
     
-    // Check for listing-specific URL patterns
+    // Check for listing-specific URL patterns (international)
     const listingUrlPatterns = [
-      '/annunci/',
-      '/annuncio/',
-      '/listing/',
-      '/property/',
-      '/apartment/',
-      '/immobile/',
-      '/casa/',
-      '/appartamento/',
-      '/id/',
-      '/detail/',
-      '/details/'
+      // Italian
+      '/annunci/', '/annuncio/', '/immobile/', '/casa/', '/appartamento/',
+      // English
+      '/listing/', '/property/', '/apartment/', '/rental/', '/rent/', '/sale/', '/buy/',
+      '/details/', '/detail/', '/home/', '/house/', '/flat/', '/unit/',
+      // UK specific
+      '/properties/', '/property-details/', '/to-rent/', '/for-sale/',
+      // USA specific
+      '/homedetails/', '/homes/', '/rentals/', '/apartments/',
+      // French
+      '/annonce/', '/appartement/', '/maison/', '/location/', '/vente/',
+      // German
+      '/immobilie/', '/wohnung/', '/haus/', '/miete/', '/kauf/',
+      // Spanish
+      '/anuncio/', '/piso/', '/casa/', '/alquiler/', '/venta/',
+      // Generic
+      '/id/', '/pid/', '/ref/', '/reference/'
     ];
     const hasListingUrlPattern = listingUrlPatterns.some(pattern => url.includes(pattern));
     
-    // Check for listing-specific keywords in title or body
+    // Check for listing-specific keywords in title or body (international)
     const listingKeywords = [
-      'appartamento', 'casa', 'immobile', 'trilocale', 'bilocale', 'monolocale',
-      'annuncio', 'listing', 'property', 'apartment'
+      // Italian
+      'appartamento', 'casa', 'immobile', 'trilocale', 'bilocale', 'monolocale', 'annuncio',
+      // English
+      'listing', 'property', 'apartment', 'flat', 'house', 'home', 'rental', 'rent', 'sale', 'bedroom', 'bathroom',
+      // French
+      'appartement', 'maison', 'location', 'vente', 'annonce',
+      // German
+      'wohnung', 'haus', 'immobilie', 'miete', 'kauf',
+      // Spanish
+      'piso', 'casa', 'apartamento', 'alquiler', 'venta', 'anuncio',
+      // Other
+      'property', 'real estate', 'immobilier', 'immobilien', 'bienes raíces'
     ];
     const hasListingKeywords = listingKeywords.some(keyword => 
       title.toLowerCase().includes(keyword) || bodyText.toLowerCase().includes(keyword)
@@ -567,10 +647,23 @@
     const content = document.body.innerText || '';
     const title = document.title || document.querySelector('h1')?.textContent || '';
     
-    // Extract price
-    const priceRegex = /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/gi;
-    const priceMatches = content.match(priceRegex);
-    const price = priceMatches ? priceMatches[0] : null;
+    // Extract price (multiple currencies)
+    const pricePatterns = [
+      /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/gi, // Euro
+      /\$\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*\$?/gi, // Dollar
+      /£\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*£/gi, // Pound
+      /CHF\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*CHF/gi, // Swiss Franc
+      /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*(?:EUR|USD|GBP|CAD|AUD|CHF)/gi // Currency codes
+    ];
+    
+    let price = null;
+    for (const pattern of pricePatterns) {
+      const matches = content.match(pattern);
+      if (matches && matches[0]) {
+        price = matches[0];
+        break;
+      }
+    }
     
     // Extract images (simplified version)
     const images = [];

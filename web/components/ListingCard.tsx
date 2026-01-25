@@ -164,7 +164,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
     return hasRentalKeyword
   }
 
-  const formatPrice = (price: number | null | string | undefined, isRent: boolean = false) => {
+  const formatPrice = (price: number | null | string | undefined, isRent: boolean = false, currency: string | null = null) => {
     if (!price) return null
     if (typeof price === 'string') {
       // If already formatted string, check if it has /mo
@@ -173,8 +173,58 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       }
       return price
     }
-    const formatted = `€${price.toLocaleString('it-IT')}`
+    
+    // Determine currency symbol/code
+    let currencySymbol = '€'
+    let locale = 'it-IT'
+    
+    if (currency) {
+      switch (currency.toUpperCase()) {
+        case 'EUR':
+          currencySymbol = '€'
+          locale = 'it-IT'
+          break
+        case 'USD':
+          currencySymbol = '$'
+          locale = 'en-US'
+          break
+        case 'GBP':
+          currencySymbol = '£'
+          locale = 'en-GB'
+          break
+        case 'CHF':
+          currencySymbol = 'CHF'
+          locale = 'de-CH'
+          break
+        case 'CAD':
+          currencySymbol = 'C$'
+          locale = 'en-CA'
+          break
+        case 'AUD':
+          currencySymbol = 'A$'
+          locale = 'en-AU'
+          break
+        default:
+          currencySymbol = currency
+          locale = 'en-US'
+      }
+    }
+    
+    const formatted = `${currencySymbol}${price.toLocaleString(locale)}`
     return isRent ? `${formatted}/mo` : formatted
+  }
+  
+  const formatSize = (sizeSqm: number | null, sizeUnit: string | null = null) => {
+    if (!sizeSqm) return null
+    
+    // If size_unit is sqft, convert back from sqm to sqft for display
+    if (sizeUnit === 'sqft') {
+      const sqft = sizeSqm / 0.092903 // Convert sqm back to sqft
+      return `${Math.round(sqft)} sq ft`
+    }
+    
+    // Default to sqm
+    return `${Math.round(sizeSqm)} m²`
   }
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -348,7 +398,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             {(metadata?.price || basicInfo?.price) && (
               <div className="flex items-center justify-between">
                 <div className="text-xl font-bold">
-                  {formatPrice(metadata?.price || basicInfo?.price, isRental())}
+                  {formatPrice(metadata?.price || basicInfo?.price, isRental(), metadata?.currency || null)}
                   {!metadata && basicInfo?.price && (
                     <span className="text-xs font-normal text-gray-500 ml-2">(extracted)</span>
                   )}
@@ -413,8 +463,8 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             {metadata && (
               <div className="mt-2 space-y-2">
                 <div className="flex flex-wrap gap-2">
-                  {metadata.size_sqm && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">{metadata.size_sqm} m²</span>
+                  {metadata.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
+                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                   )}
                   {metadata.bedrooms !== null && metadata.bedrooms !== undefined && metadata.bedrooms > 0 && (
                     <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
@@ -431,7 +481,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                   {metadata.condo_fees && (
                     <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
                       <Building className="w-3.5 h-3.5" />
-                      {formatPrice(metadata.condo_fees)}/mo
+                      {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
                     </span>
                   )}
                   {listing.distanceFromReference !== undefined && (

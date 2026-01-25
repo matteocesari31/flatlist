@@ -165,10 +165,10 @@ serve(async (req) => {
     const messages: any[] = [
       {
         role: 'system',
-        content: `You are an expert at analyzing Italian apartment listings. Extract structured metadata from the listing content and images.
+        content: `You are an expert at analyzing apartment listings from any country. Extract structured metadata from the listing content and images.
 
 Extract the following information:
-- Hard facts: price (numeric), address, size_sqm (numeric), rooms (integer), bedrooms (integer - number of bedrooms/sleeping rooms), bathrooms (integer - number of bathrooms), beds_single (integer), beds_double (integer), furnishing (text), condo_fees (numeric, optional - monthly condominio/condo fees if mentioned), listing_type ("rent" or "sale" - determine from keywords like "affitto"/"rent" for rent, "vendita"/"sale" for sale)
+- Hard facts: price (numeric), address, size_sqm (numeric - ALWAYS convert to square meters if the listing uses square feet), rooms (integer), bedrooms (integer - number of bedrooms/sleeping rooms), bathrooms (integer - number of bathrooms), beds_single (integer), beds_double (integer), furnishing (text), condo_fees (numeric, optional - monthly condominio/condo fees if mentioned), listing_type ("rent" or "sale" - determine from keywords like "affitto"/"rent" for rent, "vendita"/"sale" for sale), currency (string - currency code like "EUR", "USD", "GBP", "CHF", "CAD", "AUD" based on the price format in the listing), size_unit (string - "sqm" if listing uses square meters/m², "sqft" if listing uses square feet/ft²/sq ft)
 - Inferred attributes:
   * student_friendly (boolean): ALWAYS DEFAULT TO TRUE. Only set to false if the listing contains an EXPLICIT statement like "no students", "students not allowed", "no studenti", "studenti non ammessi", or similar direct rejection of student tenants. High price, luxury, prestigious, or professional target audience does NOT mean students are not allowed. If there is no explicit "no students" statement, student_friendly MUST be true.
   * floor_type ("wood", "tile", or "unknown"): Infer from text descriptions or visible flooring in images
@@ -193,6 +193,8 @@ Return ONLY valid JSON in this exact format:
   "furnishing": "Furnished",
   "condo_fees": 150.00,
   "listing_type": "rent",
+  "currency": "EUR",
+  "size_unit": "sqm",
   "student_friendly": true,
   "floor_type": "wood",
   "natural_light": "high",
@@ -210,7 +212,13 @@ Return ONLY valid JSON in this exact format:
     "pet_friendly": "Listing mentions 'animali ammessi'",
     "balcony": "Listing mentions 'balcone'"
   }
-}`
+}
+
+IMPORTANT NOTES:
+- For currency: Detect from price format - € = EUR, $ = USD (or CAD/AUD based on address), £ = GBP, CHF = CHF
+- For size_unit: If listing shows "sq ft", "ft²", "square feet", "sqft" → use "sqft". If listing shows "m²", "sqm", "square meters", "square metres" → use "sqm"
+- ALWAYS convert size to square meters in size_sqm field (multiply sqft by 0.092903 to get sqm)
+- If size_unit is "sqft", store the original square feet value converted to sqm in size_sqm, but keep size_unit as "sqft" so the UI can display correctly`
       }
     ]
 
@@ -574,6 +582,8 @@ Return ONLY valid JSON in this exact format:
         beds_double: metadata.beds_double || null,
         furnishing: metadata.furnishing || null,
         condo_fees: metadata.condo_fees || null,
+        currency: (metadata as any).currency || null,
+        size_unit: (metadata as any).size_unit || 'sqm',
         student_friendly: metadata.student_friendly ?? null,
         floor_type: metadata.floor_type || 'unknown',
         natural_light: metadata.natural_light || 'medium',

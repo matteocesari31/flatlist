@@ -73,6 +73,8 @@ export interface ListingMetadata {
   latitude: number | null
   longitude: number | null
   size_sqm: number | null
+  size_unit: string | null // 'sqm' or 'sqft'
+  currency: string | null // Currency code like 'EUR', 'USD', 'GBP', etc.
   rooms: number | null
   bedrooms: number | null
   bathrooms: number | null
