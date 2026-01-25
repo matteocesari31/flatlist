@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { ListingWithMetadata } from '@/lib/types'
 import { parseSearchQuery, generateExplanation, SearchFilters } from '@/lib/ai-search'
@@ -15,6 +15,7 @@ export default function SearchPage() {
   const [explanation, setExplanation] = useState('')
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
+  const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -26,6 +27,17 @@ export default function SearchPage() {
       setUser(user)
     })
   }, [router])
+
+  // Auto-resize search textarea
+  useEffect(() => {
+    const textarea = searchTextareaRef.current
+    if (textarea) {
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = 'auto'
+      // Set height to scrollHeight (content height)
+      textarea.style.height = `${textarea.scrollHeight}px`
+    }
+  }, [query])
 
   const performSearch = async () => {
     if (!query.trim()) {
@@ -236,14 +248,31 @@ export default function SearchPage() {
           <h1 className="text-3xl font-bold mb-6">Search Listings</h1>
 
           <div className="mb-6">
-            <div className="flex gap-2">
-              <input
-                type="text"
+            <div className="flex gap-2 items-start">
+              <textarea
+                ref={searchTextareaRef}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && performSearch()}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  // Auto-resize on input
+                  setTimeout(() => {
+                    const textarea = searchTextareaRef.current
+                    if (textarea) {
+                      textarea.style.height = 'auto'
+                      textarea.style.height = `${textarea.scrollHeight}px`
+                    }
+                  }, 0)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    performSearch()
+                  }
+                }}
                 placeholder="e.g., Quiet apartments for students near M2 under 900€"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none overflow-hidden min-h-[42px] max-h-[200px]"
+                rows={1}
+                style={{ lineHeight: '1.5' }}
               />
               <button
                 onClick={performSearch}
