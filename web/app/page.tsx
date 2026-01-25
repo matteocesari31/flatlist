@@ -500,19 +500,17 @@ export default function Home() {
     }
   }, [isEditingCatalogName])
 
-  // Auto-resize search textarea
-  const adjustTextareaHeight = () => {
+  // Auto-resize search textarea - only grow if content exceeds single line
+  useEffect(() => {
     const textarea = searchTextareaRef.current
     if (textarea) {
-      // Reset height to auto to get the correct scrollHeight
+      // Reset height to get accurate scrollHeight
       textarea.style.height = 'auto'
-      // Set height to scrollHeight (content height)
+      // Get the natural height for one line
+      const singleLineHeight = textarea.scrollHeight
+      // Set height to scrollHeight (will be single line height if text fits, or more if it wraps)
       textarea.style.height = `${textarea.scrollHeight}px`
     }
-  }
-
-  useEffect(() => {
-    adjustTextareaHeight()
   }, [searchQuery])
 
   // Close profile popover on Escape key
@@ -1312,7 +1310,7 @@ export default function Home() {
             <div className="flex-1 flex justify-center px-4">
               <div className="relative w-full max-w-3xl">
                 {/* Search input */}
-                <div className="flex items-start w-full border border-gray-300 rounded-[30px] bg-white transition-all pl-4 py-2">
+                <div className="flex items-center w-full border border-gray-300 rounded-[30px] bg-white transition-all pl-4">
                   <textarea
                     ref={searchTextareaRef}
                     value={searchQuery}
@@ -1334,9 +1332,9 @@ export default function Home() {
                       }
                     }}
                     placeholder="e.g. Sunny 2 bedroom apartments near Susa metro station in Milan"
-                    className={`flex-1 py-2 ${searchQuery ? 'pr-28' : 'pr-14'} bg-transparent focus:outline-none text-black resize-none overflow-hidden min-h-[56px] max-h-[200px]`}
+                    className={`flex-1 py-4 ${searchQuery ? 'pr-28' : 'pr-14'} bg-transparent focus:outline-none text-black resize-none overflow-hidden max-h-[200px]`}
                     rows={1}
-                    style={{ lineHeight: '1.5' }}
+                    style={{ lineHeight: '1.5', height: 'auto' }}
                   />
                   
                   {/* Clear button */}
@@ -1350,7 +1348,7 @@ export default function Home() {
                         setSearchFilters({})
                         setSearchResultCount(0)
                       }}
-                      className="absolute right-14 top-2 px-3 py-1.5 rounded-[20px] border border-gray-300 hover:bg-gray-50 text-sm bg-white"
+                      className="absolute right-14 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-[20px] border border-gray-300 hover:bg-gray-50 text-sm bg-white"
                       title="Clear all"
                     >
                       Clear
@@ -1361,7 +1359,7 @@ export default function Home() {
                   <button
                     onClick={performSearch}
                     disabled={searchLoading}
-                    className="absolute right-2 top-2 w-10 h-10 rounded-full bg-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-opacity"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-opacity"
                     title="Search"
                   >
                     {searchLoading ? (

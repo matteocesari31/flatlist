@@ -28,13 +28,13 @@ export default function SearchPage() {
     })
   }, [router])
 
-  // Auto-resize search textarea
+  // Auto-resize search textarea - only grow if content exceeds single line
   useEffect(() => {
     const textarea = searchTextareaRef.current
     if (textarea) {
-      // Reset height to auto to get the correct scrollHeight
+      // Reset height to get accurate scrollHeight
       textarea.style.height = 'auto'
-      // Set height to scrollHeight (content height)
+      // Set height to scrollHeight (will be single line height if text fits, or more if it wraps)
       textarea.style.height = `${textarea.scrollHeight}px`
     }
   }, [query])
@@ -248,7 +248,7 @@ export default function SearchPage() {
           <h1 className="text-3xl font-bold mb-6">Search Listings</h1>
 
           <div className="mb-6">
-            <div className="flex gap-2 items-start">
+            <div className="flex gap-2">
               <textarea
                 ref={searchTextareaRef}
                 value={query}
@@ -270,9 +270,9 @@ export default function SearchPage() {
                   }
                 }}
                 placeholder="e.g., Quiet apartments for students near M2 under 900€"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none overflow-hidden min-h-[42px] max-h-[200px]"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none overflow-hidden max-h-[200px]"
                 rows={1}
-                style={{ lineHeight: '1.5' }}
+                style={{ lineHeight: '1.5', height: 'auto' }}
               />
               <button
                 onClick={performSearch}
