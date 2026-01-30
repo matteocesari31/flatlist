@@ -1287,149 +1287,25 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - same background, vertical divider */}
-      <aside className="w-[72px] flex-shrink-0 flex flex-col bg-gray-50 border-r border-gray-200 min-h-screen sticky top-0 h-screen">
-        {/* Logo - top aligned */}
-        <div className="pt-4 px-3 flex justify-center">
-          <button
-            onClick={() => {
-              setSearchQuery('')
-              setConfirmedLocation(null)
-              setListings(allListings)
-              setSearchExplanation('')
-              setSearchFilters({})
-              setSearchResultCount(0)
-            }}
-            className="cursor-pointer"
-            title="Clear search"
-          >
-            <img src="/logo.svg" alt="flatlist" className="h-10" />
-          </button>
-        </div>
-        {/* Help & Profile - bottom aligned */}
-        <div className="mt-auto pb-4 px-3 flex flex-col items-center gap-3">
-          {/* Help Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowHelpPopover(!showHelpPopover)}
-              className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-              title="Help & Feedback"
-            >
-              <MessageCircle className="w-5 h-5" strokeWidth={2} style={{ color: '#697284' }} />
-            </button>
-            {showHelpPopover && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowHelpPopover(false)}
-                />
-                <div className="absolute left-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
-                  <p className="text-sm text-black">
-                    Have questions, suggestions, or want to report a bug?
-                  </p>
-                  <p className="text-sm mt-2 text-black">
-                    Write to us at{' '}
-                    <button
-                      onClick={async (e) => {
-                        e.preventDefault()
-                        try {
-                          await navigator.clipboard.writeText('team@flatlist.app')
-                          setEmailCopied(true)
-                          setTimeout(() => {
-                            setEmailCopied(false)
-                            setShowHelpPopover(false)
-                          }, 1500)
-                        } catch (err) {
-                          console.error('Failed to copy:', err)
-                        }
-                      }}
-                      className="text-black font-medium hover:underline cursor-pointer"
-                    >
-                      {emailCopied ? 'Copied!' : 'team@flatlist.app'}
-                    </button>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-          {/* Profile Button */}
-          <div className="relative">
-            <button
-              ref={profileButtonRef}
-              onClick={() => setShowProfilePopover(!showProfilePopover)}
-              className="h-[40px] w-[40px] rounded-full flex items-center justify-center text-white text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
-              title={user?.email || 'Profile'}
-            >
-              {user?.email?.charAt(0).toUpperCase() || '?'}
-            </button>
-            {showProfilePopover && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowProfilePopover(false)}
-                />
-                <div className="absolute left-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="text-sm font-medium text-gray-900">{user?.email}</div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          subscription?.isPremium 
-                            ? 'bg-black text-white' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {subscription?.isPremium ? 'Premium' : 'Free Plan'}
-                        </span>
-                        {subscription?.isPremium && subscription.currentPeriodEnd && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                          </div>
-                        )}
-                        {!subscription?.isPremium && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
-                          </div>
-                        )}
-                      </div>
-                      {!subscription?.isPremium && (
-                        <button
-                          onClick={() => {
-                            setShowProfilePopover(false)
-                            setUpgradeModalTrigger('general')
-                            setShowUpgradeModal(true)
-                          }}
-                          className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                        >
-                          Upgrade
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="p-2">
-                    <button
-                      onClick={() => {
-                        setShowProfilePopover(false)
-                        handleSignOut()
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-gray-50 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center">
+            <button
+              onClick={() => {
+                setSearchQuery('')
+                setConfirmedLocation(null)
+                setListings(allListings)
+                setSearchExplanation('')
+                setSearchFilters({})
+                setSearchResultCount(0)
+              }}
+              className="flex-shrink-0 cursor-pointer"
+              title="Clear search"
+            >
+              <img src="/logo.svg" alt="flatlist" className="h-10" />
+            </button>
+            
             {/* Search Bar - Centered */}
             <div className="flex-1 flex justify-center px-4">
               <div className="relative w-full max-w-3xl">
@@ -1508,11 +1384,133 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <div className="flex items-center flex-shrink-0 ml-auto gap-3 relative">
+              {/* Help Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowHelpPopover(!showHelpPopover)}
+                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
+                  title="Help & Feedback"
+                >
+                  <MessageCircle className="w-5 h-5" strokeWidth={2} style={{ color: '#697284' }} />
+                </button>
+                
+                {/* Help Popover */}
+                {showHelpPopover && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowHelpPopover(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
+                      <p className="text-sm text-black">
+                        Have questions, suggestions, or want to report a bug?
+                      </p>
+                      <p className="text-sm mt-2 text-black">
+                        Write to us at{' '}
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault()
+                            try {
+                              await navigator.clipboard.writeText('team@flatlist.app')
+                              setEmailCopied(true)
+                              setTimeout(() => {
+                                setEmailCopied(false)
+                                setShowHelpPopover(false)
+                              }, 1500)
+                            } catch (err) {
+                              console.error('Failed to copy:', err)
+                            }
+                          }}
+                          className="text-black font-medium hover:underline cursor-pointer"
+                        >
+                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
+                        </button>
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              {/* Profile Button */}
+              <button
+                ref={profileButtonRef}
+                onClick={() => setShowProfilePopover(!showProfilePopover)}
+                className="h-[40px] w-[40px] rounded-full flex items-center justify-center text-white text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
+                title={user?.email || 'Profile'}
+              >
+                {user?.email?.charAt(0).toUpperCase() || '?'}
+              </button>
+              
+              {/* Profile Popover */}
+              {showProfilePopover && (
+                <>
+                  {/* Backdrop to close on outside click */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowProfilePopover(false)}
+                  />
+                  {/* Popover */}
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="text-sm font-medium text-gray-900">{user?.email}</div>
+                      {/* Subscription Status */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <div>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            subscription?.isPremium 
+                              ? 'bg-black text-white' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {subscription?.isPremium ? 'Premium' : 'Free Plan'}
+                          </span>
+                          {subscription?.isPremium && subscription.currentPeriodEnd && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                            </div>
+                          )}
+                          {!subscription?.isPremium && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
+                            </div>
+                          )}
+                        </div>
+                        {!subscription?.isPremium && (
+                          <button
+                            onClick={() => {
+                              setShowProfilePopover(false)
+                              setUpgradeModalTrigger('general')
+                              setShowUpgradeModal(true)
+                            }}
+                            className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                          >
+                            Upgrade
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        onClick={() => {
+                          setShowProfilePopover(false)
+                          handleSignOut()
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      <main className={`flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-white rounded-[30px] shadow-sm p-8 text-center">
             <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
@@ -2001,7 +1999,6 @@ export default function Home() {
         </div>
       )}
 
-      </div>
     </div>
   )
 }
