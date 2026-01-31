@@ -1494,87 +1494,19 @@ export default function Home() {
             >
               <img src="/logo.svg" alt="flatlist" className="h-10" />
             </button>
-            
-            {/* Search Bar - Centered */}
-            <div className="flex-1 flex justify-center px-4">
-              <div className="relative w-full max-w-3xl">
-                {/* Search input */}
-                <div className="flex items-center w-full border border-gray-300 rounded-[30px] bg-white transition-all pl-4">
-                  <textarea
-                    ref={searchTextareaRef}
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value)
-                      // Auto-resize on input
-                      setTimeout(() => {
-                        const textarea = searchTextareaRef.current
-                        if (textarea) {
-                          textarea.style.height = 'auto'
-                          textarea.style.height = `${textarea.scrollHeight}px`
-                        }
-                      }, 0)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        performSearch()
-                      }
-                    }}
-                    placeholder="e.g. Sunny 2 bedroom apartments near Susa metro station in Milan"
-                    className={`flex-1 py-4 ${searchQuery ? 'pr-28' : 'pr-14'} bg-transparent focus:outline-none text-black resize-none overflow-hidden max-h-[200px]`}
-                    rows={1}
-                    style={{ lineHeight: '1.5', height: 'auto' }}
-                  />
-                  
-                  {/* Clear button */}
-                  {searchQuery && (
-                    <button
-                      onClick={() => {
-                        setSearchQuery('')
-                        setConfirmedLocation(null)
-                        setListings(allListings)
-                        setSearchExplanation('')
-                        setSearchFilters({})
-                        setSearchResultCount(0)
-                      }}
-                      className="absolute right-14 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-[20px] border border-gray-300 hover:bg-gray-50 text-sm bg-white"
-                      title="Clear all"
-                    >
-                      Clear
-                    </button>
-                  )}
-                  
-                  {/* Search button */}
-                  <button
-                    onClick={performSearch}
-                    disabled={searchLoading}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-opacity"
-                    title="Search"
-                  >
-                    {searchLoading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
+
+            {/* Dream Apartment Button - Center */}
+            <div className="flex-1 flex justify-center">
+              <button
+                onClick={() => setShowDreamApartmentModal(true)}
+                className="h-[60px] w-[60px] rounded-full flex items-center justify-center bg-black hover:opacity-90 transition-opacity"
+                title="My Dream Apartment"
+              >
+                <House className="w-[30px] h-[30px] text-white" strokeWidth={2} />
+              </button>
             </div>
 
-            <div className="flex items-center flex-shrink-0 ml-auto gap-3 relative">
+            <div className="flex items-center flex-shrink-0 gap-3 relative">
               {/* Help Button */}
               <div className="relative">
                 <button
@@ -1622,17 +1554,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Dream Apartment Button */}
-              <button
-                onClick={() => setShowDreamApartmentModal(true)}
-                className={`h-[40px] w-[40px] rounded-full flex items-center justify-center border bg-white hover:bg-gray-50 transition-colors ${
-                  dreamApartmentDescription ? 'border-black' : 'border-gray-300'
-                }`}
-                title="My Dream Apartment"
-              >
-                <House className="w-5 h-5" strokeWidth={2} style={{ color: dreamApartmentDescription ? '#000' : '#697284' }} />
-              </button>
-              
               {/* Profile Button */}
               <button
                 ref={profileButtonRef}
