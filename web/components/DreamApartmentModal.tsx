@@ -105,17 +105,17 @@ export default function DreamApartmentModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-lg w-full p-6 shadow-2xl"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-lg w-full p-6 shadow-2xl border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <House className="w-6 h-6 text-gray-700" />
-            <h2 className="text-xl font-semibold">My Dream Apartment</h2>
+            <House className="w-6 h-6 text-white" />
+            <h2 className="text-xl font-semibold text-white">My Dream Apartment</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-200 transition-colors"
             aria-label="Close"
           >
             <svg
@@ -137,7 +137,7 @@ export default function DreamApartmentModal({
 
         {success ? (
           <div className="text-center py-8">
-            <div className="text-green-600 mb-3">
+            <div className="text-green-400 mb-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-12 w-12 mx-auto"
@@ -153,11 +153,11 @@ export default function DreamApartmentModal({
                 />
               </svg>
             </div>
-            <p className="text-gray-700 font-medium">
+            <p className="text-white font-medium">
               {description.trim() ? 'Saved!' : 'Cleared!'}
             </p>
             {description.trim() && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-400 mt-2">
                 Evaluating your listings...
               </p>
             )}
@@ -165,7 +165,7 @@ export default function DreamApartmentModal({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="dream-description" className="block text-sm text-gray-600 mb-2">
+              <label htmlFor="dream-description" className="block text-sm text-gray-300 mb-2">
                 Describe your ideal apartment in your own words. The AI will compare each listing to your vision.
               </label>
               <textarea
@@ -173,7 +173,7 @@ export default function DreamApartmentModal({
                 id="dream-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 resize-none min-h-[120px]"
+                className="w-full px-4 py-3 border border-gray-600 bg-gray-900/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/20 resize-none min-h-[120px] placeholder-gray-500"
                 placeholder="e.g. A bright 2-bedroom apartment near the city center with a balcony, modern kitchen, and within walking distance to public transport. I prefer quiet neighborhoods and renovated buildings. Budget around €1,200/month."
                 disabled={loading}
                 rows={4}
@@ -182,20 +182,20 @@ export default function DreamApartmentModal({
 
             {/* Evaluation status */}
             {isEvaluating && (
-              <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm">
+              <div className="flex items-center gap-2 p-3 bg-blue-900/30 text-blue-300 rounded-lg text-sm">
                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 <span>Evaluating listings against your description...</span>
               </div>
             )}
 
             {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              <div className="p-3 bg-red-900/30 text-red-300 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-xs text-gray-500">
+              <div className="flex items-center gap-1 text-xs text-gray-400">
                 <Sparkles className="w-3 h-3" />
                 <span>AI-powered matching</span>
               </div>
@@ -206,7 +206,7 @@ export default function DreamApartmentModal({
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm"
+                  className="px-4 py-2 text-red-400 border border-red-600 rounded-lg hover:bg-red-900/30 transition-colors text-sm"
                   disabled={loading}
                 >
                   Clear
@@ -216,7 +216,7 @@ export default function DreamApartmentModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-200 border border-gray-600 rounded-lg hover:bg-gray-800 transition-colors"
                 disabled={loading}
               >
                 Cancel
@@ -225,7 +225,7 @@ export default function DreamApartmentModal({
               <button
                 type="submit"
                 disabled={loading || !hasChanges || !hasDescription}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               >
                 {loading ? (
                   <>
