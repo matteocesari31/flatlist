@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { House, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 interface DreamApartmentModalProps {
   isOpen: boolean
@@ -105,35 +105,29 @@ export default function DreamApartmentModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <House className="w-6 h-6 text-white" />
-            <h2 className="text-xl font-semibold text-white">My Dream Apartment</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-200 transition-colors"
-            aria-label="Close"
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors"
+          aria-label="Close"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
 
         {success ? (
           <div className="text-center py-8">
@@ -165,16 +159,13 @@ export default function DreamApartmentModal({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="dream-description" className="block text-sm text-gray-300 mb-2">
-                Describe your ideal apartment in your own words. The AI will compare each listing to your vision.
-              </label>
               <textarea
                 ref={textareaRef}
                 id="dream-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-600 bg-gray-900/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/20 resize-none min-h-[200px] placeholder-gray-500"
-                placeholder="e.g. A bright 2-bedroom apartment near the city center with a balcony, modern kitchen, and within walking distance to public transport. I prefer quiet neighborhoods and renovated buildings. Budget around €1,200/month."
+                className="w-full px-0 py-3 border-0 bg-transparent text-white focus:outline-none focus:ring-0 resize-none min-h-[200px] placeholder-gray-500"
+                placeholder="Describe your ideal apartment in your own words. The AI will compare each listing to your vision."
                 disabled={loading}
                 rows={4}
               />
