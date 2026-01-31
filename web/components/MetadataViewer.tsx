@@ -349,9 +349,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('student_friendly')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -368,9 +368,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('floor_type')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -387,9 +387,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('natural_light')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -406,9 +406,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('noise_level')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -425,9 +425,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('renovation_state')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -451,9 +451,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('furnishing')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-400">
               {bedsSingle && <div>{bedsSingle}</div>}
               {bedsDouble && <div>{bedsDouble}</div>}
             </div>
@@ -495,9 +495,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('pet_friendly')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -538,9 +538,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <>
             <div className="mb-2 flex items-center gap-2">
               {getCardIcon('balcony')}
-              <span className="text-sm text-black font-medium">{title}</span>
+              <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-500">{evidence}</p>}
+            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
           </>
         )
       })
@@ -564,13 +564,13 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 z-10 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+          className="absolute top-2 right-2 z-10 p-1.5 hover:bg-gray-800 rounded-full transition-colors text-gray-300"
           aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -631,7 +631,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 {/* Price, Address, and Google Maps Link */}
                 <div className="space-y-2">
                 {metadata?.price && (
-                  <div className="text-[24px] font-bold">
+                  <div className="text-[24px] font-bold text-white">
                     {formatPrice(metadata.price, isRental(), metadata.currency)}
                   </div>
                 )}
@@ -640,13 +640,13 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                     href={`https://www.google.com/maps?q=${metadata.latitude},${metadata.longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[14px] text-black hover:underline flex items-center gap-1.5"
+                    className="text-[14px] text-gray-200 hover:underline flex items-center gap-1.5"
                   >
                     <MapPin className="w-4 h-4" />
                     {metadata.address}
                   </a>
                 ) : metadata?.address ? (
-                  <div className="text-[14px] text-black flex items-center gap-1.5">
+                  <div className="text-[14px] text-gray-200 flex items-center gap-1.5">
                     <MapPin className="w-4 h-4" />
                     {metadata.address}
                   </div>
@@ -657,25 +657,25 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               <div className="mt-6">
                 <div className="flex flex-wrap gap-2">
                   {metadata?.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-sm">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                   )}
                   {metadata?.rooms && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm">{metadata.rooms} {metadata.rooms > 1 ? 'rooms' : 'room'}</span>
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-sm">{metadata.rooms} {metadata.rooms > 1 ? 'rooms' : 'room'}</span>
                   )}
                   {metadata?.bedrooms !== null && metadata?.bedrooms !== undefined && metadata.bedrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-sm flex items-center gap-1">
                       <BedDouble className="w-4 h-4" />
                       {metadata.bedrooms}
                     </span>
                   )}
                   {metadata?.bathrooms !== null && metadata?.bathrooms !== undefined && metadata.bathrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-sm flex items-center gap-1">
                       <Bath className="w-4 h-4" />
                       {metadata.bathrooms}
                     </span>
                   )}
                   {metadata?.condo_fees && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-sm flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-sm flex items-center gap-1">
                       <Building className="w-4 h-4" />
                       {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
                     </span>
@@ -684,7 +684,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                   {metadata?.vibe_tags && metadata.vibe_tags.length > 0 && (
                     <>
                       {metadata.vibe_tags.map((tag, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                        <span key={idx} className="px-2 py-1 bg-blue-900/50 text-blue-300 rounded text-sm">
                           {tag}
                         </span>
                       ))}
@@ -712,7 +712,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               <div className="flex-shrink-0 relative">
                 {hasDreamApartment ? (
                   // Show Dream Apartment Comparison
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-[20px] p-5">
+                  <div className="bg-gray-800/50 rounded-[20px] p-5 border border-gray-700/50">
                     <div className="flex items-start gap-4">
                       {/* Score Badge */}
                       {matchScore !== undefined ? (
@@ -724,7 +724,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                           <span className="text-2xl font-bold text-white">{matchScore}</span>
                         </div>
                       ) : (
-                        <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-400">
+                        <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-700 text-gray-400">
                           {isEvaluatingListing ? (
                             <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
@@ -736,50 +736,50 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       {/* Summary Text */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <House className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-700">Dream Apartment Match</span>
-                          <Sparkles className="w-3 h-3 text-gray-400" />
+                          <House className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-200">Dream Apartment Match</span>
+                          <Sparkles className="w-3 h-3 text-gray-500" />
                         </div>
                         {comparisonSummary ? (
-                          <p className="text-sm text-gray-600 leading-relaxed">{comparisonSummary}</p>
+                          <p className="text-sm text-gray-300 leading-relaxed">{comparisonSummary}</p>
                         ) : matchScore !== undefined ? (
-                          <p className="text-sm text-gray-500 italic">Comparison complete. Summary being generated...</p>
+                          <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
                         ) : isEvaluatingListing ? (
-                          <p className="text-sm text-gray-600">Evaluating this listing… usually 15–30 seconds.</p>
+                          <p className="text-sm text-gray-300">Evaluating this listing… usually 15–30 seconds.</p>
                         ) : onEvaluateListing ? (
                           <div className="space-y-2">
-                            <p className="text-sm text-gray-600">No score yet. Evaluate this listing to see how it matches your dream apartment.</p>
+                            <p className="text-sm text-gray-300">No score yet. Evaluate this listing to see how it matches your dream apartment.</p>
                             <button
                               type="button"
                               onClick={onEvaluateListing}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
                             >
                               <Sparkles className="w-4 h-4" />
                               Get match score
                             </button>
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-500 italic">AI is evaluating this listing. This may take a moment…</p>
+                          <p className="text-sm text-gray-400 italic">AI is evaluating this listing. This may take a moment…</p>
                         )}
                       </div>
                     </div>
                   </div>
                 ) : (
                   // Show prompt to set up dream apartment (when no dream apartment is set)
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[20px] p-5 border border-blue-100">
+                  <div className="bg-gray-800/50 rounded-[20px] p-5 border border-gray-700/50">
                     <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <House className="w-6 h-6 text-blue-600" />
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-900/50 flex items-center justify-center">
+                        <House className="w-6 h-6 text-blue-300" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium text-gray-800 mb-1">Describe your dream apartment</h4>
-                        <p className="text-sm text-gray-600 mb-3">
+                        <h4 className="text-sm font-medium text-gray-200 mb-1">Describe your dream apartment</h4>
+                        <p className="text-sm text-gray-400 mb-3">
                           Get AI-powered match scores for each listing based on your ideal home.
                         </p>
                         {onOpenDreamApartment && (
                           <button
                             onClick={onOpenDreamApartment}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
                           >
                             <Sparkles className="w-4 h-4" />
                             Set Up Now
