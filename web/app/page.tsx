@@ -1507,6 +1507,46 @@ export default function Home() {
             </div>
 
             <div className="flex items-center flex-shrink-0 gap-3 relative">
+              {/* Plus (Add) Button */}
+              <button
+                onClick={() => {
+                  if (subscription?.canInvite) {
+                    setShowInviteModal(true)
+                  } else {
+                    setUpgradeModalTrigger('invite')
+                    setShowUpgradeModal(true)
+                  }
+                }}
+                className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                title={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+              {/* Refresh Button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  fetchListings()
+                  setRefreshKey(prev => prev + 1)
+                }}
+                className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                title="Refresh"
+              >
+                <svg
+                  key={refreshKey}
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  style={{ animation: 'spin-reverse 0.3s linear', transformOrigin: 'center' }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
               {/* Help Button */}
               <div className="relative">
                 <button
@@ -1650,166 +1690,16 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Listings Header */}
-            <div className="mb-4">
-              {searchQuery || confirmedLocation ? (
+            {/* Listings Header - only when searching */}
+            {(searchQuery || confirmedLocation) && (
+              <div className="mb-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold text-white">
                     Search Results ({listings.length})
                   </h2>
                 </div>
-              ) : (
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      {isEditingCatalogName ? (
-                        <input
-                          ref={catalogInputRef}
-                          type="text"
-                          value={tempCatalogName}
-                          onChange={(e) => setTempCatalogName(e.target.value)}
-                          onKeyDown={handleCatalogNameKeyDown}
-                          onBlur={handleSaveCatalogName}
-                          className="text-xl font-semibold bg-transparent border-b-2 border-[#FF5C5C] outline-none px-0 py-0 text-white"
-                          style={{ width: `${Math.max(tempCatalogName.length, 8)}ch` }}
-                        />
-                      ) : (
-                        <h2 
-                          className="text-xl font-semibold cursor-pointer hover:text-gray-400 transition-colors text-white"
-                          onClick={handleStartEditingCatalogName}
-                          title="Click to rename"
-                        >
-                          {catalogName}
-                        </h2>
-                      )}
-                      <span className="text-xl font-semibold text-gray-400">({allListings.length})</span>
-                    </div>
-                    {/* Profile icons, add button, and refresh button - all in one row */}
-                    <div className="flex items-center justify-between gap-2 mt-2 w-full">
-                      <div className="flex items-center gap-2">
-                        {/* Display all catalog members' profile pictures */}
-                        {catalogMembers.length > 0 ? (
-                          <div className="flex items-center gap-2">
-                            {catalogMembers.map((member) => (
-                              <div key={member.user_id} className="relative group">
-                                <div 
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-default"
-                                  style={{ backgroundColor: getUserColor(member.user_id) }}
-                                >
-                                  {removingMember === member.user_id ? (
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                  ) : (
-                                    member.email?.charAt(0).toUpperCase() || '?'
-                                  )}
-                                </div>
-                                {/* Remove button - visible on hover for owners, hidden for self */}
-                                {isOwner && member.user_id !== user?.id && (
-                                  <button
-                                    onClick={() => handleRemoveMemberClick(member.user_id)}
-                                    disabled={removingMember === member.user_id}
-                                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
-                                    title="Remove collaborator"
-                                  >
-                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                )}
-                                {/* Custom tooltip */}
-                                {member.email && (
-                                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-white text-black text-xs rounded-lg shadow-lg border border-gray-200 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                                    {member.email}{member.role === 'owner' ? ' (owner)' : ''}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          // Fallback: show current user's profile picture if no members loaded yet
-                          user && (
-                            <div className="relative group">
-                              <div 
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-default"
-                                style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
-                              >
-                                {user?.email?.charAt(0).toUpperCase() || '?'}
-                              </div>
-                              {/* Custom tooltip */}
-                              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-white text-black text-xs rounded-lg shadow-lg border border-gray-200 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                                {user?.email}
-                              </div>
-                            </div>
-                          )
-                        )}
-                        <div className="relative group">
-                          <button
-                            onClick={() => {
-                              if (subscription?.canInvite) {
-                                setShowInviteModal(true)
-                              } else {
-                                setUpgradeModalTrigger('invite')
-                                setShowUpgradeModal(true)
-                              }
-                            }}
-                            className="w-8 h-8 rounded-full border border-gray-600 bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </button>
-                          {/* Custom tooltip */}
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-white text-black text-xs rounded-lg shadow-lg border border-gray-200 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                            {subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Refresh button - circular, same size as profile icons, right aligned */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          console.log('Manual refresh triggered')
-                          fetchListings()
-                          // Trigger animation by updating key
-                          setRefreshKey(prev => prev + 1)
-                        }}
-                        className="w-8 h-8 rounded-full border border-gray-600 bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors flex-shrink-0"
-                        title="Refresh"
-                      >
-                        <svg
-                          key={refreshKey}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          style={{ 
-                            animation: 'spin-reverse 0.3s linear',
-                            transformOrigin: 'center'
-                          }}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Filter Pills - under Search Results */}
             {(searchExplanation || Object.keys(searchFilters).length > 0) && (

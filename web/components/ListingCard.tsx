@@ -418,7 +418,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
         {/* Show metadata if available, otherwise show basic extracted info */}
         {(metadata || basicInfo) && (
-          <div className="space-y-2">
+          <div className="space-y-[6px]">
             {/* Price - from metadata or extracted */}
             {(metadata?.price || basicInfo?.price) && (
               <div className="flex items-center justify-between">
