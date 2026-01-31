@@ -14,9 +14,22 @@ interface ListingCardProps {
   onDelete?: (listingId: string) => void
   onRetryEnrichment?: (listingId: string) => void
   catalogMembers?: Array<{ user_id: string; email: string | null }>
+  matchScore?: number
+  hasDreamApartment?: boolean
 }
 
-export default function ListingCard({ listing, onClick, onViewDetails, onSaveNote, onDelete, onRetryEnrichment, catalogMembers = [] }: ListingCardProps) {
+// Helper function to get score color based on value
+function getScoreColor(score: number): { bg: string; text: string; border: string } {
+  if (score >= 70) {
+    return { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' }
+  } else if (score >= 40) {
+    return { bg: 'bg-yellow-400', text: 'text-yellow-900', border: 'border-yellow-500' }
+  } else {
+    return { bg: 'bg-red-400', text: 'text-white', border: 'border-red-500' }
+  }
+}
+
+export default function ListingCard({ listing, onClick, onViewDetails, onSaveNote, onDelete, onRetryEnrichment, catalogMembers = [], matchScore, hasDreamApartment = false }: ListingCardProps) {
   const [noteText, setNoteText] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showNotesPopover, setShowNotesPopover] = useState(false)
@@ -367,20 +380,32 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       >
       {/* Image section (on top) */}
       <div className="px-4 pt-4">
-        {thumbnailImage ? (
-          <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden rounded-[15px]">
-            <img
-              src={thumbnailImage}
-              alt={listing.title || 'Listing image'}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          </div>
-        ) : (
-          <div className="w-full aspect-[4/3] bg-gray-100 rounded-[15px]"></div>
-        )}
+        <div className="relative">
+          {thumbnailImage ? (
+            <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden rounded-[15px]">
+              <img
+                src={thumbnailImage}
+                alt={listing.title || 'Listing image'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-full aspect-[4/3] bg-gray-100 rounded-[15px]"></div>
+          )}
+          
+          {/* Match Score Badge */}
+          {hasDreamApartment && matchScore !== undefined && (
+            <div 
+              className={`absolute top-2 right-2 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 ${getScoreColor(matchScore).bg} ${getScoreColor(matchScore).text} ${getScoreColor(matchScore).border}`}
+              title={`Match score: ${matchScore}%`}
+            >
+              {matchScore}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content section (below image) */}

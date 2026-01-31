@@ -14,7 +14,8 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, House } from 'lucide-react'
+import DreamApartmentModal from '@/components/DreamApartmentModal'
 
 interface SubscriptionInfo {
   plan: SubscriptionPlan
@@ -53,6 +54,10 @@ export default function Home() {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeModalTrigger, setUpgradeModalTrigger] = useState<'invite' | 'listings' | 'general'>('general')
+  const [showDreamApartmentModal, setShowDreamApartmentModal] = useState(false)
+  const [dreamApartmentDescription, setDreamApartmentDescription] = useState<string | null>(null)
+  const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map())
+  const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -482,6 +487,85 @@ export default function Home() {
     }
   }, [])
 
+  // Fetch user's dream apartment description
+  const fetchDreamApartment = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user-preferences')
+      if (response.ok) {
+        const data = await response.json()
+        setDreamApartmentDescription(data.dream_apartment_description)
+      }
+    } catch (error) {
+      console.error('Error fetching dream apartment:', error)
+    }
+  }, [])
+
+  // Fetch listing comparisons for current user
+  const fetchListingComparisons = useCallback(async () => {
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('listing_comparisons')
+        .select('listing_id, match_score, comparison_summary')
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error fetching comparisons:', error)
+        return
+      }
+
+      const comparisonsMap = new Map<string, { score: number; summary: string }>()
+      data?.forEach(comp => {
+        comparisonsMap.set(comp.listing_id, {
+          score: comp.match_score,
+          summary: comp.comparison_summary
+        })
+      })
+      setListingComparisons(comparisonsMap)
+    } catch (error) {
+      console.error('Error fetching comparisons:', error)
+    }
+  }, [])
+
+  // Save dream apartment description
+  const saveDreamApartment = useCallback(async (description: string) => {
+    setIsEvaluatingListings(true)
+    try {
+      const response = await fetch('/api/user-preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dream_apartment_description: description })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save preferences')
+      }
+
+      setDreamApartmentDescription(description || null)
+
+      // If description is cleared, clear comparisons
+      if (!description) {
+        setListingComparisons(new Map())
+        setIsEvaluatingListings(false)
+        return
+      }
+
+      // Real-time subscriptions will automatically update the comparisons as they complete
+      // Set a timeout to stop the "evaluating" state after a reasonable time
+      // (60 seconds should be enough for most listings to be processed)
+      setTimeout(() => {
+        setIsEvaluatingListings(false)
+      }, 60000)
+
+    } catch (error) {
+      setIsEvaluatingListings(false)
+      throw error
+    }
+  }, [])
+
   // Load catalog name from localStorage
   useEffect(() => {
     const savedName = localStorage.getItem('flatlist-catalog-name')
@@ -548,6 +632,10 @@ export default function Home() {
       
       // Fetch subscription status
       fetchSubscription()
+      
+      // Fetch dream apartment preferences and comparisons
+      fetchDreamApartment()
+      fetchListingComparisons()
       
       // Fetch user's catalog (with error handling for missing tables)
       try {
@@ -824,6 +912,60 @@ export default function Home() {
       supabase.removeChannel(channel)
     }
   }, [currentCatalogId, fetchListings])
+
+  // Real-time subscription for listing comparisons (separate channel for user-specific updates)
+  useEffect(() => {
+    if (!user?.id) return
+
+    const supabase = createClient()
+    
+    const comparisonsChannel = supabase
+      .channel(`user-${user.id}-comparisons`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'listing_comparisons',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('🏠 Listing comparison updated:', payload.eventType)
+          
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const newComparison = payload.new as any
+            if (newComparison?.listing_id) {
+              setListingComparisons(prev => {
+                const updated = new Map(prev)
+                updated.set(newComparison.listing_id, {
+                  score: newComparison.match_score,
+                  summary: newComparison.comparison_summary
+                })
+                return updated
+              })
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const oldComparison = payload.old as any
+            if (oldComparison?.listing_id) {
+              setListingComparisons(prev => {
+                const updated = new Map(prev)
+                updated.delete(oldComparison.listing_id)
+                return updated
+              })
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time subscription active for comparisons')
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(comparisonsChannel)
+    }
+  }, [user?.id])
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -1432,6 +1574,17 @@ export default function Home() {
                   </>
                 )}
               </div>
+
+              {/* Dream Apartment Button */}
+              <button
+                onClick={() => setShowDreamApartmentModal(true)}
+                className={`h-[40px] w-[40px] rounded-full flex items-center justify-center border bg-white hover:bg-gray-50 transition-colors ${
+                  dreamApartmentDescription ? 'border-black' : 'border-gray-300'
+                }`}
+                title="My Dream Apartment"
+              >
+                <House className="w-5 h-5" strokeWidth={2} style={{ color: dreamApartmentDescription ? '#000' : '#697284' }} />
+              </button>
               
               {/* Profile Button */}
               <button
@@ -1910,6 +2063,8 @@ export default function Home() {
                     onDelete={handleDelete}
                     onRetryEnrichment={handleRetryEnrichment}
                     catalogMembers={catalogMembers}
+                    matchScore={listingComparisons.get(listing.id)?.score}
+                    hasDreamApartment={!!dreamApartmentDescription}
                   />
                 ))}
         </div>
@@ -1923,6 +2078,10 @@ export default function Home() {
         listing={selectedListing}
         isOpen={!!selectedListing}
         onClose={() => setSelectedListing(null)}
+        matchScore={selectedListing ? listingComparisons.get(selectedListing.id)?.score : undefined}
+        comparisonSummary={selectedListing ? listingComparisons.get(selectedListing.id)?.summary : undefined}
+        hasDreamApartment={!!dreamApartmentDescription}
+        onOpenDreamApartment={() => setShowDreamApartmentModal(true)}
       />
 
       {/* Invite Collaborator Modal */}
@@ -1943,6 +2102,15 @@ export default function Home() {
           fetchSubscription()
         }}
         trigger={upgradeModalTrigger}
+      />
+
+      {/* Dream Apartment Modal */}
+      <DreamApartmentModal
+        isOpen={showDreamApartmentModal}
+        onClose={() => setShowDreamApartmentModal(false)}
+        initialDescription={dreamApartmentDescription}
+        onSave={saveDreamApartment}
+        isEvaluating={isEvaluatingListings}
       />
 
       {/* Remove Member Confirmation Modal */}

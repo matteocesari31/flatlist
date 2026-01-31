@@ -3,15 +3,30 @@
 import { ListingWithMetadata } from '@/lib/types'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis } from 'lucide-react'
+import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis, House, Sparkles } from 'lucide-react'
 
 interface MetadataViewerProps {
   listing: ListingWithMetadata | null
   isOpen: boolean
   onClose: () => void
+  matchScore?: number
+  comparisonSummary?: string
+  hasDreamApartment?: boolean
+  onOpenDreamApartment?: () => void
 }
 
-export default function MetadataViewer({ listing, isOpen, onClose }: MetadataViewerProps) {
+// Helper function to get score color based on value
+function getScoreColor(score: number): { bg: string; text: string; ring: string } {
+  if (score >= 70) {
+    return { bg: 'bg-green-500', text: 'text-white', ring: 'ring-green-300' }
+  } else if (score >= 40) {
+    return { bg: 'bg-yellow-400', text: 'text-yellow-900', ring: 'ring-yellow-200' }
+  } else {
+    return { bg: 'bg-red-400', text: 'text-white', ring: 'ring-red-200' }
+  }
+}
+
+export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment }: MetadataViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
@@ -691,106 +706,67 @@ export default function MetadataViewer({ listing, isOpen, onClose }: MetadataVie
                 </div>
               )}
               
-              {/* AI Inferred Attributes */}
+              {/* Dream Apartment Match or AI Inferred Attributes */}
               <div className="flex-shrink-0 relative">
-                {/* Card Selector Button - Absolutely positioned above cards, doesn't affect layout */}
-                <div className="absolute -top-12 right-0 flex justify-end">
-                  <button
-                    ref={cardSelectorButtonRef}
-                    onClick={() => {
-                      if (cardSelectorButtonRef.current) {
-                        const rect = cardSelectorButtonRef.current.getBoundingClientRect()
-                        setPopupPosition({
-                          top: rect.bottom + 8,
-                          right: window.innerWidth - rect.right
-                        })
-                      }
-                      setShowCardSelector(!showCardSelector)
-                    }}
-                    className="p-2 text-gray-700 border border-gray-300 rounded-[20px] hover:bg-gray-50 transition-colors flex items-center justify-center"
-                    title="Customize Cards"
-                  >
-                    <Ellipsis className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Card Selector Popup */}
-                {showCardSelector && (
-                  <>
-                    {/* Backdrop */}
-                    <div
-                      className="fixed inset-0 z-[60]"
-                      onClick={() => setShowCardSelector(false)}
-                    />
-                    {/* Popup - fixed positioning relative to button */}
-                    <div 
-                      className="fixed z-[70] bg-white rounded-[20px] px-6 pt-3 pb-6 shadow-2xl border border-gray-200" 
-                      style={{ 
-                        top: `${popupPosition.top}px`,
-                        right: `${popupPosition.right}px`,
-                        minWidth: '300px'
-                      }}
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="text-xs text-gray-500">
-                            Select up to 6 cards to display
-                          </div>
-                          <button
-                            onClick={() => setShowCardSelector(false)}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                            aria-label="Close"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
+                {hasDreamApartment ? (
+                  // Show Dream Apartment Comparison
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-[20px] p-5">
+                    <div className="flex items-start gap-4">
+                      {/* Score Circle */}
+                      {matchScore !== undefined ? (
+                        <div 
+                          className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold ring-4 ${getScoreColor(matchScore).bg} ${getScoreColor(matchScore).text} ${getScoreColor(matchScore).ring}`}
+                        >
+                          {matchScore}
                         </div>
-                        <div className="space-y-2">
-                          {[
-                            { key: 'student_friendly', label: 'Student Friendly' },
-                            { key: 'floor_type', label: 'Floor Type' },
-                            { key: 'natural_light', label: 'Natural Light' },
-                            { key: 'noise_level', label: 'Noise Level' },
-                            { key: 'renovation_state', label: 'Renovation State' },
-                            { key: 'furnishing', label: 'Furnishing' },
-                            { key: 'pet_friendly', label: 'Pet Friendly' },
-                            { key: 'balcony', label: 'Balcony' },
-                          ].map(({ key, label }) => {
-                            const isChecked = visibleCards.has(key)
-                            const isDisabled = !isChecked && visibleCards.size >= 6
-                            return (
-                              <label 
-                                key={key} 
-                                className={`flex items-center gap-2 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={() => toggleCardVisibility(key)}
-                                  disabled={isDisabled}
-                                  className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black disabled:cursor-not-allowed"
-                                />
-                                <span className="text-sm text-gray-700">{label}</span>
-                              </label>
-                            )
-                          })}
+                      ) : (
+                        <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-400">
+                          <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                         </div>
+                      )}
+                      
+                      {/* Summary Text */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <House className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm font-medium text-gray-700">Dream Apartment Match</span>
+                          <Sparkles className="w-3 h-3 text-gray-400" />
+                        </div>
+                        {comparisonSummary ? (
+                          <p className="text-sm text-gray-600 leading-relaxed">{comparisonSummary}</p>
+                        ) : matchScore !== undefined ? (
+                          <p className="text-sm text-gray-500 italic">Generating comparison summary...</p>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">Evaluating this listing against your dream apartment...</p>
+                        )}
                       </div>
-                    </>
-                  )}
-
-                {/* Cards Grid */}
-                <div className="grid grid-cols-9 gap-x-4 gap-y-1 auto-rows-min">
-                  {aiCards.map(({ card, span }, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white rounded-[20px] p-4 flex flex-col"
-                      style={{ gridColumn: `span ${span}` }}
-                    >
-                      {card.renderContent()}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  // Show prompt to set up dream apartment (when no dream apartment is set)
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[20px] p-5 border border-blue-100">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <House className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-800 mb-1">Describe your dream apartment</h4>
+                        <p className="text-sm text-gray-600 mb-3">
+                          Get AI-powered match scores for each listing based on your ideal home.
+                        </p>
+                        {onOpenDreamApartment && (
+                          <button
+                            onClick={onOpenDreamApartment}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            Set Up Now
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
