@@ -47,7 +47,7 @@ export default function DreamApartmentModal({
     const textarea = textareaRef.current
     if (textarea) {
       textarea.style.height = 'auto'
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 300)}px`
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 360)}px`
     }
   }, [description])
 
@@ -105,7 +105,7 @@ export default function DreamApartmentModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-lg w-full p-6 shadow-2xl border border-gray-700"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -173,7 +173,7 @@ export default function DreamApartmentModal({
                 id="dream-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-600 bg-gray-900/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/20 resize-none min-h-[120px] placeholder-gray-500"
+                className="w-full px-4 py-3 border border-gray-600 bg-gray-900/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/20 resize-none min-h-[200px] placeholder-gray-500"
                 placeholder="e.g. A bright 2-bedroom apartment near the city center with a balcony, modern kitchen, and within walking distance to public transport. I prefer quiet neighborhoods and renovated buildings. Budget around €1,200/month."
                 disabled={loading}
                 rows={4}
