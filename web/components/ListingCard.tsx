@@ -21,11 +21,11 @@ interface ListingCardProps {
 // Helper function to get score color and glow based on value
 function getScoreColor(score: number): { bg: string; glow: string } {
   if (score >= 70) {
-    return { bg: 'bg-green-500', glow: '0 0 8px 2px rgba(34, 197, 94, 0.4)' }
+    return { bg: 'bg-green-500', glow: '0 0 10px 3px rgba(34, 197, 94, 0.55)' }
   } else if (score >= 40) {
-    return { bg: 'bg-yellow-400', glow: '0 0 8px 2px rgba(250, 204, 21, 0.4)' }
+    return { bg: 'bg-yellow-400', glow: '0 0 10px 3px rgba(250, 204, 21, 0.55)' }
   } else {
-    return { bg: 'bg-red-400', glow: '0 0 8px 2px rgba(248, 113, 113, 0.4)' }
+    return { bg: 'bg-red-400', glow: '0 0 10px 3px rgba(248, 113, 113, 0.55)' }
   }
 }
 
@@ -402,7 +402,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
               title={`Match score: ${matchScore}%`}
               style={{ backdropFilter: 'blur(12px)' }}
             >
-              <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
               <span className="text-sm font-semibold text-white">{matchScore}</span>
           </div>
         )}
