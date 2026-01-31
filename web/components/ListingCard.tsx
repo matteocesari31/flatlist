@@ -484,52 +484,48 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
               </div>
             )}
 
-            {/* Info pills */}
+            {/* Metadata - grey text, spaced */}
             {metadata && (
-              <div className="mt-2 space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  {metadata.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
-                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
-                  )}
-                  {metadata.bedrooms !== null && metadata.bedrooms !== undefined && metadata.bedrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
-                      <BedDouble className="w-3.5 h-3.5" />
-                      {metadata.bedrooms}
-                    </span>
-                  )}
-                  {metadata.bathrooms !== null && metadata.bathrooms !== undefined && metadata.bathrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
-                      <Bath className="w-3.5 h-3.5" />
-                      {metadata.bathrooms}
-                    </span>
-                  )}
-                  {metadata.condo_fees && (
-                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
-                      <Building className="w-3.5 h-3.5" />
-                      {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
-                    </span>
-                  )}
-                  {listing.distanceFromReference !== undefined && (
-                    <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs font-normal">
-                      {listing.distanceFromReference < 1 
-                        ? `${Math.round(listing.distanceFromReference * 1000)} m away`
-                        : `${listing.distanceFromReference.toFixed(1)} km away`
-                      }
-                    </span>
-                  )}
-                </div>
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                {metadata.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
+                  <span>{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
+                )}
+                {metadata.bedrooms !== null && metadata.bedrooms !== undefined && metadata.bedrooms > 0 && (
+                  <span className="flex items-center gap-1">
+                    <BedDouble className="w-3.5 h-3.5" />
+                    {metadata.bedrooms}
+                  </span>
+                )}
+                {metadata.bathrooms !== null && metadata.bathrooms !== undefined && metadata.bathrooms > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Bath className="w-3.5 h-3.5" />
+                    {metadata.bathrooms}
+                  </span>
+                )}
+                {metadata.condo_fees && (
+                  <span className="flex items-center gap-1">
+                    <Building className="w-3.5 h-3.5" />
+                    {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
+                  </span>
+                )}
+                {listing.distanceFromReference !== undefined && (
+                  <span>
+                    {listing.distanceFromReference < 1 
+                      ? `${Math.round(listing.distanceFromReference * 1000)} m away`
+                      : `${listing.distanceFromReference.toFixed(1)} km away`
+                    }
+                  </span>
+                )}
               </div>
             )}
 
-            {/* Show distance pill even without metadata */}
+            {/* Show distance even without metadata */}
             {!metadata && listing.distanceFromReference !== undefined && (
-              <div className="mt-2">
-                <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs font-normal">
-                  {listing.distanceFromReference < 1 
-                    ? `${Math.round(listing.distanceFromReference * 1000)} m away`
-                    : `${listing.distanceFromReference.toFixed(1)} km away`
-                  }
-                </span>
+              <div className="mt-2 text-xs text-gray-400">
+                {listing.distanceFromReference < 1 
+                  ? `${Math.round(listing.distanceFromReference * 1000)} m away`
+                  : `${listing.distanceFromReference.toFixed(1)} km away`
+                }
               </div>
             )}
 
