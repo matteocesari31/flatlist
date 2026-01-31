@@ -584,11 +584,11 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
             {/* Left Column - Images */}
             {images && images.length > 0 && (
               <div className="flex-shrink-0 w-[45%]" ref={imageContainerRef}>
-                <div className="relative aspect-square bg-gray-100 rounded-[20px] overflow-hidden group w-full">
+                <div className="relative bg-gray-900 rounded-[20px] overflow-hidden group w-full">
                   <img
                     src={images[currentImageIndex]}
                     alt={`Listing image ${currentImageIndex + 1} of ${images.length}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto object-contain"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                     }}
