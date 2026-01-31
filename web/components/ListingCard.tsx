@@ -19,13 +19,13 @@ interface ListingCardProps {
 }
 
 // Helper function to get score color based on value
-function getScoreColor(score: number): { bg: string; text: string; border: string } {
+function getScoreColor(score: number): { dot: string; glass: string } {
   if (score >= 70) {
-    return { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' }
+    return { dot: 'bg-green-500', glass: 'bg-green-500/10 border-green-500/20' }
   } else if (score >= 40) {
-    return { bg: 'bg-yellow-400', text: 'text-yellow-900', border: 'border-yellow-500' }
+    return { dot: 'bg-yellow-400', glass: 'bg-yellow-400/10 border-yellow-400/20' }
   } else {
-    return { bg: 'bg-red-400', text: 'text-white', border: 'border-red-500' }
+    return { dot: 'bg-red-400', glass: 'bg-red-400/10 border-red-400/20' }
   }
 }
 
@@ -399,10 +399,12 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
           {/* Match Score Badge */}
           {hasDreamApartment && matchScore !== undefined && (
             <div 
-              className={`absolute top-2 right-2 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 ${getScoreColor(matchScore).bg} ${getScoreColor(matchScore).text} ${getScoreColor(matchScore).border}`}
+              className={`absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md border shadow-lg ${getScoreColor(matchScore).glass}`}
               title={`Match score: ${matchScore}%`}
+              style={{ backdropFilter: 'blur(12px)' }}
             >
-              {matchScore}
+              <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore).dot}`}></div>
+              <span className="text-sm font-semibold text-gray-700">{matchScore}</span>
             </div>
           )}
         </div>

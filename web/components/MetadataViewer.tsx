@@ -18,13 +18,13 @@ interface MetadataViewerProps {
 }
 
 // Helper function to get score color based on value
-function getScoreColor(score: number): { bg: string; text: string; ring: string } {
+function getScoreColor(score: number): { dot: string; glass: string } {
   if (score >= 70) {
-    return { bg: 'bg-green-500', text: 'text-white', ring: 'ring-green-300' }
+    return { dot: 'bg-green-500', glass: 'bg-green-500/10 border-green-500/20' }
   } else if (score >= 40) {
-    return { bg: 'bg-yellow-400', text: 'text-yellow-900', ring: 'ring-yellow-200' }
+    return { dot: 'bg-yellow-400', glass: 'bg-yellow-400/10 border-yellow-400/20' }
   } else {
-    return { bg: 'bg-red-400', text: 'text-white', ring: 'ring-red-200' }
+    return { dot: 'bg-red-400', glass: 'bg-red-400/10 border-red-400/20' }
   }
 }
 
@@ -714,12 +714,14 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                   // Show Dream Apartment Comparison
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-[20px] p-5">
                     <div className="flex items-start gap-4">
-                      {/* Score Circle */}
+                      {/* Score Badge */}
                       {matchScore !== undefined ? (
                         <div 
-                          className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold ring-4 ${getScoreColor(matchScore).bg} ${getScoreColor(matchScore).text} ${getScoreColor(matchScore).ring}`}
+                          className={`flex-shrink-0 px-4 py-2 rounded-[30px] flex items-center gap-3 backdrop-blur-md border shadow-lg ${getScoreColor(matchScore).glass}`}
+                          style={{ backdropFilter: 'blur(12px)' }}
                         >
-                          {matchScore}
+                          <div className={`w-3 h-3 rounded-full ${getScoreColor(matchScore).dot}`}></div>
+                          <span className="text-2xl font-bold text-gray-700">{matchScore}</span>
                         </div>
                       ) : (
                         <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-400">
