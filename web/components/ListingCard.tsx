@@ -409,7 +409,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       </div>
 
       {/* Info (below image, no card) */}
-      <div className="pt-5 flex flex-col">
+      <div className="pt-2 flex flex-col">
         {getStatusBadge() && (
           <div className="mb-2">
             {getStatusBadge()}

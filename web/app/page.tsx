@@ -2102,7 +2102,7 @@ export default function Home() {
             ) : (
               <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="break-inside-avoid mb-6 sm:mb-8">
+                  <div key={listing.id} className="break-inside-avoid mb-10 sm:mb-12">
                     <ListingCard
                       listing={listing}
                       onViewDetails={() => handleViewDetails(listing)}
