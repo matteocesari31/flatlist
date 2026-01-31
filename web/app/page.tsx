@@ -2100,19 +2100,20 @@ export default function Home() {
                 <p className="text-gray-600">No listings match your search</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4 items-start">
+              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
                 {listings.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    onViewDetails={() => handleViewDetails(listing)}
-                    onSaveNote={handleSaveNote}
-                    onDelete={handleDelete}
-                    onRetryEnrichment={handleRetryEnrichment}
-                    catalogMembers={catalogMembers}
-                    matchScore={listingComparisons.get(listing.id)?.score}
-                    hasDreamApartment={!!dreamApartmentDescription}
-                  />
+                  <div key={listing.id} className="break-inside-avoid mb-6 sm:mb-8">
+                    <ListingCard
+                      listing={listing}
+                      onViewDetails={() => handleViewDetails(listing)}
+                      onSaveNote={handleSaveNote}
+                      onDelete={handleDelete}
+                      onRetryEnrichment={handleRetryEnrichment}
+                      catalogMembers={catalogMembers}
+                      matchScore={listingComparisons.get(listing.id)?.score}
+                      hasDreamApartment={!!dreamApartmentDescription}
+                    />
+                  </div>
                 ))}
         </div>
             )}
