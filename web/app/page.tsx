@@ -1478,7 +1478,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gray-50 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-6 sm:px-8 py-4">
           <div className="flex items-center">
             <button
               onClick={() => {
@@ -1710,7 +1710,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`w-full px-6 sm:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-white rounded-[30px] shadow-sm p-8 text-center">
             <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
