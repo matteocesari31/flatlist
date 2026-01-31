@@ -718,7 +718,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                   // Show Dream Apartment Comparison - no card, just text
                   <div>
                     {comparisonSummary ? (
-                      <p className="text-sm text-gray-300 leading-relaxed">{comparisonSummary}</p>
+                      <p className="text-base text-white leading-relaxed">{comparisonSummary}</p>
                     ) : matchScore !== undefined ? (
                       <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
                     ) : isEvaluatingListing ? (
