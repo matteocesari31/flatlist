@@ -717,11 +717,11 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       {/* Score Badge */}
                       {matchScore !== undefined ? (
                         <div 
-                          className="flex-shrink-0 px-4 py-2 rounded-[30px] flex items-center gap-3 backdrop-blur-md bg-white/20 border border-white/30 shadow-lg"
+                          className="flex-shrink-0 px-4 py-2 rounded-[30px] flex items-center gap-3 backdrop-blur-md bg-black/40 border border-white/20 shadow-lg"
                           style={{ backdropFilter: 'blur(12px)' }}
                         >
                           <div className={`w-3 h-3 rounded-full ${getScoreColor(matchScore)}`}></div>
-                          <span className="text-2xl font-bold text-gray-700">{matchScore}</span>
+                          <span className="text-2xl font-bold text-white">{matchScore}</span>
                         </div>
                       ) : (
                         <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-400">

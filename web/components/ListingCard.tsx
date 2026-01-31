@@ -398,12 +398,12 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
         {/* Match Score Badge */}
         {hasDreamApartment && matchScore !== undefined && (
           <div 
-            className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-white/20 border border-white/30 shadow-lg"
-            title={`Match score: ${matchScore}%`}
-            style={{ backdropFilter: 'blur(12px)' }}
-          >
-            <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore)}`}></div>
-            <span className="text-sm font-semibold text-gray-700">{matchScore}</span>
+            className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/40 border border-white/20 shadow-lg"
+              title={`Match score: ${matchScore}%`}
+              style={{ backdropFilter: 'blur(12px)' }}
+            >
+              <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore)}`}></div>
+              <span className="text-sm font-semibold text-white">{matchScore}</span>
           </div>
         )}
       </div>
