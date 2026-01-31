@@ -1495,18 +1495,8 @@ export default function Home() {
               <img src="/logo.svg" alt="flatlist" className="h-10" />
             </button>
 
-            {/* Dream Apartment Button - Center */}
-            <div className="flex-1 flex justify-center">
-              <button
-                onClick={() => setShowDreamApartmentModal(true)}
-                className="h-[52px] w-[52px] rounded-full flex items-center justify-center bg-black hover:opacity-90 transition-opacity"
-                title="My Dream Apartment"
-              >
-                <House className="w-[26px] h-[26px] text-white" strokeWidth={2} />
-              </button>
-            </div>
-
-            <div className="flex items-center flex-shrink-0 gap-3 relative">
+            {/* Center: Plus | Dream Home | Refresh */}
+            <div className="flex-1 flex justify-center items-center gap-3">
               {/* Plus (Add) Button */}
               <button
                 onClick={() => {
@@ -1523,6 +1513,14 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
+              </button>
+              {/* Dream Apartment Button */}
+              <button
+                onClick={() => setShowDreamApartmentModal(true)}
+                className="h-[52px] w-[52px] rounded-full flex items-center justify-center bg-black hover:opacity-90 transition-opacity"
+                title="My Dream Apartment"
+              >
+                <House className="w-[26px] h-[26px] text-white" strokeWidth={2} />
               </button>
               {/* Refresh Button */}
               <button
@@ -1547,6 +1545,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
+            </div>
+
+            <div className="flex items-center flex-shrink-0 gap-3 relative">
               {/* Help Button */}
               <div className="relative">
                 <button
