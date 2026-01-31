@@ -1517,10 +1517,10 @@ export default function Home() {
               {/* Dream Apartment Button */}
               <button
                 onClick={() => setShowDreamApartmentModal(true)}
-                className="h-[52px] w-[52px] rounded-full flex items-center justify-center bg-black hover:opacity-90 transition-opacity"
+                className="h-[52px] w-[52px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
                 title="My Dream Apartment"
               >
-                <House className="w-[26px] h-[26px] text-white" strokeWidth={2} />
+                <House className="w-[26px] h-[26px]" strokeWidth={2} />
               </button>
               {/* Refresh Button */}
               <button
