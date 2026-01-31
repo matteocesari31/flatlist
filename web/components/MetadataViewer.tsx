@@ -583,7 +583,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           <div className="flex gap-6 items-stretch">
             {/* Left Column - Images */}
             {images && images.length > 0 && (
-              <div className="flex-[9] min-w-0" ref={imageContainerRef}>
+              <div className="flex-shrink-0 w-[70%]" ref={imageContainerRef}>
                 <div className="relative bg-gray-900 rounded-[20px] overflow-hidden group w-full">
                   <img
                     src={images[currentImageIndex]}
@@ -639,7 +639,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
             )}
 
             {/* Right Column - Price/Address and AI Inferred Attributes */}
-            <div className="flex-1 min-w-[240px] flex flex-col pr-4 h-full justify-between" ref={rightColumnRef}>
+            <div className="flex-shrink-0 w-[30%] flex flex-col pr-4 h-full justify-between" ref={rightColumnRef}>
               <div className="flex-shrink-0">
                 {/* Price, Address, and Google Maps Link */}
                 <div className="space-y-2">
