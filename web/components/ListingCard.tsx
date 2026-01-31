@@ -382,11 +382,11 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       <div className="px-4 pt-4">
         <div className="relative">
           {thumbnailImage ? (
-            <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden rounded-[15px]">
+            <div className="w-full bg-gray-100 overflow-hidden rounded-[15px]">
               <img
                 src={thumbnailImage}
                 alt={listing.title || 'Listing image'}
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                 }}
