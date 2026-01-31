@@ -1477,7 +1477,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-gray-50 sticky top-0 z-30">
+      <header className="bg-gray-50 fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200">
         <div className="w-full px-6 sm:px-8 py-4">
           <div className="flex items-center">
             <button
@@ -1592,7 +1592,7 @@ export default function Home() {
                       className="fixed inset-0 z-40"
                       onClick={() => setShowHelpPopover(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
+                    <div className="absolute right-0 bottom-full mb-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
                       <p className="text-sm text-black">
                         Have questions, suggestions, or want to report a bug?
                       </p>
@@ -1653,7 +1653,7 @@ export default function Home() {
                     onClick={() => setShowProfilePopover(false)}
                   />
                   {/* Popover */}
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
+                  <div className="absolute right-0 bottom-full mb-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
                     <div className="p-4 border-b border-gray-100">
                       <div className="text-sm font-medium text-gray-900">{user?.email}</div>
                       {/* Subscription Status */}
@@ -1710,7 +1710,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`w-full px-6 sm:px-8 py-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`w-full px-6 sm:px-8 pt-8 pb-24 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-white rounded-[30px] shadow-sm p-8 text-center">
             <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
