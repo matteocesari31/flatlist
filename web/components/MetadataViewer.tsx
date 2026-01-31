@@ -13,6 +13,8 @@ interface MetadataViewerProps {
   comparisonSummary?: string
   hasDreamApartment?: boolean
   onOpenDreamApartment?: () => void
+  onEvaluateListing?: () => void
+  isEvaluatingListing?: boolean
 }
 
 // Helper function to get score color based on value
@@ -26,7 +28,7 @@ function getScoreColor(score: number): { bg: string; text: string; ring: string 
   }
 }
 
-export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment }: MetadataViewerProps) {
+export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false }: MetadataViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
@@ -721,7 +723,11 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                         </div>
                       ) : (
                         <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-400">
-                          <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          {isEvaluatingListing ? (
+                            <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <span className="text-lg font-medium text-gray-500">—</span>
+                          )}
                         </div>
                       )}
                       
@@ -736,8 +742,22 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                           <p className="text-sm text-gray-600 leading-relaxed">{comparisonSummary}</p>
                         ) : matchScore !== undefined ? (
                           <p className="text-sm text-gray-500 italic">Comparison complete. Summary being generated...</p>
+                        ) : isEvaluatingListing ? (
+                          <p className="text-sm text-gray-600">Evaluating this listing… usually 15–30 seconds.</p>
+                        ) : onEvaluateListing ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-600">No score yet. Evaluate this listing to see how it matches your dream apartment.</p>
+                            <button
+                              type="button"
+                              onClick={onEvaluateListing}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              Get match score
+                            </button>
+                          </div>
                         ) : (
-                          <p className="text-sm text-gray-500 italic">AI is evaluating this listing. This may take a moment...</p>
+                          <p className="text-sm text-gray-500 italic">AI is evaluating this listing. This may take a moment…</p>
                         )}
                       </div>
                     </div>

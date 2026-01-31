@@ -58,6 +58,7 @@ export default function Home() {
   const [dreamApartmentDescription, setDreamApartmentDescription] = useState<string | null>(null)
   const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
+  const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -943,6 +944,7 @@ export default function Home() {
                 })
                 return updated
               })
+              setEvaluatingListingId(prev => prev === newComparison.listing_id ? null : prev)
             }
           } else if (payload.eventType === 'DELETE') {
             const oldComparison = payload.old as any
@@ -976,6 +978,51 @@ export default function Home() {
   const handleViewDetails = (listing: ListingWithMetadata) => {
     setSelectedListing(listing)
   }
+
+  // Trigger single-listing evaluation when user opens detail and there's no score yet
+  const handleEvaluateListing = useCallback(async () => {
+    if (!selectedListing || !dreamApartmentDescription) return
+    setEvaluatingListingId(selectedListing.id)
+    try {
+      const res = await fetch('/api/reevaluate-listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listing_id: selectedListing.id })
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Evaluate listing failed:', data)
+        setEvaluatingListingId(null)
+      }
+      // Success: real-time subscription or timeout will clear evaluatingListingId
+      setTimeout(() => setEvaluatingListingId(null), 90000)
+    } catch (err) {
+      console.error('Evaluate listing error:', err)
+      setEvaluatingListingId(null)
+    }
+  }, [selectedListing, dreamApartmentDescription])
+
+  // When opening a listing that has no comparison yet, auto-trigger evaluation once
+  const hasTriggeredEvaluationRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!selectedListing?.id) {
+      hasTriggeredEvaluationRef.current = null
+      return
+    }
+    if (!dreamApartmentDescription || evaluatingListingId) return
+    if (listingComparisons.has(selectedListing.id)) return
+    if (hasTriggeredEvaluationRef.current === selectedListing.id) return
+    hasTriggeredEvaluationRef.current = selectedListing.id
+    setEvaluatingListingId(selectedListing.id)
+    fetch('/api/reevaluate-listings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ listing_id: selectedListing.id })
+    })
+      .then(res => { if (!res.ok) setEvaluatingListingId(null) })
+      .catch(() => setEvaluatingListingId(null))
+    setTimeout(() => setEvaluatingListingId(null), 90000)
+  }, [selectedListing?.id, dreamApartmentDescription, evaluatingListingId, listingComparisons])
 
   const handleStartEditingCatalogName = () => {
     setTempCatalogName(catalogName)
@@ -2082,6 +2129,8 @@ export default function Home() {
         comparisonSummary={selectedListing ? listingComparisons.get(selectedListing.id)?.summary : undefined}
         hasDreamApartment={!!dreamApartmentDescription}
         onOpenDreamApartment={() => setShowDreamApartmentModal(true)}
+        onEvaluateListing={handleEvaluateListing}
+        isEvaluatingListing={!!selectedListing && evaluatingListingId === selectedListing.id}
       />
 
       {/* Invite Collaborator Modal */}

@@ -191,7 +191,9 @@ serve(async (req) => {
           return { listing_id: lid, success: false, error: 'Listing not found' }
         }
 
-        const metadata = listing.listing_metadata as any
+        // Supabase returns relations as array; normalize to single object
+        const rawMeta = listing.listing_metadata
+        const metadata = Array.isArray(rawMeta) ? rawMeta[0] : rawMeta
         const truncatedContent = truncateContent(listing.raw_content || '', 6000)
 
         // Build location info string
