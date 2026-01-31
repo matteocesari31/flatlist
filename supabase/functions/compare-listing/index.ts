@@ -156,8 +156,12 @@ serve(async (req) => {
 
     const results: Array<{ listing_id: string; success: boolean; score?: number; error?: string }> = []
 
-    // Process each listing
-    for (const lid of listingIds) {
+    // Process listings in parallel (batches of 3 to avoid rate limits)
+    const batchSize = 3
+    for (let i = 0; i < listingIds.length; i += batchSize) {
+      const batch = listingIds.slice(i, i + batchSize)
+      
+      const batchResults = await Promise.all(batch.map(async (lid) => {
       try {
         console.log(`Processing listing: ${lid}`)
         
@@ -184,8 +188,7 @@ serve(async (req) => {
 
         if (listingError || !listing) {
           console.error('Error fetching listing:', listingError)
-          results.push({ listing_id: lid, success: false, error: 'Listing not found' })
-          continue
+          return { listing_id: lid, success: false, error: 'Listing not found' }
         }
 
         const metadata = listing.listing_metadata as any
@@ -314,16 +317,14 @@ ${truncatedContent}`
         if (!openaiResponse.ok) {
           const errorText = await openaiResponse.text()
           console.error('OpenAI API error:', errorText)
-          results.push({ listing_id: lid, success: false, error: 'OpenAI API error' })
-          continue
+          return { listing_id: lid, success: false, error: 'OpenAI API error' }
         }
 
         const openaiData = await openaiResponse.json()
         const content = openaiData.choices[0]?.message?.content
 
         if (!content) {
-          results.push({ listing_id: lid, success: false, error: 'No content from OpenAI' })
-          continue
+          return { listing_id: lid, success: false, error: 'No content from OpenAI' }
         }
 
         // Parse response
@@ -332,8 +333,7 @@ ${truncatedContent}`
           comparison = JSON.parse(content)
         } catch (parseError) {
           console.error('Failed to parse OpenAI response:', content)
-          results.push({ listing_id: lid, success: false, error: 'Invalid JSON from OpenAI' })
-          continue
+          return { listing_id: lid, success: false, error: 'Invalid JSON from OpenAI' }
         }
 
         const score = Math.max(0, Math.min(100, Math.round(comparison.score || 0)))
@@ -356,20 +356,23 @@ ${truncatedContent}`
 
         if (upsertError) {
           console.error('Error saving comparison:', upsertError)
-          results.push({ listing_id: lid, success: false, error: 'Failed to save comparison' })
-          continue
+          return { listing_id: lid, success: false, error: 'Failed to save comparison' }
         }
 
-        results.push({ listing_id: lid, success: true, score })
-
-        // Small delay between listings to avoid rate limits
-        if (listingIds.length > 1) {
-          await new Promise(resolve => setTimeout(resolve, 500))
-        }
+        return { listing_id: lid, success: true, score }
 
       } catch (listingError) {
         console.error(`Error processing listing ${lid}:`, listingError)
-        results.push({ listing_id: lid, success: false, error: String(listingError) })
+        return { listing_id: lid, success: false, error: String(listingError) }
+      }
+      }))
+      
+      // Add batch results to overall results
+      results.push(...batchResults)
+
+      // Small delay between batches to avoid rate limits
+      if (i + batchSize < listingIds.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
       }
     }
 

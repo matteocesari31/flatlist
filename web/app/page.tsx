@@ -555,10 +555,10 @@ export default function Home() {
 
       // Real-time subscriptions will automatically update the comparisons as they complete
       // Set a timeout to stop the "evaluating" state after a reasonable time
-      // (60 seconds should be enough for most listings to be processed)
+      // The evaluations will continue in the background and update via real-time subscription
       setTimeout(() => {
         setIsEvaluatingListings(false)
-      }, 60000)
+      }, 30000) // 30 seconds - enough time for the first batch to complete
 
     } catch (error) {
       setIsEvaluatingListings(false)

@@ -735,9 +735,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                         {comparisonSummary ? (
                           <p className="text-sm text-gray-600 leading-relaxed">{comparisonSummary}</p>
                         ) : matchScore !== undefined ? (
-                          <p className="text-sm text-gray-500 italic">Generating comparison summary...</p>
+                          <p className="text-sm text-gray-500 italic">Comparison complete. Summary being generated...</p>
                         ) : (
-                          <p className="text-sm text-gray-500 italic">Evaluating this listing against your dream apartment...</p>
+                          <p className="text-sm text-gray-500 italic">AI is evaluating this listing. This may take a moment...</p>
                         )}
                       </div>
                     </div>
