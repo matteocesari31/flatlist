@@ -1476,7 +1476,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black text-white">
       <header className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl rounded-[30px] backdrop-blur-md bg-black/40 border border-white/20 shadow-xl" style={{ backdropFilter: 'blur(12px)' }}>
         <div className="w-full px-6 sm:px-8 py-2.5">
           <div className="flex items-center">
@@ -1511,10 +1511,10 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setShowHelpPopover(!showHelpPopover)}
-                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
+                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
                   title="Help & Feedback"
                 >
-                  <MessageCircle className="w-5 h-5" strokeWidth={2} style={{ color: '#697284' }} />
+                  <MessageCircle className="w-5 h-5" strokeWidth={2} />
                 </button>
                 
                 {/* Help Popover */}
@@ -1633,9 +1633,9 @@ export default function Home() {
 
       <main className={`w-full px-6 sm:px-8 pt-8 pb-24 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
-          <div className="bg-white rounded-[30px] shadow-sm p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">Let's start your hunt.</h2>
-            <p className="text-black mb-8">
+          <div className="bg-gray-900 rounded-[30px] shadow-sm p-8 text-center border border-gray-800">
+            <h2 className="text-xl font-semibold mb-2 text-white">Let's start your hunt.</h2>
+            <p className="text-gray-300 mb-8">
               Your collection is looking a little empty.<br />
               Install our extension to save listings from any website in one click.
             </p>
@@ -1643,7 +1643,7 @@ export default function Home() {
               href="https://chromewebstore.google.com/detail/flatlist/jfgepfpkigigbkfobopoiidcjjofpbkj"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-black text-white px-6 py-3 rounded-[30px] hover:bg-gray-800 transition-colors font-medium"
+              className="inline-block bg-white text-black px-6 py-3 rounded-[30px] hover:bg-gray-200 transition-colors font-medium"
             >
               Install the Chrome Extension
             </a>
@@ -1654,7 +1654,7 @@ export default function Home() {
             <div className="mb-4">
               {searchQuery || confirmedLocation ? (
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-xl font-semibold text-white">
                     Search Results ({listings.length})
                   </h2>
                 </div>
@@ -1670,19 +1670,19 @@ export default function Home() {
                           onChange={(e) => setTempCatalogName(e.target.value)}
                           onKeyDown={handleCatalogNameKeyDown}
                           onBlur={handleSaveCatalogName}
-                          className="text-xl font-semibold bg-transparent border-b-2 border-[#FF5C5C] outline-none px-0 py-0"
+                          className="text-xl font-semibold bg-transparent border-b-2 border-[#FF5C5C] outline-none px-0 py-0 text-white"
                           style={{ width: `${Math.max(tempCatalogName.length, 8)}ch` }}
                         />
                       ) : (
                         <h2 
-                          className="text-xl font-semibold cursor-pointer hover:text-gray-600 transition-colors"
+                          className="text-xl font-semibold cursor-pointer hover:text-gray-400 transition-colors text-white"
                           onClick={handleStartEditingCatalogName}
                           title="Click to rename"
                         >
                           {catalogName}
                         </h2>
                       )}
-                      <span className="text-xl font-semibold text-gray-500">({allListings.length})</span>
+                      <span className="text-xl font-semibold text-gray-400">({allListings.length})</span>
                     </div>
                     {/* Profile icons, add button, and refresh button - all in one row */}
                     <div className="flex items-center justify-between gap-2 mt-2 w-full">
@@ -1754,7 +1754,7 @@ export default function Home() {
                                 setShowUpgradeModal(true)
                               }
                             }}
-                            className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                            className="w-8 h-8 rounded-full border border-gray-600 bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1782,7 +1782,7 @@ export default function Home() {
                           // Trigger animation by updating key
                           setRefreshKey(prev => prev + 1)
                         }}
-                        className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors flex-shrink-0"
+                        className="w-8 h-8 rounded-full border border-gray-600 bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors flex-shrink-0"
                         title="Refresh"
                       >
                         <svg
@@ -2018,7 +2018,7 @@ export default function Home() {
               </div>
             ) : listings.length === 0 && searchQuery ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">No listings match your search</p>
+                <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
               <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
@@ -2087,23 +2087,23 @@ export default function Home() {
       {/* Remove Member Confirmation Modal */}
       {memberToRemove && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/50 p-4"
           onClick={() => setMemberToRemove(null)}
         >
           <div
-            className="bg-white rounded-[20px] max-w-sm w-full p-6 shadow-2xl"
+            className="bg-gray-900 rounded-[20px] max-w-sm w-full p-6 shadow-2xl border border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-900/50 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Collaborator</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Remove Collaborator</h3>
+              <p className="text-gray-300 mb-6">
                 Are you sure you want to remove{' '}
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-white">
                   {memberToRemove.email || 'this collaborator'}
                 </span>
                 {' '}from this catalog? They will lose access to all listings.
@@ -2111,7 +2111,7 @@ export default function Home() {
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={() => setMemberToRemove(null)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="px-4 py-2 text-gray-200 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors font-medium"
                 >
                   Cancel
                 </button>

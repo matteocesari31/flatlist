@@ -149,7 +149,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       case 'done':
         return null
       default:
-        return <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded">Pending</span>
+        return <span className="text-xs px-2 py-1 bg-gray-700 text-gray-200 rounded">Pending</span>
     }
   }
 
@@ -422,10 +422,10 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             {/* Price - from metadata or extracted */}
             {(metadata?.price || basicInfo?.price) && (
               <div className="flex items-center justify-between">
-                <div className="text-xl font-bold">
+                <div className="text-xl font-bold text-white">
                   {formatPrice(metadata?.price || basicInfo?.price, isRental(), metadata?.currency || null)}
                   {!metadata && basicInfo?.price && (
-                    <span className="text-xs font-normal text-gray-500 ml-2">(extracted)</span>
+                    <span className="text-xs font-normal text-gray-400 ml-2">(extracted)</span>
                   )}
                 </div>
                 {/* Action buttons aligned with price */}
@@ -437,7 +437,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                         e.stopPropagation()
                         setShowNotesPopover(!showNotesPopover)
                       }}
-                      className="relative p-1.5 rounded-full transition-colors text-gray-400 hover:text-[#4A4D55]"
+                      className="relative p-1.5 rounded-full transition-colors text-gray-400 hover:text-gray-200"
                       title="Notes"
                       aria-label="Notes"
                     >
@@ -450,7 +450,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                   {onDelete && (
                     <button
                       onClick={handleDelete}
-                      className="p-1.5 rounded-full text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-1.5 rounded-full text-gray-400 hover:text-red-400 transition-colors"
                       title="Delete listing"
                       aria-label="Delete listing"
                     >
@@ -476,7 +476,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             
             {/* Address - from metadata or extracted */}
             {(metadata?.address || basicInfo?.address) && (
-              <div className="text-sm text-black">
+              <div className="text-sm text-gray-200">
                 {metadata?.address || basicInfo?.address}
                 {!metadata && basicInfo?.address && (
                   <span className="text-xs text-gray-500 ml-1">(from title)</span>
@@ -489,28 +489,28 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
               <div className="mt-2 space-y-2">
                 <div className="flex flex-wrap gap-2">
                   {metadata.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs">{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                   )}
                   {metadata.bedrooms !== null && metadata.bedrooms !== undefined && metadata.bedrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
                       <BedDouble className="w-3.5 h-3.5" />
                       {metadata.bedrooms}
                     </span>
                   )}
                   {metadata.bathrooms !== null && metadata.bathrooms !== undefined && metadata.bathrooms > 0 && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
                       <Bath className="w-3.5 h-3.5" />
                       {metadata.bathrooms}
                     </span>
                   )}
                   {metadata.condo_fees && (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs flex items-center gap-1">
+                    <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs flex items-center gap-1">
                       <Building className="w-3.5 h-3.5" />
                       {formatPrice(metadata.condo_fees, false, metadata.currency)}/mo
                     </span>
                   )}
                   {listing.distanceFromReference !== undefined && (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-normal">
+                    <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs font-normal">
                       {listing.distanceFromReference < 1 
                         ? `${Math.round(listing.distanceFromReference * 1000)} m away`
                         : `${listing.distanceFromReference.toFixed(1)} km away`
@@ -524,7 +524,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             {/* Show distance pill even without metadata */}
             {!metadata && listing.distanceFromReference !== undefined && (
               <div className="mt-2">
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-normal">
+                <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs font-normal">
                   {listing.distanceFromReference < 1 
                     ? `${Math.round(listing.distanceFromReference * 1000)} m away`
                     : `${listing.distanceFromReference.toFixed(1)} km away`
@@ -535,7 +535,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
             {/* Show enrichment status message if pending/processing */}
             {!metadata && status !== 'failed' && (
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-gray-400 mt-2">
                 {status === 'processing' 
                   ? 'AI enrichment in progress...'
                   : 'Waiting for AI enrichment...'}
