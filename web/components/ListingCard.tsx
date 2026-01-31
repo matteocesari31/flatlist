@@ -398,7 +398,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
         {/* Match Score Badge */}
         {hasDreamApartment && matchScore !== undefined && (
           <div 
-            className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/40 border border-white/20 shadow-lg"
+            className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
               title={`Match score: ${matchScore}%`}
               style={{ backdropFilter: 'blur(12px)' }}
             >

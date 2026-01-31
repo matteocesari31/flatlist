@@ -1476,7 +1476,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#0D0D0D] text-white">
       <header className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl rounded-[30px] backdrop-blur-md bg-black/40 border border-white/20 shadow-xl" style={{ backdropFilter: 'blur(12px)' }}>
         <div className="w-full px-6 sm:px-8 py-2.5">
           <div className="flex items-center">
