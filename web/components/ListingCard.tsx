@@ -376,42 +376,40 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
       <div
         onClick={onViewDetails || onClick}
-        className="rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white relative flex flex-col"
+        className="cursor-pointer flex flex-col"
       >
       {/* Image section (on top) */}
-      <div className="px-4 pt-4">
-        <div className="relative">
-          {thumbnailImage ? (
-            <div className="w-full bg-gray-100 overflow-hidden rounded-[15px]">
-              <img
-                src={thumbnailImage}
-                alt={listing.title || 'Listing image'}
-                className="w-full h-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
-            </div>
-          ) : (
-            <div className="w-full aspect-[4/3] bg-gray-100 rounded-[15px]"></div>
-          )}
-          
-          {/* Match Score Badge */}
-          {hasDreamApartment && matchScore !== undefined && (
-            <div 
-              className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-white/20 border border-white/30 shadow-lg"
-              title={`Match score: ${matchScore}%`}
-              style={{ backdropFilter: 'blur(12px)' }}
-            >
-              <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore)}`}></div>
-              <span className="text-sm font-semibold text-gray-700">{matchScore}</span>
-            </div>
-          )}
-        </div>
+      <div className="relative">
+        {thumbnailImage ? (
+          <div className="w-full bg-gray-100 overflow-hidden rounded-xl">
+            <img
+              src={thumbnailImage}
+              alt={listing.title || 'Listing image'}
+              className="w-full h-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-full aspect-[4/3] bg-gray-100 rounded-xl"></div>
+        )}
+        
+        {/* Match Score Badge */}
+        {hasDreamApartment && matchScore !== undefined && (
+          <div 
+            className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-white/20 border border-white/30 shadow-lg"
+            title={`Match score: ${matchScore}%`}
+            style={{ backdropFilter: 'blur(12px)' }}
+          >
+            <div className={`w-2 h-2 rounded-full ${getScoreColor(matchScore)}`}></div>
+            <span className="text-sm font-semibold text-gray-700">{matchScore}</span>
+          </div>
+        )}
       </div>
 
-      {/* Content section (below image) */}
-      <div className="p-4 flex flex-col">
+      {/* Info (below image, no card) */}
+      <div className="pt-3 flex flex-col">
         {getStatusBadge() && (
           <div className="mb-2">
             {getStatusBadge()}
