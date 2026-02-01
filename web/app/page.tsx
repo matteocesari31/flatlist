@@ -1492,7 +1492,7 @@ export default function Home() {
               className="flex-shrink-0 cursor-pointer"
               title="Clear search"
             >
-              <img src="/flatlist outline logo.svg" alt="flatlist" className="h-10" />
+              <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
             </button>
 
             {/* Center: Plus | Dream Home | Refresh */}
