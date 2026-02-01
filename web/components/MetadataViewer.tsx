@@ -576,16 +576,16 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
         opacity: isAnimating ? 0 : 1,
-        transition: 'opacity 300ms ease-out'
+        transition: 'opacity 200ms ease-out'
       }}
       onClick={onClose}
     >
       <div
         className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         style={{
-          transform: isAnimating ? 'scale(0.8)' : 'scale(1)',
+          transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
-          transition: 'transform 300ms ease-out, opacity 300ms ease-out'
+          transition: 'transform 200ms ease-out, opacity 200ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >

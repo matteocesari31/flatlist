@@ -41,7 +41,7 @@ export default function DreamApartmentModal({
       // Focus textarea after animation completes
       const focusTimer = setTimeout(() => {
         textareaRef.current?.focus()
-      }, 400)
+      }, 250)
       
       return () => {
         clearTimeout(timer)
@@ -121,16 +121,16 @@ export default function DreamApartmentModal({
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
         opacity: isAnimating ? 0 : 1,
-        transition: 'opacity 300ms ease-out'
+        transition: 'opacity 200ms ease-out'
       }}
       onClick={onClose}
     >
       <div
         className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
         style={{
-          transform: isAnimating ? 'scale(0.8)' : 'scale(1)',
+          transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
-          transition: 'transform 300ms ease-out, opacity 300ms ease-out'
+          transition: 'transform 200ms ease-out, opacity 200ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >
