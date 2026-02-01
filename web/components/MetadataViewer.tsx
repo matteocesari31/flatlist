@@ -103,6 +103,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       return () => clearTimeout(timer)
     } else {
       document.body.style.overflow = 'unset'
+      // Reset animation state when modal closes so it's ready for next open
+      setIsAnimating(true)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -602,7 +604,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
         className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         style={{
           ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
-          transition: 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms ease-out'
+          transition: 'transform 400ms ease-out, opacity 400ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >

@@ -52,6 +52,8 @@ export default function DreamApartmentModal({
       }
     } else {
       document.body.style.overflow = 'unset'
+      // Reset animation state when modal closes so it's ready for next open
+      setIsAnimating(true)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -148,7 +150,7 @@ export default function DreamApartmentModal({
         className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
         style={{
           ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
-          transition: 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms ease-out'
+          transition: 'transform 400ms ease-out, opacity 400ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >
