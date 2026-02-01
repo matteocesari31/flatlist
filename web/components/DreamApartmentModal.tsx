@@ -36,14 +36,19 @@ export default function DreamApartmentModal({
       setSuccess(false)
       setIsAnimating(true)
       
+      // Use requestAnimationFrame to ensure initial style is painted before animating
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(false)
+        })
+      })
+      
       // Focus textarea after animation
       setTimeout(() => {
         textareaRef.current?.focus()
-        setIsAnimating(false)
       }, 300)
     } else {
       document.body.style.overflow = 'unset'
-      setIsAnimating(false)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -111,7 +116,7 @@ export default function DreamApartmentModal({
 
   // Calculate initial position for animation
   const getInitialStyle = () => {
-    if (!triggerPosition || !isAnimating) return {}
+    if (!triggerPosition) return { opacity: 0, transform: 'scale(0.95)' }
     
     const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
     const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080

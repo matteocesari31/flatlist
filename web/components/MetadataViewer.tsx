@@ -94,10 +94,15 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
     if (isOpen) {
       document.body.style.overflow = 'hidden'
       setIsAnimating(true)
-      setTimeout(() => setIsAnimating(false), 300)
+      
+      // Use requestAnimationFrame to ensure initial style is painted before animating
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(false)
+        })
+      })
     } else {
       document.body.style.overflow = 'unset'
-      setIsAnimating(false)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -568,7 +573,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
   // Calculate initial position for animation
   const getInitialStyle = () => {
-    if (!triggerPosition || !isAnimating) return {}
+    if (!triggerPosition) return { opacity: 0, transform: 'scale(0.95)' }
     
     const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
     const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080
