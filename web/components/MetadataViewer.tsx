@@ -616,15 +616,47 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                     }}
                   />
                   
-                  {/* Match Score Badge - in image */}
-                  {hasDreamApartment && matchScore !== undefined && (
-                    <div 
-                      className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
-                      title={`Match score: ${matchScore}%`}
-                      style={{ backdropFilter: 'blur(12px)' }}
-                    >
-                      <div className={`w-1.5 h-1.5 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
-                      <span className="text-sm font-semibold text-white">{matchScore}</span>
+                  {/* AI Score + Summary overlay - bottom left */}
+                  {hasDreamApartment && (
+                    <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md flex flex-col gap-2">
+                      {/* AI Score tag - on top of panel */}
+                      {matchScore !== undefined && (
+                        <div 
+                          className="self-start px-4 py-2 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
+                          title={`Match score: ${matchScore}%`}
+                          style={{ backdropFilter: 'blur(12px)' }}
+                        >
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
+                          <span className="text-base font-semibold text-white">AI Score: {matchScore}</span>
+                        </div>
+                      )}
+                      {/* Glassmorphism panel with summary */}
+                      <div 
+                        className="backdrop-blur-md bg-black/50 border border-white/15 rounded-[20px] p-4 shadow-lg"
+                        style={{ backdropFilter: 'blur(12px)' }}
+                      >
+                        {comparisonSummary ? (
+                          <p className="text-sm text-white leading-relaxed">{comparisonSummary}</p>
+                        ) : matchScore !== undefined ? (
+                          <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
+                        ) : isEvaluatingListing ? (
+                          <p className="text-sm text-gray-300">Evaluating this listing… usually 15–30 seconds.</p>
+                        ) : onEvaluateListing ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-300">No score yet. Evaluate this listing to see how it matches your dream apartment.</p>
+                            <button
+                              type="button"
+                              onClick={onEvaluateListing}
+                              className="inline-flex items-center gap-2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              Get match score
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">AI is evaluating this listing. This may take a moment…</p>
+                        )}
+                      </div>
                     </div>
                   )}
                   
@@ -734,34 +766,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 </div>
               )}
               
-              {/* Dream Apartment Match or AI Inferred Attributes */}
+              {/* Dream Apartment: only show "Set up" prompt when not configured (summary/score are on image overlay) */}
               <div className="flex-shrink-0 relative">
-                {hasDreamApartment ? (
-                  // Show Dream Apartment Comparison - no card, just text
-                  <div>
-                    {comparisonSummary ? (
-                      <p className="text-base text-white leading-relaxed">{comparisonSummary}</p>
-                    ) : matchScore !== undefined ? (
-                      <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
-                    ) : isEvaluatingListing ? (
-                      <p className="text-sm text-gray-300">Evaluating this listing… usually 15–30 seconds.</p>
-                    ) : onEvaluateListing ? (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-300">No score yet. Evaluate this listing to see how it matches your dream apartment.</p>
-                        <button
-                          type="button"
-                          onClick={onEvaluateListing}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                          <Sparkles className="w-4 h-4" />
-                          Get match score
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-400 italic">AI is evaluating this listing. This may take a moment…</p>
-                    )}
-                  </div>
-                ) : (
+                {!hasDreamApartment && (
                   // Show prompt to set up dream apartment (when no dream apartment is set)
                   <div className="bg-gray-800/50 rounded-[20px] p-5 border border-gray-700/50">
                     <div className="flex items-center gap-4">
