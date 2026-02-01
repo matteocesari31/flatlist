@@ -21,7 +21,6 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
 
     const init = async () => {
       const mapboxgl = (await import('mapbox-gl')).default
-      await import('mapbox-gl/dist/mapbox-gl.css')
 
       if (!mounted || !containerRef.current) return
 
