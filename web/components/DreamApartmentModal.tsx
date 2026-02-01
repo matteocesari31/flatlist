@@ -9,6 +9,7 @@ interface DreamApartmentModalProps {
   initialDescription: string | null
   onSave: (description: string) => Promise<void>
   isEvaluating?: boolean
+  triggerPosition?: { x: number; y: number }
 }
 
 export default function DreamApartmentModal({ 
@@ -16,13 +17,16 @@ export default function DreamApartmentModal({
   onClose, 
   initialDescription, 
   onSave,
-  isEvaluating = false
+  isEvaluating = false,
+  triggerPosition
 }: DreamApartmentModalProps) {
   const [description, setDescription] = useState(initialDescription || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -30,12 +34,16 @@ export default function DreamApartmentModal({
       setDescription(initialDescription || '')
       setError(null)
       setSuccess(false)
-      // Focus textarea after modal opens
+      setIsAnimating(true)
+      
+      // Focus textarea after animation
       setTimeout(() => {
         textareaRef.current?.focus()
-      }, 100)
+        setIsAnimating(false)
+      }, 300)
     } else {
       document.body.style.overflow = 'unset'
+      setIsAnimating(false)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -101,13 +109,33 @@ export default function DreamApartmentModal({
 
   if (!isOpen) return null
 
+  // Calculate initial position for animation
+  const getInitialStyle = () => {
+    if (!triggerPosition || !isAnimating) return {}
+    
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
+    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080
+    
+    // Calculate translate values to position modal at trigger point
+    const translateX = triggerPosition.x - windowWidth / 2
+    const translateY = triggerPosition.y - windowHeight / 2
+    
+    return {
+      transform: `translate(${translateX}px, ${translateY}px) scale(0.1)`,
+      opacity: 0
+    }
+  }
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 transition-opacity duration-300"
+      style={{ opacity: isAnimating ? 0 : 1 }}
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative animate-in zoom-in-95 duration-200"
+        ref={modalRef}
+        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative transition-all duration-300 ease-out"
+        style={isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }}
         onClick={(e) => e.stopPropagation()}
       >
         <button

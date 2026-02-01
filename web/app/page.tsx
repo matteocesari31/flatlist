@@ -38,6 +38,7 @@ export default function Home() {
   const [searchResultCount, setSearchResultCount] = useState<number>(0)
   const [confirmedLocation, setConfirmedLocation] = useState<ConfirmedLocation | null>(null)
   const [selectedListing, setSelectedListing] = useState<ListingWithMetadata | null>(null)
+  const [listingClickPosition, setListingClickPosition] = useState<{ x: number; y: number } | undefined>(undefined)
   const [catalogName, setCatalogName] = useState('')
   const [isEditingCatalogName, setIsEditingCatalogName] = useState(false)
   const [tempCatalogName, setTempCatalogName] = useState('')
@@ -55,6 +56,7 @@ export default function Home() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeModalTrigger, setUpgradeModalTrigger] = useState<'invite' | 'listings' | 'general'>('general')
   const [showDreamApartmentModal, setShowDreamApartmentModal] = useState(false)
+  const [dreamButtonClickPosition, setDreamButtonClickPosition] = useState<{ x: number; y: number } | undefined>(undefined)
   const [dreamApartmentDescription, setDreamApartmentDescription] = useState<string | null>(null)
   const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
@@ -975,7 +977,14 @@ export default function Home() {
     router.push('/auth')
   }
 
-  const handleViewDetails = (listing: ListingWithMetadata) => {
+  const handleViewDetails = (listing: ListingWithMetadata, event?: React.MouseEvent) => {
+    if (event) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+      setListingClickPosition({ 
+        x: rect.left + rect.width / 2, 
+        y: rect.top + rect.height / 2 
+      })
+    }
     setSelectedListing(listing)
   }
 
@@ -1516,7 +1525,10 @@ export default function Home() {
               </button>
               {/* Dream Apartment Button */}
               <button
-                onClick={() => setShowDreamApartmentModal(true)}
+                onClick={() => {
+                  setShowDreamApartmentModal(true)
+                  setDreamButtonClickPosition({ x: window.innerWidth / 2, y: window.innerHeight - 60 })
+                }}
                 className="h-[52px] w-[52px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
                 title="My Dream Apartment"
               >
@@ -1917,7 +1929,7 @@ export default function Home() {
                   <div key={listing.id} className="break-inside-avoid mb-10 sm:mb-12">
                     <ListingCard
                       listing={listing}
-                      onViewDetails={() => handleViewDetails(listing)}
+                      onViewDetails={(event) => handleViewDetails(listing, event)}
                       onSaveNote={handleSaveNote}
                       onDelete={handleDelete}
                       onRetryEnrichment={handleRetryEnrichment}
@@ -1944,6 +1956,7 @@ export default function Home() {
         onOpenDreamApartment={() => setShowDreamApartmentModal(true)}
         onEvaluateListing={handleEvaluateListing}
         isEvaluatingListing={!!selectedListing && evaluatingListingId === selectedListing.id}
+        triggerPosition={listingClickPosition}
       />
 
       {/* Invite Collaborator Modal */}
@@ -1973,6 +1986,7 @@ export default function Home() {
         initialDescription={dreamApartmentDescription}
         onSave={saveDreamApartment}
         isEvaluating={isEvaluatingListings}
+        triggerPosition={dreamButtonClickPosition}
       />
 
       {/* Remove Member Confirmation Modal */}

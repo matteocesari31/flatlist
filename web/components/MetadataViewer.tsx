@@ -15,6 +15,7 @@ interface MetadataViewerProps {
   onOpenDreamApartment?: () => void
   onEvaluateListing?: () => void
   isEvaluatingListing?: boolean
+  triggerPosition?: { x: number; y: number }
 }
 
 // Helper function to get score color based on value
@@ -28,13 +29,15 @@ function getScoreColor(score: number): { bg: string; glow: string } {
   }
 }
 
-export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false }: MetadataViewerProps) {
+export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false, triggerPosition }: MetadataViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
+  const [isAnimating, setIsAnimating] = useState(false)
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const rightColumnRef = useRef<HTMLDivElement>(null)
   const cardSelectorButtonRef = useRef<HTMLButtonElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
   
   // Load card visibility preferences from localStorage
   const [visibleCards, setVisibleCards] = useState<Set<string>>(() => {
@@ -90,8 +93,11 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      setIsAnimating(true)
+      setTimeout(() => setIsAnimating(false), 300)
     } else {
       document.body.style.overflow = 'unset'
+      setIsAnimating(false)
     }
     return () => {
       document.body.style.overflow = 'unset'
@@ -560,13 +566,33 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
   if (!isOpen || !listing) return null
 
+  // Calculate initial position for animation
+  const getInitialStyle = () => {
+    if (!triggerPosition || !isAnimating) return {}
+    
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
+    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080
+    
+    // Calculate translate values to position modal at trigger point
+    const translateX = triggerPosition.x - windowWidth / 2
+    const translateY = triggerPosition.y - windowHeight / 2
+    
+    return {
+      transform: `translate(${translateX}px, ${translateY}px) scale(0.1)`,
+      opacity: 0
+    }
+  }
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 transition-opacity duration-300"
+      style={{ opacity: isAnimating ? 0 : 1 }}
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200"
+        ref={modalRef}
+        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative transition-all duration-300 ease-out"
+        style={isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
