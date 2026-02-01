@@ -9,7 +9,6 @@ interface DreamApartmentModalProps {
   initialDescription: string | null
   onSave: (description: string) => Promise<void>
   isEvaluating?: boolean
-  triggerPosition?: { x: number; y: number }
 }
 
 export default function DreamApartmentModal({ 
@@ -17,8 +16,7 @@ export default function DreamApartmentModal({
   onClose, 
   initialDescription, 
   onSave,
-  isEvaluating = false,
-  triggerPosition
+  isEvaluating = false
 }: DreamApartmentModalProps) {
   const [description, setDescription] = useState(initialDescription || '')
   const [loading, setLoading] = useState(false)
@@ -26,7 +24,6 @@ export default function DreamApartmentModal({
   const [success, setSuccess] = useState(false)
   const [isAnimating, setIsAnimating] = useState(true)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -119,38 +116,21 @@ export default function DreamApartmentModal({
 
   if (!isOpen) return null
 
-  // Calculate initial position for animation
-  const getInitialStyle = () => {
-    if (!triggerPosition) return { opacity: 0, transform: 'scale(0.95)' }
-    
-    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
-    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080
-    
-    // Calculate translate values to position modal at trigger point
-    const translateX = triggerPosition.x - windowWidth / 2
-    const translateY = triggerPosition.y - windowHeight / 2
-    
-    return {
-      transform: `translate(${translateX}px, ${translateY}px) scale(0.6)`,
-      opacity: 0
-    }
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
         opacity: isAnimating ? 0 : 1,
-        transition: 'opacity 400ms ease-out'
+        transition: 'opacity 300ms ease-out'
       }}
       onClick={onClose}
     >
       <div
-        ref={modalRef}
         className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
         style={{
-          ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
-          transition: 'transform 400ms ease-out, opacity 400ms ease-out'
+          transform: isAnimating ? 'scale(0.8)' : 'scale(1)',
+          opacity: isAnimating ? 0 : 1,
+          transition: 'transform 300ms ease-out, opacity 300ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >

@@ -8,8 +8,8 @@ import { BedDouble, Bath, Building, FileText } from 'lucide-react'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
-  onClick?: (event?: React.MouseEvent) => void
-  onViewDetails?: (event?: React.MouseEvent) => void
+  onClick?: () => void
+  onViewDetails?: () => void
   onSaveNote?: (listingId: string, note: string) => void
   onDelete?: (listingId: string) => void
   onRetryEnrichment?: (listingId: string) => void
@@ -375,10 +375,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       )}
 
       <div
-        onClick={(e) => {
-          const handler = onViewDetails || onClick
-          if (handler) handler(e)
-        }}
+        onClick={onViewDetails || onClick}
         className="cursor-pointer flex flex-col"
       >
       {/* Image section (on top) */}

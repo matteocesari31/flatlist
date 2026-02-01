@@ -15,7 +15,6 @@ interface MetadataViewerProps {
   onOpenDreamApartment?: () => void
   onEvaluateListing?: () => void
   isEvaluatingListing?: boolean
-  triggerPosition?: { x: number; y: number }
 }
 
 // Helper function to get score color based on value
@@ -29,7 +28,7 @@ function getScoreColor(score: number): { bg: string; glow: string } {
   }
 }
 
-export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false, triggerPosition }: MetadataViewerProps) {
+export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false }: MetadataViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
@@ -37,7 +36,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const rightColumnRef = useRef<HTMLDivElement>(null)
   const cardSelectorButtonRef = useRef<HTMLButtonElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
   
   // Load card visibility preferences from localStorage
   const [visibleCards, setVisibleCards] = useState<Set<string>>(() => {
@@ -573,38 +571,21 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
   if (!isOpen || !listing) return null
 
-  // Calculate initial position for animation
-  const getInitialStyle = () => {
-    if (!triggerPosition) return { opacity: 0, transform: 'scale(0.95)' }
-    
-    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
-    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080
-    
-    // Calculate translate values to position modal at trigger point
-    const translateX = triggerPosition.x - windowWidth / 2
-    const translateY = triggerPosition.y - windowHeight / 2
-    
-    return {
-      transform: `translate(${translateX}px, ${translateY}px) scale(0.6)`,
-      opacity: 0
-    }
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
         opacity: isAnimating ? 0 : 1,
-        transition: 'opacity 400ms ease-out'
+        transition: 'opacity 300ms ease-out'
       }}
       onClick={onClose}
     >
       <div
-        ref={modalRef}
         className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         style={{
-          ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
-          transition: 'transform 400ms ease-out, opacity 400ms ease-out'
+          transform: isAnimating ? 'scale(0.8)' : 'scale(1)',
+          opacity: isAnimating ? 0 : 1,
+          transition: 'transform 300ms ease-out, opacity 300ms ease-out'
         }}
         onClick={(e) => e.stopPropagation()}
       >
