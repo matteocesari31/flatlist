@@ -35,7 +35,7 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         container: containerRef.current,
         style: 'mapbox://styles/mapbox/standard',
         center: [longitude!, latitude!],
-        zoom: 18,
+        zoom: 16,
         pitch: 60,
         bearing: -17,
       })
