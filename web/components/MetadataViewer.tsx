@@ -4,6 +4,7 @@ import { ListingWithMetadata } from '@/lib/types'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis, House, Sparkles } from 'lucide-react'
+import ListingMap from './ListingMap'
 
 interface MetadataViewerProps {
   listing: ListingWithMetadata | null
@@ -763,6 +764,17 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                   >
                     Go to {getWebsiteName(listing.source_url)}
                   </a>
+                </div>
+              )}
+
+              {/* Mapbox 3D map with listing pin */}
+              {metadata?.latitude != null && metadata?.longitude != null && (
+                <div className="flex-shrink-0 w-full mt-4">
+                  <ListingMap
+                    latitude={metadata.latitude}
+                    longitude={metadata.longitude}
+                    className="w-full h-[200px]"
+                  />
                 </div>
               )}
               
