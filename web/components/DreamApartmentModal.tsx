@@ -126,7 +126,7 @@ export default function DreamApartmentModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full p-6 pb-4 shadow-2xl border border-gray-700 relative"
         style={{
           transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
@@ -190,7 +190,7 @@ export default function DreamApartmentModal({
                 id="dream-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-0 py-3 border-0 bg-transparent text-white focus:outline-none focus:ring-0 resize-none min-h-[200px] placeholder-gray-500"
+                className="w-full px-0 py-3 border-0 bg-transparent text-white text-base focus:outline-none focus:ring-0 resize-none min-h-[200px] placeholder-gray-500"
                 placeholder="Describe your ideal apartment in your own words. The AI will compare each listing to your vision."
                 disabled={loading}
                 rows={4}
