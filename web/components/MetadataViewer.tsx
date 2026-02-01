@@ -558,13 +558,15 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
   if (!isOpen || !listing) return null
 
+  if (!isOpen || !listing) return null
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
