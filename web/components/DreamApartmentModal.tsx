@@ -190,7 +190,7 @@ export default function DreamApartmentModal({
                 id="dream-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-0 py-3 border-0 bg-transparent text-white text-base focus:outline-none focus:ring-0 resize-none min-h-[200px] placeholder-gray-500"
+                className="w-full px-0 py-3 border-0 bg-transparent text-white text-[20px] focus:outline-none focus:ring-0 resize-none min-h-[200px] placeholder-gray-500"
                 placeholder="Describe your ideal apartment in your own words. The AI will compare each listing to your vision."
                 disabled={loading}
                 rows={4}
