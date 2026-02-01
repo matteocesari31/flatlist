@@ -33,7 +33,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(true)
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const rightColumnRef = useRef<HTMLDivElement>(null)
   const cardSelectorButtonRef = useRef<HTMLButtonElement>(null)
@@ -95,12 +95,12 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       document.body.style.overflow = 'hidden'
       setIsAnimating(true)
       
-      // Use requestAnimationFrame to ensure initial style is painted before animating
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsAnimating(false)
-        })
-      })
+      // Small delay to ensure the initial state is rendered, then start animation
+      const timer = setTimeout(() => {
+        setIsAnimating(false)
+      }, 50)
+      
+      return () => clearTimeout(timer)
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -590,14 +590,20 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 transition-opacity duration-300"
-      style={{ opacity: isAnimating ? 0 : 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+      style={{ 
+        opacity: isAnimating ? 0 : 1,
+        transition: 'opacity 400ms ease-out'
+      }}
       onClick={onClose}
     >
       <div
         ref={modalRef}
-        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative transition-all duration-300 ease-out"
-        style={isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }}
+        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
+        style={{
+          ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
+          transition: 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms ease-out'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}

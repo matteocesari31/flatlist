@@ -24,7 +24,7 @@ export default function DreamApartmentModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(true)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -36,17 +36,20 @@ export default function DreamApartmentModal({
       setSuccess(false)
       setIsAnimating(true)
       
-      // Use requestAnimationFrame to ensure initial style is painted before animating
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsAnimating(false)
-        })
-      })
+      // Small delay to ensure the initial state is rendered, then start animation
+      const timer = setTimeout(() => {
+        setIsAnimating(false)
+      }, 50)
       
-      // Focus textarea after animation
-      setTimeout(() => {
+      // Focus textarea after animation completes
+      const focusTimer = setTimeout(() => {
         textareaRef.current?.focus()
-      }, 300)
+      }, 400)
+      
+      return () => {
+        clearTimeout(timer)
+        clearTimeout(focusTimer)
+      }
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -133,14 +136,20 @@ export default function DreamApartmentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4 transition-opacity duration-300"
-      style={{ opacity: isAnimating ? 0 : 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+      style={{ 
+        opacity: isAnimating ? 0 : 1,
+        transition: 'opacity 400ms ease-out'
+      }}
       onClick={onClose}
     >
       <div
         ref={modalRef}
-        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative transition-all duration-300 ease-out"
-        style={isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }}
+        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full min-h-[420px] p-6 shadow-2xl border border-gray-700 relative"
+        style={{
+          ...(isAnimating ? getInitialStyle() : { transform: 'translate(0, 0) scale(1)', opacity: 1 }),
+          transition: 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms ease-out'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
