@@ -767,16 +767,14 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 </div>
               )}
 
-              {/* Mapbox 3D map with listing pin */}
-              {metadata?.latitude != null && metadata?.longitude != null && (
-                <div className="flex-shrink-0 w-full mt-4">
-                  <ListingMap
-                    latitude={metadata.latitude}
-                    longitude={metadata.longitude}
-                    className="w-full h-[200px]"
-                  />
-                </div>
-              )}
+              {/* Mapbox 3D map with listing pin - always show frame; map or placeholder inside */}
+              <div className="flex-shrink-0 w-full mt-4">
+                <ListingMap
+                  latitude={metadata?.latitude ?? null}
+                  longitude={metadata?.longitude ?? null}
+                  className="w-full h-[200px]"
+                />
+              </div>
               
               {/* Dream Apartment: only show "Set up" prompt when not configured (summary/score are on image overlay) */}
               <div className="flex-shrink-0 relative">

@@ -2,20 +2,25 @@
 
 import { useEffect, useRef } from 'react'
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-
 interface ListingMapProps {
-  latitude: number
-  longitude: number
+  latitude: number | null
+  longitude: number | null
   className?: string
 }
 
 export default function ListingMap({ latitude, longitude, className = '' }: ListingMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<{ map: import('mapbox-gl').Map; marker: import('mapbox-gl').Marker } | null>(null)
+  // Read at render so it picks up inlined NEXT_PUBLIC_ value; trim to avoid whitespace issues
+  const token = (() => {
+    const t = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+    return t != null && String(t).trim() !== '' ? String(t).trim() : undefined
+  })()
+
+  const hasCoords = latitude != null && longitude != null && Number.isFinite(latitude) && Number.isFinite(longitude)
 
   useEffect(() => {
-    if (!MAPBOX_ACCESS_TOKEN || !containerRef.current) return
+    if (!token || !hasCoords || !containerRef.current) return
 
     let mounted = true
 
@@ -24,19 +29,19 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
 
       if (!mounted || !containerRef.current) return
 
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
+      mapboxgl.accessToken = token
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
         style: 'mapbox://styles/mapbox/standard',
-        center: [longitude, latitude],
+        center: [longitude!, latitude!],
         zoom: 15,
         pitch: 60,
         bearing: -17,
       })
 
       const marker = new mapboxgl.Marker({ color: '#ef4444' })
-        .setLngLat([longitude, latitude])
+        .setLngLat([longitude!, latitude!])
         .addTo(map)
 
       mapRef.current = { map, marker }
@@ -51,9 +56,17 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         mapRef.current = null
       }
     }
-  }, [latitude, longitude])
+  }, [latitude, longitude, token, hasCoords])
 
-  if (!MAPBOX_ACCESS_TOKEN) {
+  if (!hasCoords) {
+    return (
+      <div className={`rounded-[20px] bg-gray-800/50 border border-gray-700 flex items-center justify-center text-gray-400 text-sm ${className}`} style={{ minHeight: 200 }}>
+        Location not available
+      </div>
+    )
+  }
+
+  if (!token) {
     return (
       <div className={`rounded-[20px] bg-gray-800/50 border border-gray-700 flex items-center justify-center text-gray-400 text-sm ${className}`} style={{ minHeight: 200 }}>
         Add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to show map
