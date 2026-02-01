@@ -722,7 +722,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               </div>
               
               {/* Basic Information - grey text, spaced */}
-              <div className="mt-6">
+              <div className="mt-3">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-400">
                   {metadata?.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
                     <span>{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
