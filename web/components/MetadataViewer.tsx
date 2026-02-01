@@ -585,7 +585,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
     const translateY = triggerPosition.y - windowHeight / 2
     
     return {
-      transform: `translate(${translateX}px, ${translateY}px) scale(0.1)`,
+      transform: `translate(${translateX}px, ${translateY}px) scale(0.6)`,
       opacity: 0
     }
   }
