@@ -631,9 +631,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                           <span className="text-base font-semibold text-white">AI Score: {matchScore}</span>
                         </div>
                       )}
-                      {/* Glassmorphism panel with summary */}
+                      {/* Glassmorphism panel with summary - same color as AI score tag */}
                       <div 
-                        className="backdrop-blur-md bg-black/50 border border-white/15 rounded-[20px] p-4 shadow-lg"
+                        className="backdrop-blur-md bg-black/60 border border-white/15 rounded-[20px] p-4 shadow-lg"
                         style={{ backdropFilter: 'blur(12px)' }}
                       >
                         {comparisonSummary ? (
@@ -772,7 +772,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 <ListingMap
                   latitude={metadata?.latitude ?? null}
                   longitude={metadata?.longitude ?? null}
-                  className="w-full h-[200px]"
+                  className="w-full h-[280px]"
                 />
               </div>
               
