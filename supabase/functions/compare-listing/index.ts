@@ -228,7 +228,7 @@ Your task is to:
    - 41-60: Average match, several preferences met but key ones missing
    - 61-80: Good match, most preferences satisfied
    - 81-100: Excellent match, nearly all preferences satisfied
-4. Write a 2-3 sentence summary explaining HOW this listing compares to the user's vision. Wrap key terms in double asterisks for emphasis (e.g. **within budget**, **two bedrooms**, **wood floors**). Bold the most important matching or missing criteria (preferences met, deal-breakers, standout features).
+4. Write a 2-3 sentence summary. You MUST wrap 4-8 key terms in double asterisks for emphasis. Include: what matches (e.g. **within budget**, **wood floors**, **natural light**), what is missing (e.g. **lacks a balcony**, **not near metro**), and standout facts (e.g. **exceeds budget**, **two bedrooms**). Every summary must contain multiple **keyword** phrases.
 
 Consider ALL aspects the user mentions including:
 - Location preferences (neighborhood, proximity to landmarks, transportation)

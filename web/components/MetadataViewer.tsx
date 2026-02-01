@@ -18,14 +18,45 @@ interface MetadataViewerProps {
   isEvaluatingListing?: boolean
 }
 
-// Parse summary text with **keyword** markup and return React nodes (bold for **...**)
+// Phrases to bold in summaries that don't contain ** markup (fallback for older summaries)
+const SUMMARY_BOLD_PHRASES = [
+  'within budget', 'exceeds the budget', 'exceeds your budget', 'above your budget',
+  'wood floors', 'natural light', 'two bedrooms', 'one bedroom', 'three bedrooms',
+  'not located', 'not near', 'near the', 'M4 metro', 'metro station', 'metro line',
+  'below average', 'below-average', 'induction stove', 'dishwasher', 'balcony',
+  'Dateo', 'Argonne', 'budget', 'location', 'aligns with', 'lacks', 'lacks a',
+  'which is a plus', 'important to you', 'your preferences'
+]
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Parse summary: render **keyword** as bold; if no ** present, bold common phrases as fallback
 function renderSummaryWithBold(text: string): ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  // First try **keyword** markup from AI
+  if (text.includes('**')) {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g)
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>
+      }
+      return part
+    })
+  }
+  // Fallback: bold common comparison phrases (for summaries without **)
+  const pattern = SUMMARY_BOLD_PHRASES
+    .slice()
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegex)
+    .join('|')
+  const regex = new RegExp(`(${pattern})`, 'gi')
+  const parts = text.split(regex)
   return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
+    if (SUMMARY_BOLD_PHRASES.some(p => part.toLowerCase() === p.toLowerCase())) {
+      return <strong key={i}>{part}</strong>
     }
-    return part
+    return <span key={i}>{part}</span>
   })
 }
 
