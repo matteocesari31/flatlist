@@ -228,7 +228,7 @@ Your task is to:
    - 41-60: Average match, several preferences met but key ones missing
    - 61-80: Good match, most preferences satisfied
    - 81-100: Excellent match, nearly all preferences satisfied
-4. Write a 2-3 sentence summary explaining HOW this listing compares to the user's vision
+4. Write a 2-3 sentence summary explaining HOW this listing compares to the user's vision. Wrap key terms in double asterisks for emphasis (e.g. **within budget**, **two bedrooms**, **wood floors**). Bold the most important matching or missing criteria (preferences met, deal-breakers, standout features).
 
 Consider ALL aspects the user mentions including:
 - Location preferences (neighborhood, proximity to landmarks, transportation)
@@ -241,7 +241,7 @@ Consider ALL aspects the user mentions including:
 Return ONLY valid JSON in this exact format:
 {
   "score": 75,
-  "summary": "This apartment offers the bright, modern aesthetic you're looking for with large windows and renovated interiors. While it's slightly above your budget and lacks a balcony, its prime location near the metro and open layout align well with your preferences."
+  "summary": "This apartment offers the **bright, modern** aesthetic you're looking for with **large windows** and **renovated interiors**. While it's slightly above your budget and **lacks a balcony**, its **prime location near the metro** and open layout align well with your preferences."
 }`
           }
         ]

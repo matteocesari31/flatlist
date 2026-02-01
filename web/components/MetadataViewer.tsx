@@ -18,6 +18,17 @@ interface MetadataViewerProps {
   isEvaluatingListing?: boolean
 }
 
+// Parse summary text with **keyword** markup and return React nodes (bold for **...**)
+function renderSummaryWithBold(text: string): ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
 // Helper function to get score color based on value
 function getScoreColor(score: number): { bg: string; glow: string } {
   if (score >= 70) {
@@ -637,7 +648,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                         style={{ backdropFilter: 'blur(12px)' }}
                       >
                         {comparisonSummary ? (
-                          <p className="text-sm text-white leading-relaxed">{comparisonSummary}</p>
+                          <p className="text-sm text-white leading-relaxed">{renderSummaryWithBold(comparisonSummary)}</p>
                         ) : matchScore !== undefined ? (
                           <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
                         ) : isEvaluatingListing ? (
