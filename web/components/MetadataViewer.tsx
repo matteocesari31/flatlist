@@ -708,7 +708,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       {/* Left Arrow */}
                       <button
                         onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 backdrop-blur-md bg-black/60 border border-white/15 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 text-white hover:bg-black/70"
+                        style={{ backdropFilter: 'blur(12px)' }}
                         aria-label="Previous image"
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -718,7 +719,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       {/* Right Arrow */}
                       <button
                         onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 backdrop-blur-md bg-black/60 border border-white/15 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 text-white hover:bg-black/70"
+                        style={{ backdropFilter: 'blur(12px)' }}
                         aria-label="Next image"
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -726,7 +728,10 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                         </svg>
                       </button>
                       {/* Image Counter */}
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-2 py-1 rounded transition-all opacity-0 group-hover:opacity-100">
+                      <div 
+                        className="absolute bottom-4 right-4 backdrop-blur-md bg-black/60 border border-white/15 text-white text-xs px-3 py-1.5 rounded-[20px] shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        style={{ backdropFilter: 'blur(12px)' }}
+                      >
                         {currentImageIndex + 1} / {images.length}
                       </div>
                     </>
