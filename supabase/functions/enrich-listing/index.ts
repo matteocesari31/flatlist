@@ -495,26 +495,68 @@ IMPORTANT NOTES:
             // Italian address format: "Via Street Name Number, Neighborhood, City"
             variations.push(addr)
             
-            // Extract street part (Italian street types)
-            const streetMatch = addr.match(/^((?:Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\s+[^,]+)/i)
-            const streetOnly = streetMatch ? streetMatch[1].trim() : null
+            // Extract components: street type, street name, number, neighborhood, city
+            const itMatch = addr.match(/^((?:Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\s+)(.+?)(\s+\d+)?(?:\s*,\s*([^,]+))?(?:\s*,\s*(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia))?/i)
             
-            // Remove neighborhood info
-            const cleanedAddress = addr
-              .replace(/,\s*[A-Za-z\s-]+\s*-\s*[A-Za-z\s-]+\s*,/g, ',')
-              .replace(/,\s*[A-Za-z\s-]+\s*,\s*(Milano|Roma|Firenze|Torino|Napoli)/gi, ', $1')
-            
-            if (cleanedAddress !== addr) {
-              variations.push(cleanedAddress)
-            }
-            
-            if (streetOnly) {
-              // Extract city
-              const cityMatch = addr.match(/\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i)
-              if (cityMatch) {
-                const city = cityMatch[1]
-                variations.push(`${streetOnly}, ${city}`)
-                variations.push(`${streetOnly}, ${city}, Italy`)
+            if (itMatch) {
+              const [, streetType, streetName, number, neighborhood, city] = itMatch
+              const streetTypeClean = streetType.trim()
+              const streetNameClean = streetName.trim()
+              const numberClean = number ? number.trim() : ''
+              const neighborhoodClean = neighborhood ? neighborhood.trim() : null
+              const cityClean = city ? city.trim() : null
+              
+              // Try variations with different word orders in street name (for cases like "da Fossano Bergognone" vs "Bergognone da Fossano")
+              const streetWords = streetNameClean.split(/\s+/)
+              if (streetWords.length > 2) {
+                // Try reversed order for multi-word street names
+                const reversedStreet = streetWords.reverse().join(' ')
+                variations.push(`${streetTypeClean}${reversedStreet}${numberClean}${cityClean ? `, ${cityClean}` : ''}`)
+                variations.push(`${streetTypeClean}${reversedStreet}${numberClean}${cityClean ? `, ${cityClean}, Italy` : ', Italy'}`)
+              }
+              
+              // Try without neighborhood
+              if (neighborhoodClean) {
+                const withoutNeighborhood = `${streetTypeClean}${streetNameClean}${numberClean}${cityClean ? `, ${cityClean}` : ''}`
+                if (!variations.includes(withoutNeighborhood)) {
+                  variations.push(withoutNeighborhood)
+                }
+                variations.push(`${withoutNeighborhood}, Italy`)
+              }
+              
+              // Try with just street name + city (no number)
+              if (cityClean) {
+                variations.push(`${streetTypeClean}${streetNameClean}, ${cityClean}`)
+                variations.push(`${streetTypeClean}${streetNameClean}, ${cityClean}, Italy`)
+              }
+              
+              // Try neighborhood + city + number as fallback
+              if (neighborhoodClean && cityClean && numberClean) {
+                variations.push(`${neighborhoodClean}, ${cityClean}${numberClean}`)
+                variations.push(`${neighborhoodClean}, ${cityClean}, Italy`)
+              }
+            } else {
+              // Fallback: try to extract street part
+              const streetMatch = addr.match(/^((?:Via|Viale|Piazza|Piazzale|Corso|Vicolo|Largo)\s+[^,]+)/i)
+              const streetOnly = streetMatch ? streetMatch[1].trim() : null
+              
+              // Remove neighborhood info
+              const cleanedAddress = addr
+                .replace(/,\s*[A-Za-z\s-]+\s*-\s*[A-Za-z\s-]+\s*,/g, ',')
+                .replace(/,\s*[A-Za-z\s-]+\s*,\s*(Milano|Roma|Firenze|Torino|Napoli)/gi, ', $1')
+              
+              if (cleanedAddress !== addr) {
+                variations.push(cleanedAddress)
+              }
+              
+              if (streetOnly) {
+                // Extract city
+                const cityMatch = addr.match(/\b(Milano|Roma|Firenze|Torino|Napoli|Bologna|Genova|Palermo|Venezia)\b/i)
+                if (cityMatch) {
+                  const city = cityMatch[1]
+                  variations.push(`${streetOnly}, ${city}`)
+                  variations.push(`${streetOnly}, ${city}, Italy`)
+                }
               }
             }
             
