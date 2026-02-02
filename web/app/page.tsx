@@ -184,8 +184,15 @@ export default function Home() {
             ...l,
             listing_notes: []
           }))
-          setListings(fetchedListings)
-          setAllListings(fetchedListings)
+          // Ensure listings are sorted by saved_at (most recent first)
+          const sortedOldListings = [...fetchedListings].sort((a, b) => {
+            const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
+            const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
+            return dateB - dateA // Descending: most recent first
+          })
+          setListings(sortedOldListings)
+          setAllListings(sortedOldListings)
+          listingsRef.current = sortedOldListings
           setLoading(false)
           return
         }
@@ -1496,7 +1503,13 @@ export default function Home() {
               onClick={() => {
                 setSearchQuery('')
                 setConfirmedLocation(null)
-                setListings(allListings)
+                // Ensure listings are sorted by saved_at (most recent first)
+                const sortedAllListings = [...allListings].sort((a, b) => {
+                  const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
+                  const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
+                  return dateB - dateA // Descending: most recent first
+                })
+                setListings(sortedAllListings)
                 setSearchExplanation('')
                 setSearchFilters({})
                 setSearchResultCount(0)
@@ -1924,9 +1937,9 @@ export default function Home() {
                 <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4 auto-rows-min">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="break-inside-avoid mb-10 sm:mb-12">
+                  <div key={listing.id} className="mb-10 sm:mb-12">
                     <ListingCard
                       listing={listing}
                       onViewDetails={() => handleViewDetails(listing)}
