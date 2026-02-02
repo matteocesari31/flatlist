@@ -357,9 +357,16 @@ export default function Home() {
           notesCount: listing.listing_notes?.length || 0
         })
       }
-      setListings(fetchedListings)
-      setAllListings(fetchedListings) // Store all listings
-      listingsRef.current = fetchedListings
+      // Ensure listings are sorted by saved_at (most recent first)
+      const sortedListings = [...fetchedListings].sort((a, b) => {
+        const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
+        const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
+        return dateB - dateA // Descending: most recent first
+      })
+      
+      setListings(sortedListings)
+      setAllListings(sortedListings) // Store all listings
+      listingsRef.current = sortedListings
 
       // Set currentCatalogId if not set and we have catalog IDs
       if (catalogIds.length > 0 && !currentCatalogId) {
@@ -1224,8 +1231,13 @@ export default function Home() {
 
   const performSearch = async () => {
     if (!searchQuery.trim() && !confirmedLocation) {
-      // Clear search - show all listings
-      setListings(allListings)
+      // Clear search - show all listings, sorted by saved_at (most recent first)
+      const sortedAllListings = [...allListings].sort((a, b) => {
+        const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
+        const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
+        return dateB - dateA // Descending: most recent first
+      })
+      setListings(sortedAllListings)
       setSearchExplanation('')
       setSearchFilters({})
       setSearchResultCount(0)
