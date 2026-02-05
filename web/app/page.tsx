@@ -90,50 +90,30 @@ export default function Home() {
 
       const columnHeights = new Array(columns).fill(0)
       const positions = new Map<string, { top: number; left: number; width: number }>()
+      const spacing = 24
 
-      // Process listings in order (left-to-right, top-to-bottom)
+      // Place cards in row-major order (left to right, then next row) so a single card in a row is always on the left
+      let placeIndex = 0
       listings.forEach((listing) => {
         const cardElement = cardRefs.current.get(listing.id)
         if (!cardElement) {
-          // Card not yet rendered, skip for now
           return
         }
 
-        // Measure card height accurately
-        // If card is already absolutely positioned, use its current height
-        // Otherwise, temporarily set width to measure natural height
         let cardHeight = cardElement.offsetHeight
-        
         if (cardElement.style.position !== 'absolute') {
-          // Card not yet positioned, measure with correct width
           const originalWidth = cardElement.style.width
           cardElement.style.width = `${columnWidth}px`
-          // Force reflow
           void cardElement.offsetHeight
           cardHeight = cardElement.offsetHeight
           cardElement.style.width = originalWidth
         }
 
-        // Find the shortest column, preferring leftmost when heights are equal
-        const minHeight = Math.min(...columnHeights)
-        const shortestColumnIndex = columnHeights.findIndex((height, index) => {
-          // If this column is at minimum height, use it
-          if (height === minHeight) {
-            // Check if there are any columns to the left with the same height
-            // If so, prefer the leftmost one
-            for (let i = 0; i < index; i++) {
-              if (columnHeights[i] === minHeight) {
-                return false // Prefer the leftmost column
-              }
-            }
-            return true
-          }
-          return false
-        })
-        
-        // Calculate position
-        const left = shortestColumnIndex * (columnWidth + gap)
-        const top = columnHeights[shortestColumnIndex]
+        const columnIndex = placeIndex % columns
+        placeIndex += 1
+
+        const left = columnIndex * (columnWidth + gap)
+        const top = columnHeights[columnIndex]
 
         positions.set(listing.id, {
           top,
@@ -141,16 +121,13 @@ export default function Home() {
           width: columnWidth
         })
 
-        // Update column height with spacing (24px vertical gap between cards)
-        const spacing = 24
-        columnHeights[shortestColumnIndex] += cardHeight + spacing
+        columnHeights[columnIndex] += cardHeight + spacing
       })
 
       // Update positions (even if not all cards are measured yet)
       if (positions.size > 0) {
         setMasonryPositions(positions)
         // Subtract the last spacing from container height (no spacing after last card)
-        const spacing = 24
         const maxHeight = Math.max(...columnHeights)
         setContainerHeight(maxHeight > spacing ? maxHeight - spacing : maxHeight)
       }
