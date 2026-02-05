@@ -1495,209 +1495,188 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white">
-      <header className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl rounded-[40px] backdrop-blur-md bg-black/60 border border-white/20 shadow-xl" style={{ backdropFilter: 'blur(12px)' }}>
-        <div className="w-full px-6 sm:px-8 py-2.5">
-          <div className="flex items-center">
+    <div className="min-h-screen bg-[#0D0D0D] text-white flex">
+      {/* Left Sidebar */}
+      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-[#0D0D0D] border-r border-gray-700 flex flex-col z-30">
+        {/* Top Section: Logo and Dream Home */}
+        <div className="flex flex-col items-center pt-6 gap-6">
+          {/* Logo */}
+          <button
+            onClick={() => {
+              setSearchQuery('')
+              setConfirmedLocation(null)
+              // Ensure listings are sorted by saved_at (most recent first)
+              const sortedAllListings = [...allListings].sort((a, b) => {
+                const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
+                const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
+                return dateB - dateA // Descending: most recent first
+              })
+              setListings(sortedAllListings)
+              setSearchExplanation('')
+              setSearchFilters({})
+              setSearchResultCount(0)
+            }}
+            className="cursor-pointer"
+            title="Clear search"
+          >
+            <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
+          </button>
+          
+          {/* Dream Home Button */}
+          <button
+            onClick={() => setShowDreamApartmentModal(true)}
+            className="text-white hover:opacity-70 transition-opacity"
+            title="My Dream Apartment"
+          >
+            <House className="w-6 h-6" strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Bottom Section: Plus and Profile */}
+        <div className="flex flex-col items-center gap-6 mt-auto pb-6">
+          {/* Plus (Add) Button */}
+          <button
+            onClick={() => {
+              if (subscription?.canInvite) {
+                setShowInviteModal(true)
+              } else {
+                setUpgradeModalTrigger('invite')
+                setShowUpgradeModal(true)
+              }
+            }}
+            className="text-white hover:opacity-70 transition-opacity"
+            title={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          
+          {/* Profile Button */}
+          <div className="relative">
             <button
-              onClick={() => {
-                setSearchQuery('')
-                setConfirmedLocation(null)
-                // Ensure listings are sorted by saved_at (most recent first)
-                const sortedAllListings = [...allListings].sort((a, b) => {
-                  const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
-                  const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
-                  return dateB - dateA // Descending: most recent first
-                })
-                setListings(sortedAllListings)
-                setSearchExplanation('')
-                setSearchFilters({})
-                setSearchResultCount(0)
-              }}
-              className="flex-shrink-0 cursor-pointer"
-              title="Clear search"
+              ref={profileButtonRef}
+              onClick={() => setShowProfilePopover(!showProfilePopover)}
+              className="text-white hover:opacity-70 transition-opacity text-lg font-semibold"
+              title={user?.email || 'Profile'}
             >
-              <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
+              {user?.email?.charAt(0).toUpperCase() || '?'}
             </button>
-
-            {/* Center: Plus | Dream Home | Refresh */}
-            <div className="flex-1 flex justify-center items-center gap-3">
-              {/* Plus (Add) Button */}
-              <button
-                onClick={() => {
-                  if (subscription?.canInvite) {
-                    setShowInviteModal(true)
-                  } else {
-                    setUpgradeModalTrigger('invite')
-                    setShowUpgradeModal(true)
-                  }
-                }}
-                className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
-                title={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-              {/* Dream Apartment Button */}
-              <button
-                onClick={() => setShowDreamApartmentModal(true)}
-                className="h-[52px] w-[52px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
-                title="My Dream Apartment"
-              >
-                <House className="w-[26px] h-[26px]" strokeWidth={2} />
-              </button>
-              {/* Refresh Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  fetchListings()
-                  setRefreshKey(prev => prev + 1)
-                }}
-                className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
-                title="Refresh"
-              >
-                <svg
-                  key={refreshKey}
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  style={{ animation: 'spin-reverse 0.3s linear', transformOrigin: 'center' }}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex items-center flex-shrink-0 gap-3 relative">
-              {/* Help Button */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowHelpPopover(!showHelpPopover)}
-                  className="h-[40px] w-[40px] rounded-full flex items-center justify-center border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
-                  title="Help & Feedback"
-                >
-                  <MessageCircle className="w-5 h-5" strokeWidth={2} />
-                </button>
-                
-                {/* Help Popover */}
-                {showHelpPopover && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowHelpPopover(false)}
-                    />
-                    <div className="absolute right-0 bottom-full mb-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
-                      <p className="text-sm text-black">
-                        Have questions, suggestions, or want to report a bug?
-                      </p>
-                      <p className="text-sm mt-2 text-black">
-                        Write to us at{' '}
-                        <button
-                          onClick={async (e) => {
-                            e.preventDefault()
-                            try {
-                              await navigator.clipboard.writeText('team@flatlist.app')
-                              setEmailCopied(true)
-                              setTimeout(() => {
-                                setEmailCopied(false)
-                                setShowHelpPopover(false)
-                              }, 1500)
-                            } catch (err) {
-                              console.error('Failed to copy:', err)
-                            }
-                          }}
-                          className="text-black font-medium hover:underline cursor-pointer"
-                        >
-                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
-                        </button>
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Profile Button */}
-              <button
-                ref={profileButtonRef}
-                onClick={() => setShowProfilePopover(!showProfilePopover)}
-                className="h-[40px] w-[40px] rounded-full flex items-center justify-center text-white text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
-                title={user?.email || 'Profile'}
-              >
-                {user?.email?.charAt(0).toUpperCase() || '?'}
-              </button>
-              
-              {/* Profile Popover */}
-              {showProfilePopover && (
-                <>
-                  {/* Backdrop to close on outside click */}
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowProfilePopover(false)}
-                  />
-                  {/* Popover */}
-                  <div className="absolute right-0 bottom-full mb-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
-                    <div className="p-4 border-b border-gray-100">
-                      <div className="text-sm font-medium text-gray-900">{user?.email}</div>
-                      {/* Subscription Status */}
-                      <div className="mt-3 flex items-center justify-between">
-                        <div>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            subscription?.isPremium 
-                              ? 'bg-black text-white' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {subscription?.isPremium ? 'Premium' : 'Free Plan'}
-                          </span>
-                          {subscription?.isPremium && subscription.currentPeriodEnd && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                            </div>
-                          )}
-                          {!subscription?.isPremium && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
-                            </div>
-                          )}
-                        </div>
+            
+            {/* Profile Popover */}
+            {showProfilePopover && (
+              <>
+                {/* Backdrop to close on outside click */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowProfilePopover(false)}
+                />
+                {/* Popover */}
+                <div className="absolute left-full ml-2 top-0 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
+                  <div className="p-4 border-b border-gray-100">
+                    <div className="text-sm font-medium text-gray-900">{user?.email}</div>
+                    {/* Subscription Status */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <div>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          subscription?.isPremium 
+                            ? 'bg-black text-white' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {subscription?.isPremium ? 'Premium' : 'Free Plan'}
+                        </span>
+                        {subscription?.isPremium && subscription.currentPeriodEnd && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                          </div>
+                        )}
                         {!subscription?.isPremium && (
-                          <button
-                            onClick={() => {
-                              setShowProfilePopover(false)
-                              setUpgradeModalTrigger('general')
-                              setShowUpgradeModal(true)
-                            }}
-                            className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                          >
-                            Upgrade
-                          </button>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <div className="p-2">
-                      <button
-                        onClick={() => {
-                          setShowProfilePopover(false)
-                          handleSignOut()
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                      >
-                        Sign Out
-                      </button>
+                      {!subscription?.isPremium && (
+                        <button
+                          onClick={() => {
+                            setShowProfilePopover(false)
+                            setUpgradeModalTrigger('general')
+                            setShowUpgradeModal(true)
+                          }}
+                          className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                        >
+                          Upgrade
+                        </button>
+                      )}
                     </div>
                   </div>
-                </>
-              )}
-            </div>
+                  <div className="p-2 border-b border-gray-100">
+                    {/* Questions/Help Button - moved inside profile panel */}
+                    <button
+                      onClick={() => {
+                        setShowHelpPopover(!showHelpPopover)
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
+                    >
+                      <MessageCircle className="w-4 h-4" strokeWidth={2} />
+                      Help & Feedback
+                    </button>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setShowProfilePopover(false)
+                        handleSignOut()
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className={`w-full px-6 sm:px-8 pt-8 pb-24 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      {/* Help Popover - shown when clicked from profile panel */}
+      {showHelpPopover && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowHelpPopover(false)}
+          />
+          <div className="fixed left-[80px] top-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
+            <p className="text-sm text-black">
+              Have questions, suggestions, or want to report a bug?
+            </p>
+            <p className="text-sm mt-2 text-black">
+              Write to us at{' '}
+              <button
+                onClick={async (e) => {
+                  e.preventDefault()
+                  try {
+                    await navigator.clipboard.writeText('team@flatlist.app')
+                    setEmailCopied(true)
+                    setTimeout(() => {
+                      setEmailCopied(false)
+                      setShowHelpPopover(false)
+                    }, 1500)
+                  } catch (err) {
+                    console.error('Failed to copy:', err)
+                  }
+                }}
+                className="text-black font-medium hover:underline cursor-pointer"
+              >
+                {emailCopied ? 'Copied!' : 'team@flatlist.app'}
+              </button>
+            </p>
+          </div>
+        </>
+      )}
+
+      <main className={`flex-1 ml-16 px-6 sm:px-8 pt-8 pb-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-gray-900 rounded-[30px] shadow-sm p-8 text-center border border-gray-800">
             <h2 className="text-xl font-semibold mb-2 text-white">Let's start your hunt.</h2>
