@@ -381,7 +381,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
       {/* Image section (on top) */}
       <div className="relative">
         {thumbnailImage ? (
-          <div className="w-full bg-gray-100 overflow-hidden rounded-xl">
+          <div className="w-full bg-gray-100 overflow-hidden rounded-[20px]">
             <img
               src={thumbnailImage}
               alt={listing.title || 'Listing image'}
@@ -392,7 +392,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             />
           </div>
         ) : (
-          <div className="w-full aspect-[4/3] bg-gray-100 rounded-xl"></div>
+          <div className="w-full aspect-[4/3] bg-gray-100 rounded-[20px]"></div>
         )}
         
         {/* Match Score Badge */}
