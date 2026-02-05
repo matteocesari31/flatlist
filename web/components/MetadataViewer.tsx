@@ -653,7 +653,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                   <img
                     src={images[currentImageIndex]}
                     alt={`Listing image ${currentImageIndex + 1} of ${images.length}`}
-                    className="w-full h-auto object-contain"
+                    className="w-full h-auto object-contain transition-transform duration-300 ease-out hover:scale-105"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                     }}

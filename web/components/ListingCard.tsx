@@ -385,7 +385,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
             <img
               src={thumbnailImage}
               alt={listing.title || 'Listing image'}
-              className="w-full h-auto object-contain"
+              className="w-full h-auto object-contain transition-transform duration-300 ease-out hover:scale-105"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
               }}

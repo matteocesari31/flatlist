@@ -1497,7 +1497,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white flex">
       {/* Left Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-[#0D0D0D] border-r border-[#98A1B0] flex flex-col z-30">
+      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-[#0D0D0D] border-r border-[#494E55] flex flex-col z-30">
         {/* Top Section: Logo */}
         <div className="flex flex-col items-center pt-6">
           {/* Logo */}
