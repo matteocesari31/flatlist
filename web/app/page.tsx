@@ -114,8 +114,22 @@ export default function Home() {
           cardElement.style.width = originalWidth
         }
 
-        // Find the shortest column
-        const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
+        // Find the shortest column, preferring leftmost when heights are equal
+        const minHeight = Math.min(...columnHeights)
+        const shortestColumnIndex = columnHeights.findIndex((height, index) => {
+          // If this column is at minimum height, use it
+          if (height === minHeight) {
+            // Check if there are any columns to the left with the same height
+            // If so, prefer the leftmost one
+            for (let i = 0; i < index; i++) {
+              if (columnHeights[i] === minHeight) {
+                return false // Prefer the leftmost column
+              }
+            }
+            return true
+          }
+          return false
+        })
         
         // Calculate position
         const left = shortestColumnIndex * (columnWidth + gap)
@@ -127,8 +141,8 @@ export default function Home() {
           width: columnWidth
         })
 
-        // Update column height with small spacing (8px)
-        const spacing = 8
+        // Update column height with spacing (16px for more breathing room)
+        const spacing = 16
         columnHeights[shortestColumnIndex] += cardHeight + spacing
       })
 
@@ -136,7 +150,7 @@ export default function Home() {
       if (positions.size > 0) {
         setMasonryPositions(positions)
         // Subtract the last spacing from container height (no spacing after last card)
-        const spacing = 8
+        const spacing = 16
         const maxHeight = Math.max(...columnHeights)
         setContainerHeight(maxHeight > spacing ? maxHeight - spacing : maxHeight)
       }
