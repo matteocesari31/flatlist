@@ -42,8 +42,10 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
 
       // Set time of day to dusk after map loads
       map.on('load', () => {
-        if (map.setTimeOfDay) {
-          map.setTimeOfDay('dusk')
+        // setTimeOfDay is available on Mapbox Standard style but not in TypeScript types
+        const mapWithTimeOfDay = map as any
+        if (mapWithTimeOfDay.setTimeOfDay) {
+          mapWithTimeOfDay.setTimeOfDay('dusk')
         }
       })
 
