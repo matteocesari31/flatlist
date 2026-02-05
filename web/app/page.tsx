@@ -144,8 +144,9 @@ export default function Home() {
 
     // Use requestAnimationFrame to ensure DOM is ready
     const rafId = requestAnimationFrame(() => {
-      // Wait a bit for cards to render
+      // Wait a bit for cards to render, then calculate
       setTimeout(() => {
+        // First calculation - cards should be rendered by now
         calculateMasonry()
         
         // Also wait for images to load and recalculate
@@ -154,31 +155,32 @@ export default function Home() {
         const totalImages = images.length
 
         if (totalImages === 0) {
-          calculateMasonry()
+          // No images, recalculate once more to ensure positions are set
+          setTimeout(calculateMasonry, 100)
         } else {
           images.forEach((img) => {
             if (img.complete) {
               loadedCount++
               if (loadedCount === totalImages) {
-                calculateMasonry()
+                setTimeout(calculateMasonry, 50)
               }
             } else {
               img.onload = () => {
                 loadedCount++
                 if (loadedCount === totalImages) {
-                  calculateMasonry()
+                  setTimeout(calculateMasonry, 50)
                 }
               }
               img.onerror = () => {
                 loadedCount++
                 if (loadedCount === totalImages) {
-                  calculateMasonry()
+                  setTimeout(calculateMasonry, 50)
                 }
               }
             }
           })
         }
-      }, 50)
+      }, 100)
     })
 
     // Also calculate on window resize
@@ -2049,11 +2051,26 @@ export default function Home() {
             ) : (
               <div 
                 ref={masonryContainerRef}
-                className="relative pb-4"
+                className={`relative pb-4 ${masonryPositions.size === 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8' : ''}`}
                 style={{ height: containerHeight > 0 ? `${containerHeight}px` : 'auto' }}
               >
                 {listings.map((listing) => {
                   const position = masonryPositions.get(listing.id)
+                  
+                  // Calculate fallback width if position not available
+                  const getCardWidth = () => {
+                    if (position) return position.width
+                    // Calculate width based on container and breakpoints
+                    const container = masonryContainerRef.current
+                    if (!container) return undefined
+                    const containerWidth = container.offsetWidth
+                    const gap = window.innerWidth >= 1024 ? 32 : window.innerWidth >= 768 ? 24 : 24
+                    const columns = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1
+                    return (containerWidth - (gap * (columns - 1))) / columns
+                  }
+                  
+                  const cardWidth = getCardWidth()
+                  
                   return (
                     <div
                       key={listing.id}
@@ -2068,7 +2085,7 @@ export default function Home() {
                         position: position ? 'absolute' : 'relative',
                         top: position ? `${position.top}px` : 'auto',
                         left: position ? `${position.left}px` : 'auto',
-                        width: position ? `${position.width}px` : '100%',
+                        width: cardWidth ? `${cardWidth}px` : undefined,
                         opacity: 1, // Always visible
                         transition: position ? 'opacity 0.2s ease-in-out' : 'none',
                         marginBottom: position ? 0 : '0.5rem' // Only add margin when not positioned (fallback)
