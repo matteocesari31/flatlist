@@ -229,6 +229,7 @@ Your task is to:
    - 61-80: Good match, most preferences satisfied
    - 81-100: Excellent match, nearly all preferences satisfied
 4. Write a 2-3 sentence summary. You MUST wrap 4-8 key terms in double asterisks for emphasis. Include: what matches (e.g. **within budget**, **wood floors**, **natural light**), what is missing (e.g. **lacks a balcony**, **not near metro**), and standout facts (e.g. **exceeds budget**, **two bedrooms**). Every summary must contain multiple **keyword** phrases.
+5. Write the summary in the SAME LANGUAGE as the user's dream apartment description. If the user wrote in English, respond in English; if in Italian, in Italian; if in another language, use that language.
 
 Consider ALL aspects the user mentions including:
 - Location preferences (neighborhood, proximity to landmarks, transportation)
