@@ -42,10 +42,11 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
 
       // Set time of day to dusk after map loads
       map.on('load', () => {
-        // setTimeOfDay is available on Mapbox Standard style but not in TypeScript types
-        const mapWithTimeOfDay = map as any
-        if (mapWithTimeOfDay.setTimeOfDay) {
-          mapWithTimeOfDay.setTimeOfDay('dusk')
+        // Use setConfigProperty to set lightPreset for Mapbox Standard style
+        try {
+          map.setConfigProperty('basemap', 'lightPreset', 'dusk')
+        } catch (error) {
+          console.warn('Failed to set map light preset:', error)
         }
       })
 
