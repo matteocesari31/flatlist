@@ -40,6 +40,13 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         bearing: -17,
       })
 
+      // Set time of day to dusk after map loads
+      map.on('load', () => {
+        if (map.setTimeOfDay) {
+          map.setTimeOfDay('dusk')
+        }
+      })
+
       const marker = new mapboxgl.Marker({ color: '#ef4444' })
         .setLngLat([longitude!, latitude!])
         .addTo(map)
