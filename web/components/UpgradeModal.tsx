@@ -78,14 +78,14 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-lg w-full p-6 shadow-2xl"
+        className="bg-[#0D0D0D] rounded-[20px] max-w-lg w-full p-6 shadow-2xl border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Upgrade to Premium</h2>
+          <h2 className="text-xl font-semibold text-white">Upgrade to Premium</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-200 transition-colors"
             aria-label="Close"
           >
             <svg
@@ -105,30 +105,30 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
           </button>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-300 mb-6">
           {getTriggerMessage()}
         </p>
 
         {/* Plan Comparison */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Free Plan */}
-          <div className="p-4 border border-gray-200 rounded-xl bg-gray-50">
-            <div className="text-sm font-medium text-gray-500 mb-1">Free</div>
-            <div className="text-2xl font-bold mb-3">€0</div>
-            <ul className="space-y-2 text-sm text-gray-600">
+          <div className="p-4 border border-gray-700 rounded-xl bg-gray-900/50">
+            <div className="text-sm font-medium text-gray-400 mb-1">Free</div>
+            <div className="text-2xl font-bold mb-3 text-white">€0</div>
+            <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Up to 12 listings
               </li>
               <li className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 AI-powered search
               </li>
-              <li className="flex items-center gap-2 text-gray-400">
+              <li className="flex items-center gap-2 text-gray-500">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -138,18 +138,18 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
           </div>
 
           {/* Premium Plan */}
-          <div className="p-4 border-2 border-black rounded-xl bg-white relative">
-            <div className="absolute -top-2.5 left-4 bg-black text-white text-xs px-2 py-0.5 rounded-full">
+          <div className="p-4 border-2 border-white rounded-xl bg-gray-900/50 relative">
+            <div className="absolute -top-2.5 left-4 bg-white text-black text-xs px-2 py-0.5 rounded-full font-medium">
               Recommended
             </div>
-            <div className="text-sm font-medium text-gray-500 mb-1">Premium</div>
-            <div className="text-2xl font-bold mb-1">€19.99<span className="text-sm font-normal text-gray-500">/year</span></div>
-            <ul className="space-y-2 text-sm">
+            <div className="text-sm font-medium text-gray-400 mb-1">Premium</div>
+            <div className="text-2xl font-bold mb-1 text-white">€19.99<span className="text-sm font-normal text-gray-400">/year</span></div>
+            <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <strong>Unlimited</strong> listings
+                <strong className="text-white">Unlimited</strong> listings
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -161,9 +161,9 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <strong>Multiplayer mode</strong>
+                <strong className="text-white">Multiplayer mode</strong>
               </li>
-              <li className="flex items-center gap-2 text-gray-600">
+              <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -174,7 +174,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
         </div>
 
         {error && (
-          <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm mb-4">
+          <div className="p-3 bg-red-900/30 text-red-300 border border-red-800 rounded-md text-sm mb-4">
             {error}
           </div>
         )}
@@ -183,7 +183,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-3 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            className="flex-1 px-4 py-3 text-gray-300 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors font-medium"
             disabled={loading}
           >
             Maybe Later
@@ -191,7 +191,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
           <button
             onClick={handleUpgrade}
             disabled={loading}
-            className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="flex-1 px-4 py-3 bg-white text-black rounded-xl hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
