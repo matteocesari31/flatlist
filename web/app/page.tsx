@@ -141,8 +141,8 @@ export default function Home() {
           width: columnWidth
         })
 
-        // Update column height with spacing (16px for more breathing room)
-        const spacing = 16
+        // Update column height with spacing (24px vertical gap between cards)
+        const spacing = 24
         columnHeights[shortestColumnIndex] += cardHeight + spacing
       })
 
@@ -150,7 +150,7 @@ export default function Home() {
       if (positions.size > 0) {
         setMasonryPositions(positions)
         // Subtract the last spacing from container height (no spacing after last card)
-        const spacing = 16
+        const spacing = 24
         const maxHeight = Math.max(...columnHeights)
         setContainerHeight(maxHeight > spacing ? maxHeight - spacing : maxHeight)
       }
@@ -2065,7 +2065,7 @@ export default function Home() {
             ) : (
               <div 
                 ref={masonryContainerRef}
-                className={`relative pb-4 ${masonryPositions.size === 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8' : ''}`}
+                className={`relative pb-4 w-full ${masonryPositions.size === 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8' : ''}`}
                 style={{ height: containerHeight > 0 ? `${containerHeight}px` : 'auto' }}
               >
                 {listings.map((listing) => {
