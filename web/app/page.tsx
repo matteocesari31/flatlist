@@ -65,6 +65,8 @@ export default function Home() {
   const router = useRouter()
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
+  const masonryContainerRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   
   // Detect location from query (called only during search)
   const detectLocationFromQuery = async (query: string): Promise<ConfirmedLocation | null> => {
@@ -1920,9 +1922,9 @@ export default function Home() {
                 <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="mb-4 sm:mb-6 break-inside-avoid">
+                  <div key={listing.id} className="mb-4 sm:mb-6">
                     <ListingCard
                       listing={listing}
                       onViewDetails={() => handleViewDetails(listing)}
