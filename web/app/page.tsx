@@ -67,6 +67,113 @@ export default function Home() {
   const catalogIdsRef = useRef<string[]>([])
   const masonryContainerRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map())
+  const [containerHeight, setContainerHeight] = useState<number>(0)
+
+  // Calculate masonry layout positions
+  useEffect(() => {
+    if (!masonryContainerRef.current || listings.length === 0) {
+      setMasonryPositions(new Map())
+      setContainerHeight(0)
+      return
+    }
+
+    const calculateMasonry = () => {
+      const container = masonryContainerRef.current
+      if (!container) return
+
+      const containerWidth = container.offsetWidth
+      // Match Tailwind gap values: gap-6 = 24px (1.5rem), gap-8 = 32px (2rem)
+      const gap = window.innerWidth >= 1024 ? 32 : window.innerWidth >= 768 ? 24 : 24
+      const columns = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1
+      const columnWidth = (containerWidth - (gap * (columns - 1))) / columns
+
+      const columnHeights = new Array(columns).fill(0)
+      const positions = new Map<string, { top: number; left: number; width: number }>()
+
+      // Process listings in order (left-to-right, top-to-bottom)
+      listings.forEach((listing) => {
+        const cardElement = cardRefs.current.get(listing.id)
+        if (!cardElement) {
+          // Card not yet rendered, skip for now
+          return
+        }
+
+        // Find the shortest column
+        const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
+        
+        // Calculate position
+        const left = shortestColumnIndex * (columnWidth + gap)
+        const top = columnHeights[shortestColumnIndex]
+
+        positions.set(listing.id, {
+          top,
+          left,
+          width: columnWidth
+        })
+
+        // Update column height (include margin bottom: mb-4 = 16px, sm:mb-6 = 24px)
+        const marginBottom = window.innerWidth >= 640 ? 24 : 16
+        columnHeights[shortestColumnIndex] += cardElement.offsetHeight + marginBottom
+      })
+
+      // Only update if we have positions for all cards
+      if (positions.size === listings.length) {
+        setMasonryPositions(positions)
+        setContainerHeight(Math.max(...columnHeights))
+      }
+    }
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    const rafId = requestAnimationFrame(() => {
+      // Wait a bit for cards to render
+      setTimeout(() => {
+        calculateMasonry()
+        
+        // Also wait for images to load and recalculate
+        const images = masonryContainerRef.current?.querySelectorAll('img') || []
+        let loadedCount = 0
+        const totalImages = images.length
+
+        if (totalImages === 0) {
+          calculateMasonry()
+        } else {
+          images.forEach((img) => {
+            if (img.complete) {
+              loadedCount++
+              if (loadedCount === totalImages) {
+                calculateMasonry()
+              }
+            } else {
+              img.onload = () => {
+                loadedCount++
+                if (loadedCount === totalImages) {
+                  calculateMasonry()
+                }
+              }
+              img.onerror = () => {
+                loadedCount++
+                if (loadedCount === totalImages) {
+                  calculateMasonry()
+                }
+              }
+            }
+          })
+        }
+      }, 50)
+    })
+
+    // Also calculate on window resize
+    const handleResize = () => {
+      setTimeout(calculateMasonry, 100)
+    }
+    window.addEventListener('resize', handleResize)
+    
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [listings])
   
   // Detect location from query (called only during search)
   const detectLocationFromQuery = async (query: string): Promise<ConfirmedLocation | null> => {
@@ -1922,21 +2029,46 @@ export default function Home() {
                 <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4">
-                {listings.map((listing) => (
-                  <div key={listing.id} className="mb-4 sm:mb-6">
-                    <ListingCard
-                      listing={listing}
-                      onViewDetails={() => handleViewDetails(listing)}
-                      onSaveNote={handleSaveNote}
-                      onDelete={handleDelete}
-                      onRetryEnrichment={handleRetryEnrichment}
-                      catalogMembers={catalogMembers}
-                      matchScore={listingComparisons.get(listing.id)?.score}
-                      hasDreamApartment={!!dreamApartmentDescription}
-                    />
-                  </div>
-                ))}
+              <div 
+                ref={masonryContainerRef}
+                className="relative pb-4"
+                style={{ height: containerHeight > 0 ? `${containerHeight}px` : 'auto' }}
+              >
+                {listings.map((listing) => {
+                  const position = masonryPositions.get(listing.id)
+                  return (
+                    <div
+                      key={listing.id}
+                      ref={(el) => {
+                        if (el) {
+                          cardRefs.current.set(listing.id, el)
+                        } else {
+                          cardRefs.current.delete(listing.id)
+                        }
+                      }}
+                      className="mb-4 sm:mb-6"
+                      style={{
+                        position: position ? 'absolute' : 'relative',
+                        top: position ? `${position.top}px` : 'auto',
+                        left: position ? `${position.left}px` : 'auto',
+                        width: position ? `${position.width}px` : '100%',
+                        opacity: position ? 1 : 0,
+                        transition: 'opacity 0.2s ease-in-out'
+                      }}
+                    >
+                      <ListingCard
+                        listing={listing}
+                        onViewDetails={() => handleViewDetails(listing)}
+                        onSaveNote={handleSaveNote}
+                        onDelete={handleDelete}
+                        onRetryEnrichment={handleRetryEnrichment}
+                        catalogMembers={catalogMembers}
+                        matchScore={listingComparisons.get(listing.id)?.score}
+                        hasDreamApartment={!!dreamApartmentDescription}
+                      />
+                    </div>
+                  )
+                })}
         </div>
             )}
           </>
