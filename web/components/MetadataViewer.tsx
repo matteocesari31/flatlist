@@ -624,7 +624,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
+        className="bg-[#0D0D0D] rounded-[30px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         style={{
           transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
@@ -644,7 +644,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
         </button>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-10 pb-10 pt-10">
+        <div className="flex-1 overflow-y-auto px-8 pb-8 pt-8">
           <div className="flex gap-6 items-stretch">
             {/* Left Column - Images */}
             {images && images.length > 0 && (
