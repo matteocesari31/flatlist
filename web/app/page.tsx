@@ -1922,7 +1922,7 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4 auto-rows-min">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="mb-10 sm:mb-12">
+                  <div key={listing.id} className="mb-4 sm:mb-6">
                     <ListingCard
                       listing={listing}
                       onViewDetails={() => handleViewDetails(listing)}
