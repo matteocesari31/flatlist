@@ -1952,6 +1952,7 @@ export default function Home() {
         onOpenDreamApartment={() => setShowDreamApartmentModal(true)}
         onEvaluateListing={handleEvaluateListing}
         isEvaluatingListing={!!selectedListing && evaluatingListingId === selectedListing.id}
+        onDelete={handleDelete}
       />
 
       {/* Invite Collaborator Modal */}

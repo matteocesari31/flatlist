@@ -16,6 +16,7 @@ interface MetadataViewerProps {
   onOpenDreamApartment?: () => void
   onEvaluateListing?: () => void
   isEvaluatingListing?: boolean
+  onDelete?: (listingId: string) => void
 }
 
 // Phrases to bold in summaries that don't contain ** markup (fallback for older summaries)
@@ -71,11 +72,12 @@ function getScoreColor(score: number): { bg: string; glow: string } {
   }
 }
 
-export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false }: MetadataViewerProps) {
+export default function MetadataViewer({ listing, isOpen, onClose, matchScore, comparisonSummary, hasDreamApartment = false, onOpenDreamApartment, onEvaluateListing, isEvaluatingListing = false, onDelete }: MetadataViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showCardSelector, setShowCardSelector] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 })
   const [isAnimating, setIsAnimating] = useState(true)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const rightColumnRef = useRef<HTMLDivElement>(null)
   const cardSelectorButtonRef = useRef<HTMLButtonElement>(null)
@@ -610,11 +612,55 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
     return limitedCards.map(card => ({ card, span: 3 }))
   }, [metadata, visibleCards])
 
-  if (!isOpen || !listing) return null
+  const handleDelete = () => {
+    if (onDelete && listing) {
+      onDelete(listing.id)
+      setShowDeleteConfirm(false)
+      onClose()
+    }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
 
   if (!isOpen || !listing) return null
 
   return (
+    <>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+          onClick={cancelDelete}
+        >
+          <div
+            className="bg-[#0D0D0D] rounded-[30px] max-w-md w-full p-6 shadow-2xl border border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold mb-4 text-white">Delete Listing</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this listing? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                className="px-4 py-2 text-gray-300 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
@@ -642,6 +688,34 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+
+        {/* Delete button */}
+        {onDelete && listing && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowDeleteConfirm(true)
+            }}
+            className="absolute top-2 right-12 z-10 p-1.5 hover:bg-gray-800 rounded-full transition-colors text-gray-300 hover:text-red-400"
+            aria-label="Delete listing"
+            title="Delete listing"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">
@@ -856,6 +930,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
         </div>
       </div>
     </div>
+    </>
   )
 }
 

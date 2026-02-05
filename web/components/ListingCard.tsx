@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ListingWithMetadata } from '@/lib/types'
 import { createClient } from '@/lib/supabase'
 import { getUserColor } from '@/lib/user-colors'
-import { BedDouble, Bath, Building, FileText } from 'lucide-react'
+import { BedDouble, Bath, Building } from 'lucide-react'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
@@ -30,20 +30,11 @@ function getScoreColor(score: number): { bg: string; glow: string } {
 }
 
 export default function ListingCard({ listing, onClick, onViewDetails, onSaveNote, onDelete, onRetryEnrichment, catalogMembers = [], matchScore, hasDreamApartment = false }: ListingCardProps) {
-  const [noteText, setNoteText] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [showNotesPopover, setShowNotesPopover] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const noteTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const notesButtonRef = useRef<HTMLButtonElement>(null)
-  const [panelPosition, setPanelPosition] = useState<{ top: number; right: number } | null>(null)
   
   const metadata = listing.listing_metadata?.[0]
   const status = listing.enrichment_status
-  const sharedNote = listing.listing_notes?.[0] || null
 
   // Get current user ID and user object
   useEffect(() => {
@@ -55,66 +46,6 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
     }
     getCurrentUser()
   }, [])
-
-  // Initialize note text from shared note
-  useEffect(() => {
-    setNoteText(sharedNote?.note || '')
-  }, [sharedNote?.note])
-
-  // Calculate panel position when opening
-  useEffect(() => {
-    if (showNotesPopover && notesButtonRef.current) {
-      const buttonRect = notesButtonRef.current.getBoundingClientRect()
-      // Position above the button
-      const panelHeight = 300 // Estimated panel height
-      setPanelPosition({
-        top: buttonRect.top - panelHeight - 8,
-        right: window.innerWidth - buttonRect.right
-      })
-    } else {
-      setPanelPosition(null)
-    }
-  }, [showNotesPopover])
-
-  // Focus textarea when popover opens
-  useEffect(() => {
-    if (showNotesPopover && noteTextareaRef.current) {
-      setTimeout(() => {
-        noteTextareaRef.current?.focus()
-      }, 100)
-    }
-  }, [showNotesPopover])
-
-  // Auto-save with debounce
-  useEffect(() => {
-    if (!onSaveNote) return
-    
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-
-    // Don't auto-save on initial load
-    if (noteText === (sharedNote?.note || '')) {
-      return
-    }
-
-    setIsSaving(true)
-    
-    // Debounce save for 1 second after user stops typing
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (onSaveNote) {
-        await onSaveNote(listing.id, noteText)
-        setIsSaving(false)
-      }
-    }, 1000)
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [noteText, listing.id, onSaveNote, sharedNote?.note])
 
 
   // Extract basic info from raw_content if metadata not available
@@ -240,28 +171,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
     return `${Math.round(sizeSqm)} m²`
   }
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent card click
-    if (onDelete) {
-      setShowDeleteConfirm(true)
-    }
-  }
 
-  const confirmDelete = () => {
-    if (onDelete) {
-      onDelete(listing.id)
-      setShowDeleteConfirm(false)
-    }
-  }
-
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false)
-  }
-
-  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    e.stopPropagation()
-    setNoteText(e.target.value)
-  }
 
 
 
@@ -288,91 +198,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
   return (
     <>
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
-          onClick={cancelDelete}
-        >
-          <div
-            className="bg-white rounded-[20px] max-w-md w-full p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-semibold mb-4">Delete Listing</h2>
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to delete this listing? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={cancelDelete}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Notes Editor Popover - Outside card to avoid layout shifts */}
-      {onSaveNote && showNotesPopover && panelPosition && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowNotesPopover(false)
-            }}
-          />
-          {/* Popover */}
-          <div
-            className="fixed z-50 w-96 bg-white shadow-2xl border border-gray-200 flex flex-col"
-            style={{ 
-              borderRadius: '20px', 
-              maxHeight: 'calc(100vh - 8rem)',
-              top: `${Math.max(8, panelPosition.top)}px`,
-              right: `${panelPosition.right}px`
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button - absolute positioned */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowNotesPopover(false)
-              }}
-              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
-              aria-label="Close"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Text Editor - starts at top */}
-            <div className="flex-1 p-4 pt-4 overflow-hidden">
-              <textarea
-                ref={noteTextareaRef}
-                value={noteText}
-                onChange={handleNoteChange}
-                placeholder="Add notes about this listing..."
-                className="w-full h-full text-sm text-gray-900 placeholder-gray-400 border-0 resize-none focus:outline-none"
-                style={{ minHeight: '200px' }}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          </div>
-        </>
-      )}
 
       <div
         onClick={onViewDetails || onClick}
@@ -426,49 +252,6 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                   {formatPrice(metadata?.price || basicInfo?.price, isRental(), metadata?.currency || null)}
                   {!metadata && basicInfo?.price && (
                     <span className="text-xs font-normal text-gray-400 ml-2">(extracted)</span>
-                  )}
-                </div>
-                {/* Action buttons aligned with price */}
-                <div className="flex gap-2">
-                  {onSaveNote && (
-                    <button
-                      ref={notesButtonRef}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setShowNotesPopover(!showNotesPopover)
-                      }}
-                      className="relative p-1.5 rounded-full transition-colors text-gray-400 hover:text-gray-200"
-                      title="Notes"
-                      aria-label="Notes"
-                    >
-                      <FileText className="h-5 w-5 relative" />
-                      {sharedNote && sharedNote.note && (
-                        <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-[#2C7FFF] rounded-full"></span>
-                      )}
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button
-                      onClick={handleDelete}
-                      className="p-1.5 rounded-full text-gray-400 hover:text-red-400 transition-colors"
-                      title="Delete listing"
-                      aria-label="Delete listing"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
                   )}
                 </div>
               </div>
