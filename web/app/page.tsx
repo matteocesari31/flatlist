@@ -1920,9 +1920,9 @@ export default function Home() {
                 <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4 auto-rows-min">
+              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 sm:gap-8 pb-4">
                 {listings.map((listing) => (
-                  <div key={listing.id} className="mb-4 sm:mb-6">
+                  <div key={listing.id} className="mb-4 sm:mb-6 break-inside-avoid">
                     <ListingCard
                       listing={listing}
                       onViewDetails={() => handleViewDetails(listing)}
