@@ -132,12 +132,13 @@ export default function Home() {
         columnHeights[shortestColumnIndex] += cardHeight + spacing
       })
 
-      // Only update if we have positions for all cards
-      if (positions.size === listings.length) {
+      // Update positions (even if not all cards are measured yet)
+      if (positions.size > 0) {
         setMasonryPositions(positions)
         // Subtract the last spacing from container height (no spacing after last card)
         const spacing = 8
-        setContainerHeight(Math.max(...columnHeights) - spacing)
+        const maxHeight = Math.max(...columnHeights)
+        setContainerHeight(maxHeight > spacing ? maxHeight - spacing : maxHeight)
       }
     }
 
@@ -2068,8 +2069,8 @@ export default function Home() {
                         top: position ? `${position.top}px` : 'auto',
                         left: position ? `${position.left}px` : 'auto',
                         width: position ? `${position.width}px` : '100%',
-                        opacity: position ? 1 : 0,
-                        transition: 'opacity 0.2s ease-in-out',
+                        opacity: 1, // Always visible
+                        transition: position ? 'opacity 0.2s ease-in-out' : 'none',
                         marginBottom: position ? 0 : '0.5rem' // Only add margin when not positioned (fallback)
                       }}
                     >
