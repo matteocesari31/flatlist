@@ -99,6 +99,21 @@ export default function Home() {
           return
         }
 
+        // Measure card height accurately
+        // If card is already absolutely positioned, use its current height
+        // Otherwise, temporarily set width to measure natural height
+        let cardHeight = cardElement.offsetHeight
+        
+        if (cardElement.style.position !== 'absolute') {
+          // Card not yet positioned, measure with correct width
+          const originalWidth = cardElement.style.width
+          cardElement.style.width = `${columnWidth}px`
+          // Force reflow
+          void cardElement.offsetHeight
+          cardHeight = cardElement.offsetHeight
+          cardElement.style.width = originalWidth
+        }
+
         // Find the shortest column
         const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
         
@@ -112,15 +127,17 @@ export default function Home() {
           width: columnWidth
         })
 
-        // Update column height (include small margin bottom for spacing)
-        const marginBottom = 8 // Reduced spacing: 8px between cards
-        columnHeights[shortestColumnIndex] += cardElement.offsetHeight + marginBottom
+        // Update column height with small spacing (8px)
+        const spacing = 8
+        columnHeights[shortestColumnIndex] += cardHeight + spacing
       })
 
       // Only update if we have positions for all cards
       if (positions.size === listings.length) {
         setMasonryPositions(positions)
-        setContainerHeight(Math.max(...columnHeights))
+        // Subtract the last spacing from container height (no spacing after last card)
+        const spacing = 8
+        setContainerHeight(Math.max(...columnHeights) - spacing)
       }
     }
 
@@ -2046,14 +2063,14 @@ export default function Home() {
                           cardRefs.current.delete(listing.id)
                         }
                       }}
-                      className="mb-2"
                       style={{
                         position: position ? 'absolute' : 'relative',
                         top: position ? `${position.top}px` : 'auto',
                         left: position ? `${position.left}px` : 'auto',
                         width: position ? `${position.width}px` : '100%',
                         opacity: position ? 1 : 0,
-                        transition: 'opacity 0.2s ease-in-out'
+                        transition: 'opacity 0.2s ease-in-out',
+                        marginBottom: position ? 0 : '0.5rem' // Only add margin when not positioned (fallback)
                       }}
                     >
                       <ListingCard
