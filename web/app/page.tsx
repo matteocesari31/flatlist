@@ -112,8 +112,8 @@ export default function Home() {
           width: columnWidth
         })
 
-        // Update column height (include margin bottom: mb-4 = 16px, sm:mb-6 = 24px)
-        const marginBottom = window.innerWidth >= 640 ? 24 : 16
+        // Update column height (include small margin bottom for spacing)
+        const marginBottom = 8 // Reduced spacing: 8px between cards
         columnHeights[shortestColumnIndex] += cardElement.offsetHeight + marginBottom
       })
 
@@ -2046,7 +2046,7 @@ export default function Home() {
                           cardRefs.current.delete(listing.id)
                         }
                       }}
-                      className="mb-4 sm:mb-6"
+                      className="mb-2"
                       style={{
                         position: position ? 'absolute' : 'relative',
                         top: position ? `${position.top}px` : 'auto',
