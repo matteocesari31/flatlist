@@ -644,7 +644,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
         </button>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 pt-8">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">
           <div className="flex gap-6 items-stretch">
             {/* Left Column - Images */}
             {images && images.length > 0 && (
