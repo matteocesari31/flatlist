@@ -1497,9 +1497,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white flex">
       {/* Left Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-[#0D0D0D] border-r border-gray-700 flex flex-col z-30">
-        {/* Top Section: Logo and Dream Home */}
-        <div className="flex flex-col items-center pt-6 gap-6">
+      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-[#0D0D0D] border-r border-[#98A1B0] flex flex-col z-30">
+        {/* Top Section: Logo */}
+        <div className="flex flex-col items-center pt-6">
           {/* Logo */}
           <button
             onClick={() => {
@@ -1521,7 +1521,10 @@ export default function Home() {
           >
             <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
           </button>
-          
+        </div>
+
+        {/* Middle Section: Dream Home Button - Vertically Centered */}
+        <div className="flex-1 flex items-center justify-center">
           {/* Dream Home Button */}
           <button
             onClick={() => setShowDreamApartmentModal(true)}
@@ -1533,7 +1536,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Section: Plus and Profile */}
-        <div className="flex flex-col items-center gap-6 mt-auto pb-6">
+        <div className="flex flex-col items-center gap-6 pb-6">
           {/* Plus (Add) Button */}
           <button
             onClick={() => {
@@ -1557,7 +1560,8 @@ export default function Home() {
             <button
               ref={profileButtonRef}
               onClick={() => setShowProfilePopover(!showProfilePopover)}
-              className="text-white hover:opacity-70 transition-opacity text-lg font-semibold"
+              className="h-[40px] w-[40px] rounded-full flex items-center justify-center text-white text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
               title={user?.email || 'Profile'}
             >
               {user?.email?.charAt(0).toUpperCase() || '?'}
