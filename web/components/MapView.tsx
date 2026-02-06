@@ -87,13 +87,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
         // Default center (Milan) if no listings with coords
         let centerLng = 9.1859
         let centerLat = 45.4642
-        let zoom = 12
-
-        if (listingsWithCoords.length > 0) {
-          // Calculate center from all listings
-          centerLat = listingsWithCoords.reduce((sum, l) => sum + (l.listing_metadata?.[0]?.latitude || 0), 0) / listingsWithCoords.length
-          centerLng = listingsWithCoords.reduce((sum, l) => sum + (l.listing_metadata?.[0]?.longitude || 0), 0) / listingsWithCoords.length
-        }
+        const targetZoom = 12 // Target zoom level after animation
 
         if (!mounted || !containerRef.current) {
           console.log('MapView: Aborted before map creation')
@@ -103,15 +97,16 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
         console.log('MapView: Creating map instance', {
           container: containerRef.current,
           center: [centerLng, centerLat],
-          zoom,
+          zoom: 1, // Start at globe level
           listingsCount: listingsWithCoords.length
         })
 
+        // Start at globe level (zoom 1)
         mapInstance = new mapboxgl.Map({
           container: containerRef.current,
           style: 'mapbox://styles/mapbox/standard',
           center: [centerLng, centerLat],
-          zoom: zoom,
+          zoom: 1, // Globe level
           pitch: 0,
           bearing: 0,
         })
@@ -119,7 +114,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
         mapRef.current = mapInstance
         console.log('MapView: Map instance created')
 
-        // Set time of day to dusk
+        // Set time of day to dusk and animate zoom
         mapInstance.on('load', () => {
           console.log('MapView: Map loaded event fired')
           if (!mounted || !mapInstance) {
@@ -134,7 +129,9 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
           }
 
           // Create custom markers for each listing after map loads
-          if (listingsWithCoords.length > 0) {
+          const createMarkers = () => {
+            if (!mounted || !mapInstance || listingsWithCoords.length === 0) return
+            
             listingsWithCoords.forEach(listing => {
               if (!mounted || !mapInstance) return
               
@@ -212,6 +209,27 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
               markersRef.current.set(listing.id, { marker, element: el })
             })
           }
+
+          // Animate zoom from globe level to target zoom, then create markers
+          setTimeout(() => {
+            if (!mounted || !mapInstance) return
+
+            console.log('MapView: Animating zoom from 1 to', targetZoom, 'at center', [centerLng, centerLat])
+            mapInstance.easeTo({
+              center: [centerLng, centerLat],
+              zoom: targetZoom,
+              duration: 2000, // 2 second animation
+              easing: (t) => {
+                // Ease-out cubic function for smooth deceleration
+                return 1 - Math.pow(1 - t, 3)
+              }
+            })
+
+            // Create markers after zoom animation completes
+            setTimeout(() => {
+              createMarkers()
+            }, 2100) // Slightly longer than animation duration
+          }, 500) // Small delay after map loads
         })
 
         // Handle map errors
