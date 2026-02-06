@@ -14,8 +14,9 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle, House } from 'lucide-react'
+import { MessageCircle, House, List, Map } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
+import MapView from '@/components/MapView'
 
 interface SubscriptionInfo {
   plan: SubscriptionPlan
@@ -59,6 +60,7 @@ export default function Home() {
   const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -1659,8 +1661,21 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Right Section: Plus and Profile */}
+        {/* Right Section: View Toggle, Plus and Profile */}
         <div className="flex items-center gap-6">
+          {/* View Toggle Button */}
+          <button
+            onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+            className="text-white hover:opacity-70 transition-opacity"
+            title={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}
+          >
+            {viewMode === 'list' ? (
+              <Map className="w-6 h-6" strokeWidth={2} />
+            ) : (
+              <List className="w-6 h-6" strokeWidth={2} />
+            )}
+          </button>
+
           {/* Plus (Add) Button */}
           <button
             onClick={() => {
@@ -2035,7 +2050,14 @@ export default function Home() {
             )}
 
             {/* Listings View */}
-            {searchLoading ? (
+            {viewMode === 'map' ? (
+              <MapView
+                listings={listings}
+                listingComparisons={listingComparisons}
+                hasDreamApartment={!!dreamApartmentDescription}
+                onListingClick={handleViewDetails}
+              />
+            ) : searchLoading ? (
               <div className="text-center py-12">
                 <div className="text-lg">Searching...</div>
               </div>
