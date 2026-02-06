@@ -162,7 +162,7 @@ export default function DreamApartmentModal({
     >
       <div
         ref={modalRef}
-        className="backdrop-blur-md bg-white/10 border border-white/20 rounded-[30px] max-w-2xl w-full p-8 pb-6 shadow-2xl relative"
+        className="backdrop-blur-md bg-black/60 border border-white/15 rounded-[30px] max-w-2xl w-full p-8 pb-6 shadow-2xl relative"
         style={{
           transform: isAnimating && buttonPosition ? getInitialTransform() : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
