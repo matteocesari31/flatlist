@@ -873,9 +873,9 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               </div>
               </div>
               
-              {/* Go to Original Website Button - Centered between pills and cards */}
+              {/* Go to Original Website Button - explicit spacing so layout never collapses */}
               {listing?.source_url && (
-                <div className="flex-1 flex flex-col justify-center items-start">
+                <div className="mt-4 mb-4 flex-shrink-0">
                   <a
                     href={listing.source_url}
                     target="_blank"
@@ -888,17 +888,19 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 </div>
               )}
 
-              {/* Mapbox 3D map with listing pin - always show frame; map or placeholder inside */}
-              <div className="flex-shrink-0 w-full mt-4">
-                <ListingMap
-                  latitude={metadata?.latitude ?? null}
-                  longitude={metadata?.longitude ?? null}
-                  className="w-full h-[280px]"
-                />
-              </div>
-              
-              {/* Dream Apartment: only show "Set up" prompt when not configured (summary/score are on image overlay) */}
-              <div className="flex-shrink-0 relative">
+              {/* Bottom section: map + dream apartment - mt-auto keeps map bottom-aligned */}
+              <div className="mt-auto flex flex-col flex-shrink-0 w-full">
+                {/* Mapbox 3D map with listing pin - always show frame; map or placeholder inside */}
+                <div className="w-full mt-4">
+                  <ListingMap
+                    latitude={metadata?.latitude ?? null}
+                    longitude={metadata?.longitude ?? null}
+                    className="w-full h-[280px]"
+                  />
+                </div>
+                
+                {/* Dream Apartment: only show "Set up" prompt when not configured (summary/score are on image overlay) */}
+                <div className="relative mt-4">
                 {!hasDreamApartment && (
                   // Show prompt to set up dream apartment (when no dream apartment is set)
                   <div className="bg-gray-800/50 rounded-[20px] p-5 border border-gray-700/50">
@@ -924,6 +926,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>
