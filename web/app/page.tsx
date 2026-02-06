@@ -1618,11 +1618,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white flex">
-      {/* Left Sidebar */}
-      <aside className="fixed left-4 top-4 bottom-4 w-16 rounded-[30px] backdrop-blur-md bg-black/60 border border-white/20 flex flex-col z-30" style={{ backdropFilter: 'blur(12px)' }}>
-        {/* Top Section: Logo */}
-        <div className="flex flex-col items-center pt-6">
+    <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col">
+      {/* Top Bar */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0D0D0D] flex items-center justify-between px-6 z-30">
+        {/* Left Section: Logo and Dream Home */}
+        <div className="flex items-center gap-6">
           {/* Logo */}
           <button
             onClick={() => {
@@ -1644,10 +1644,7 @@ export default function Home() {
           >
             <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
           </button>
-        </div>
 
-        {/* Middle Section: Dream Home Button - Vertically Centered */}
-        <div className="flex-1 flex items-center justify-center">
           {/* Dream Home Button */}
           <button
             onClick={() => setShowDreamApartmentModal(true)}
@@ -1658,8 +1655,8 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Bottom Section: Plus and Profile */}
-        <div className="flex flex-col items-center gap-6 pb-6">
+        {/* Right Section: Plus and Profile */}
+        <div className="flex items-center gap-6">
           {/* Plus (Add) Button */}
           <button
             onClick={() => {
@@ -1699,7 +1696,7 @@ export default function Home() {
                   onClick={() => setShowProfilePopover(false)}
                 />
                 {/* Popover */}
-                <div className="absolute left-full ml-2 top-0 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
+                <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
                   <div className="p-4 border-b border-gray-100">
                     <div className="text-sm font-medium text-gray-900">{user?.email}</div>
                     {/* Subscription Status */}
@@ -1765,7 +1762,7 @@ export default function Home() {
             )}
           </div>
         </div>
-      </aside>
+      </header>
 
       {/* Help Popover - shown when clicked from profile panel */}
       {showHelpPopover && (
@@ -1774,7 +1771,7 @@ export default function Home() {
             className="fixed inset-0 z-40"
             onClick={() => setShowHelpPopover(false)}
           />
-          <div className="fixed left-[80px] top-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
+          <div className="fixed right-6 top-[72px] z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
             <p className="text-sm text-black">
               Have questions, suggestions, or want to report a bug?
             </p>
@@ -1803,7 +1800,7 @@ export default function Home() {
         </>
       )}
 
-      <main className={`flex-1 ml-16 px-6 sm:px-8 pt-8 pb-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`flex-1 px-6 sm:px-8 pt-24 pb-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-gray-900 rounded-[30px] shadow-sm p-8 text-center border border-gray-800">
             <h2 className="text-xl font-semibold mb-2 text-white">Let's start your hunt.</h2>
