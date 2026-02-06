@@ -32,17 +32,49 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
   })()
 
   useEffect(() => {
-    if (!token || !containerRef.current) return
+    if (!token) {
+      console.log('MapView: No token available')
+      return
+    }
 
+    console.log('MapView: Effect running, listings count:', listings.length)
+    
     let mounted = true
     let mapInstance: import('mapbox-gl').Map | null = null
+
+    // Wait for container to be available
+    const checkContainer = () => {
+      if (!mounted) return
+      
+      if (!containerRef.current) {
+        console.log('MapView: Container ref not available yet, retrying...')
+        setTimeout(checkContainer, 50)
+        return
+      }
+
+      console.log('MapView: Container found, dimensions:', {
+        width: containerRef.current.offsetWidth,
+        height: containerRef.current.offsetHeight,
+        visible: containerRef.current.offsetWidth > 0 && containerRef.current.offsetHeight > 0
+      })
+
+      if (containerRef.current.offsetWidth === 0 || containerRef.current.offsetHeight === 0) {
+        console.warn('MapView: Container has zero dimensions!')
+      }
+
+      init()
+    }
 
     const init = async () => {
       try {
         const mapboxgl = (await import('mapbox-gl')).default
 
-        if (!mounted || !containerRef.current) return
+        if (!mounted || !containerRef.current) {
+          console.log('MapView: Aborted - not mounted or no container')
+          return
+        }
 
+        console.log('MapView: Mapbox loaded, setting token and creating map')
         mapboxgl.accessToken = token
 
         // Filter listings with valid coordinates
@@ -63,7 +95,17 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
           centerLng = listingsWithCoords.reduce((sum, l) => sum + (l.listing_metadata?.[0]?.longitude || 0), 0) / listingsWithCoords.length
         }
 
-        if (!mounted || !containerRef.current) return
+        if (!mounted || !containerRef.current) {
+          console.log('MapView: Aborted before map creation')
+          return
+        }
+
+        console.log('MapView: Creating map instance', {
+          container: containerRef.current,
+          center: [centerLng, centerLat],
+          zoom,
+          listingsCount: listingsWithCoords.length
+        })
 
         mapInstance = new mapboxgl.Map({
           container: containerRef.current,
@@ -75,12 +117,18 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
         })
 
         mapRef.current = mapInstance
+        console.log('MapView: Map instance created')
 
         // Set time of day to dusk
         mapInstance.on('load', () => {
-          if (!mounted || !mapInstance) return
+          console.log('MapView: Map loaded event fired')
+          if (!mounted || !mapInstance) {
+            console.log('MapView: Map load handler aborted - not mounted or no instance')
+            return
+          }
           try {
             mapInstance.setConfigProperty('basemap', 'lightPreset', 'dusk')
+            console.log('MapView: Dusk preset applied')
           } catch (error) {
             console.warn('Failed to set map light preset:', error)
           }
@@ -164,17 +212,25 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
         // Handle map errors
         mapInstance.on('error', (e) => {
-          console.error('Mapbox error:', e)
+          console.error('MapView: Mapbox error:', e)
+        })
+
+        mapInstance.on('style.load', () => {
+          console.log('MapView: Map style loaded')
+        })
+
+        mapInstance.on('render', () => {
+          if (mapInstance?.loaded()) {
+            console.log('MapView: Map rendered and loaded')
+          }
         })
       } catch (error) {
-        console.error('Error initializing map:', error)
+        console.error('MapView: Error initializing map:', error)
       }
     }
 
     // Small delay to ensure container is rendered
-    const timer = setTimeout(() => {
-      init()
-    }, 100)
+    const timer = setTimeout(checkContainer, 100)
 
     return () => {
       mounted = false
@@ -203,7 +259,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
   if (!token) {
     return (
-      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm">
+      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
         Add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to show map
       </div>
     )
@@ -217,8 +273,8 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
   if (listingsWithCoords.length === 0) {
     return (
-      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm">
-        No listings with location data available
+      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
+        No listings with location data available ({listings.length} total listings)
       </div>
     )
   }
@@ -226,7 +282,8 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 top-16"
+      className="fixed inset-0 top-16 bg-[#0D0D0D] z-10"
+      style={{ width: '100%', height: 'calc(100vh - 4rem)' }}
     />
   )
 }
