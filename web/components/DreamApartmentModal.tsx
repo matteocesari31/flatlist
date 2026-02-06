@@ -17,14 +17,17 @@ export default function DreamApartmentModal({
   onClose, 
   initialDescription, 
   onSave,
-  isEvaluating = false
+  isEvaluating = false,
+  buttonRef
 }: DreamApartmentModalProps) {
   const [description, setDescription] = useState(initialDescription || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isAnimating, setIsAnimating] = useState(true)
+  const [buttonPosition, setButtonPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
