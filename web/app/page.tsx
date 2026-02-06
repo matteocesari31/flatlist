@@ -1115,9 +1115,9 @@ export default function Home() {
     router.push('/auth')
   }
 
-  const handleViewDetails = (listing: ListingWithMetadata) => {
+  const handleViewDetails = useCallback((listing: ListingWithMetadata) => {
     setSelectedListing(listing)
-  }
+  }, [])
 
   // Trigger single-listing evaluation when user opens detail and there's no score yet
   const handleEvaluateListing = useCallback(async () => {
@@ -1819,7 +1819,7 @@ export default function Home() {
         </>
       )}
 
-      <main className={`flex-1 px-6 sm:px-8 pt-24 pb-8 ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`flex-1 ${viewMode === 'map' ? '' : 'px-6 sm:px-8 pt-24 pb-8'} ${allListings.length === 0 && viewMode !== 'map' ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
           <div className="bg-gray-900 rounded-[30px] shadow-sm p-8 text-center border border-gray-800">
             <h2 className="text-xl font-semibold mb-2 text-white">Let's start your hunt.</h2>

@@ -194,11 +194,15 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
                 `
               }
 
-              // Add click handler
-              el.addEventListener('click', (e) => {
+              // Add click handler - use a stable reference
+              const handleClick = (e: MouseEvent) => {
                 e.stopPropagation()
                 onListingClick(listing)
-              })
+              }
+              el.addEventListener('click', handleClick)
+              
+              // Store handler for cleanup
+              ;(el as any)._clickHandler = handleClick
 
               // Create marker
               const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
@@ -236,8 +240,13 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
       mounted = false
       clearTimeout(timer)
       // Clean up markers
-      markersRef.current.forEach(({ marker }) => {
+      markersRef.current.forEach(({ marker, element }) => {
         try {
+          // Remove click handler
+          const handler = (element as any)?._clickHandler
+          if (handler) {
+            element.removeEventListener('click', handler)
+          }
           marker.remove()
         } catch (e) {
           // Ignore cleanup errors
@@ -282,8 +291,8 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 top-16 bg-[#0D0D0D] z-10"
-      style={{ width: '100%', height: 'calc(100vh - 4rem)' }}
+      className="fixed inset-0 top-16 left-0 right-0 bottom-0 bg-[#0D0D0D] z-10"
+      style={{ width: '100vw', height: 'calc(100vh - 4rem)' }}
     />
   )
 }
