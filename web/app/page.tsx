@@ -57,7 +57,7 @@ export default function Home() {
   const [upgradeModalTrigger, setUpgradeModalTrigger] = useState<'invite' | 'listings' | 'general'>('general')
   const [showDreamApartmentModal, setShowDreamApartmentModal] = useState(false)
   const [dreamApartmentDescription, setDreamApartmentDescription] = useState<string | null>(null)
-  const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map())
+  const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map([]))
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
@@ -69,14 +69,14 @@ export default function Home() {
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
   const masonryContainerRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map())
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map([]))
+  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map([]))
   const [containerHeight, setContainerHeight] = useState<number>(0)
 
   // Calculate masonry layout positions
   useEffect(() => {
     if (!masonryContainerRef.current || listings.length === 0) {
-      setMasonryPositions(new Map())
+      setMasonryPositions(new Map([]))
       setContainerHeight(0)
       return
     }
@@ -92,7 +92,7 @@ export default function Home() {
       const columnWidth = (containerWidth - (gap * (columns - 1))) / columns
 
       const columnHeights = new Array(columns).fill(0)
-      const positions = new Map<string, { top: number; left: number; width: number }>()
+      const positions = new Map<string, { top: number; left: number; width: number }>([])
       const spacing = 24
 
       // Place cards in row-major order (left to right, then next row) so a single card in a row is always on the left
@@ -655,7 +655,7 @@ export default function Home() {
         return
       }
 
-      const comparisonsMap = new Map<string, { score: number; summary: string }>()
+      const comparisonsMap = new Map<string, { score: number; summary: string }>([])
       data?.forEach(comp => {
         comparisonsMap.set(comp.listing_id, {
           score: comp.match_score,
@@ -686,7 +686,7 @@ export default function Home() {
 
       // Clear existing comparisons when description is updated (or cleared)
       // This ensures old scores/summaries don't persist when the dream apartment changes
-      setListingComparisons(new Map())
+      setListingComparisons(new Map([]))
 
       // If description is cleared, stop here
       if (!description) {
