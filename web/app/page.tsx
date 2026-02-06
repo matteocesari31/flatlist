@@ -14,7 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle, House, List, Map } from 'lucide-react'
+import { MessageCircle, House, List, Map as MapIcon } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
 import MapView from '@/components/MapView'
 
@@ -57,7 +57,7 @@ export default function Home() {
   const [upgradeModalTrigger, setUpgradeModalTrigger] = useState<'invite' | 'listings' | 'general'>('general')
   const [showDreamApartmentModal, setShowDreamApartmentModal] = useState(false)
   const [dreamApartmentDescription, setDreamApartmentDescription] = useState<string | null>(null)
-  const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map([]))
+  const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map<string, { score: number; summary: string }>())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
@@ -69,8 +69,8 @@ export default function Home() {
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
   const masonryContainerRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map([]))
-  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map([]))
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map<string, HTMLDivElement>())
+  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map<string, { top: number; left: number; width: number }>())
   const [containerHeight, setContainerHeight] = useState<number>(0)
 
   // Calculate masonry layout positions
@@ -1670,7 +1670,7 @@ export default function Home() {
             title={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}
           >
             {viewMode === 'list' ? (
-              <Map className="w-6 h-6" strokeWidth={2} />
+              <MapIcon className="w-6 h-6" strokeWidth={2} />
             ) : (
               <List className="w-6 h-6" strokeWidth={2} />
             )}
