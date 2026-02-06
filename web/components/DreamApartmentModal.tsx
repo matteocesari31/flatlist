@@ -9,6 +9,7 @@ interface DreamApartmentModalProps {
   initialDescription: string | null
   onSave: (description: string) => Promise<void>
   isEvaluating?: boolean
+  buttonRef?: React.RefObject<HTMLButtonElement | null>
 }
 
 export default function DreamApartmentModal({ 
@@ -33,6 +34,19 @@ export default function DreamApartmentModal({
       setSuccess(false)
       setIsAnimating(true)
       
+      // Get button position for morph animation
+      if (buttonRef?.current) {
+        const rect = buttonRef.current.getBoundingClientRect()
+        setButtonPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height
+        })
+      } else {
+        setButtonPosition(null)
+      }
+      
       // Small delay to ensure the initial state is rendered, then start animation
       const timer = setTimeout(() => {
         setIsAnimating(false)
@@ -41,7 +55,7 @@ export default function DreamApartmentModal({
       // Focus textarea after animation completes
       const focusTimer = setTimeout(() => {
         textareaRef.current?.focus()
-      }, 250)
+      }, 300)
       
       return () => {
         clearTimeout(timer)
@@ -51,11 +65,12 @@ export default function DreamApartmentModal({
       document.body.style.overflow = 'unset'
       // Reset animation state when modal closes so it's ready for next open
       setIsAnimating(true)
+      setButtonPosition(null)
     }
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen, initialDescription])
+  }, [isOpen, initialDescription, buttonRef])
 
   // Auto-resize textarea
   useEffect(() => {
@@ -116,27 +131,46 @@ export default function DreamApartmentModal({
 
   if (!isOpen) return null
 
+  // Calculate initial transform for morph animation
+  const getInitialTransform = () => {
+    if (!buttonPosition) return 'scale(1)'
+    // Use viewport center as target
+    const centerX = window.innerWidth / 2
+    const centerY = window.innerHeight / 2
+    // Estimate modal size (max-w-2xl ≈ 672px, but we'll use a reasonable estimate)
+    const estimatedModalWidth = 600
+    const estimatedModalHeight = 400
+    const scaleX = buttonPosition.width / estimatedModalWidth
+    const scaleY = buttonPosition.height / estimatedModalHeight
+    const translateX = buttonPosition.x - centerX
+    const translateY = buttonPosition.y - centerY
+    return `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       style={{ 
         opacity: isAnimating ? 0 : 1,
-        transition: 'opacity 200ms ease-out'
+        transition: 'opacity 200ms ease-out',
+        backdropFilter: 'blur(12px)'
       }}
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[20px] max-w-2xl w-full p-8 pb-6 shadow-2xl border border-gray-700 relative"
+        ref={modalRef}
+        className="backdrop-blur-md bg-white/10 border border-white/20 rounded-[30px] max-w-2xl w-full p-8 pb-6 shadow-2xl relative"
         style={{
-          transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
+          transform: isAnimating && buttonPosition ? getInitialTransform() : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
-          transition: 'transform 200ms ease-out, opacity 200ms ease-out'
+          transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease-out',
+          backdropFilter: 'blur(12px)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors"
+          className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
           aria-label="Close"
         >
           <svg

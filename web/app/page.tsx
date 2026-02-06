@@ -62,6 +62,7 @@ export default function Home() {
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const dreamApartmentButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
@@ -1648,6 +1649,7 @@ export default function Home() {
         {/* Center Section: Dream Apartment Button */}
         <div className="flex-1 flex items-center justify-center">
           <button
+            ref={dreamApartmentButtonRef}
             onClick={() => setShowDreamApartmentModal(true)}
             className="px-4 py-3 backdrop-blur-md bg-white/10 border border-white/20 text-white rounded-[30px] text-sm font-medium hover:bg-white/20 transition-colors"
             style={{ backdropFilter: 'blur(12px)' }}
@@ -2144,6 +2146,7 @@ export default function Home() {
         initialDescription={dreamApartmentDescription}
         onSave={saveDreamApartment}
         isEvaluating={isEvaluatingListings}
+        buttonRef={dreamApartmentButtonRef}
       />
 
       {/* Remove Member Confirmation Modal */}
