@@ -146,6 +146,13 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // When description is updated, delete existing comparisons to force re-evaluation
+    // This ensures old scores/summaries don't persist when the dream apartment changes
+    await supabase
+      .from('listing_comparisons')
+      .delete()
+      .eq('user_id', user.id)
+
     // Trigger comparison for all listings if requested
     if (trigger_comparison) {
       try {

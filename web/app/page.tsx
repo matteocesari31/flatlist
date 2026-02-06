@@ -681,9 +681,12 @@ export default function Home() {
 
       setDreamApartmentDescription(description || null)
 
-      // If description is cleared, clear comparisons
+      // Clear existing comparisons when description is updated (or cleared)
+      // This ensures old scores/summaries don't persist when the dream apartment changes
+      setListingComparisons(new Map())
+
+      // If description is cleared, stop here
       if (!description) {
-        setListingComparisons(new Map())
         setIsEvaluatingListings(false)
         return
       }
