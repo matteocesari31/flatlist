@@ -1620,10 +1620,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col">
       {/* Top Bar */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0D0D0D] flex items-center justify-between px-6 z-30">
-        {/* Left Section: Logo and Dream Home */}
-        <div className="flex items-center gap-6">
-          {/* Logo */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0D0D0D] flex items-center px-6 z-30">
+        {/* Left Section: Logo */}
+        <div className="flex items-center">
           <button
             onClick={() => {
               setSearchQuery('')
@@ -1644,14 +1643,17 @@ export default function Home() {
           >
             <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
           </button>
+        </div>
 
-          {/* Dream Home Button */}
+        {/* Center Section: Dream Apartment Button */}
+        <div className="flex-1 flex items-center justify-center">
           <button
             onClick={() => setShowDreamApartmentModal(true)}
-            className="text-white hover:opacity-70 transition-opacity"
+            className="px-4 py-3 backdrop-blur-md bg-white/10 border border-white/20 text-white rounded-[30px] text-sm font-medium hover:bg-white/20 transition-colors"
+            style={{ backdropFilter: 'blur(12px)' }}
             title="My Dream Apartment"
           >
-            <House className="w-6 h-6" strokeWidth={2} />
+            My Dream Apartment
           </button>
         </div>
 
