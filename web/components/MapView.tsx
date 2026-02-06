@@ -218,7 +218,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             mapInstance.easeTo({
               center: [centerLng, centerLat],
               zoom: targetZoom,
-              duration: 2000, // 2 second animation
+              duration: 4000, // 4 second animation
               easing: (t) => {
                 // Ease-out cubic function for smooth deceleration
                 return 1 - Math.pow(1 - t, 3)
@@ -228,7 +228,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             // Create markers after zoom animation completes
             setTimeout(() => {
               createMarkers()
-            }, 2100) // Slightly longer than animation duration
+            }, 4100) // Slightly longer than animation duration
           }, 500) // Small delay after map loads
         })
 
