@@ -101,7 +101,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
           listingsCount: listingsWithCoords.length
         })
 
-        // Start at globe level (zoom 1)
+        // Start at globe level (zoom 1), then ease to angled view like detail panel
         mapInstance = new mapboxgl.Map({
           container: containerRef.current,
           style: 'mapbox://styles/mapbox/standard',
@@ -218,6 +218,8 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             mapInstance.easeTo({
               center: [centerLng, centerLat],
               zoom: targetZoom,
+              pitch: 60,   // Angled view like detail panel (ListingMap)
+              bearing: -17,
               duration: 4000, // 4 second animation
               easing: (t) => {
                 // Ease-out cubic function for smooth deceleration
