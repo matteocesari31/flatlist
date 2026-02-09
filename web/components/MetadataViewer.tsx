@@ -107,19 +107,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
     setCurrentImageIndex(0)
   }, [listing?.id])
 
-  // Sync right column height with image container height
-  useEffect(() => {
-    if (imageContainerRef.current && rightColumnRef.current) {
-      const updateHeight = () => {
-        if (imageContainerRef.current && rightColumnRef.current) {
-          rightColumnRef.current.style.minHeight = `${imageContainerRef.current.offsetHeight}px`
-        }
-      }
-      updateHeight()
-      window.addEventListener('resize', updateHeight)
-      return () => window.removeEventListener('resize', updateHeight)
-    }
-  }, [images, listing?.id])
+  // Optional: sync right column min-height with image when present (can cause layout issues; disabled so map stays bottom-aligned)
+  // useEffect(() => { ... }, [images, listing?.id])
 
   const nextImage = () => {
     if (images.length > 0) {
@@ -815,7 +804,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
             )}
 
             {/* Right Column - Price/Address and AI Inferred Attributes */}
-            <div className="flex-shrink-0 w-[30%] flex flex-col pr-4 h-full justify-between" ref={rightColumnRef}>
+            <div className="flex-shrink-0 w-[30%] flex flex-col pr-4 min-h-0" ref={rightColumnRef}>
               <div className="flex-shrink-0">
                 {/* Price, Address, and Google Maps Link */}
                 <div className="space-y-2">
@@ -875,7 +864,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               
               {/* Go to Original Website Button - explicit spacing so layout never collapses */}
               {listing?.source_url && (
-                <div className="mt-4 mb-4 flex-shrink-0">
+                <div className="mt-6 mb-6 flex-shrink-0">
                   <a
                     href={listing.source_url}
                     target="_blank"
@@ -888,10 +877,13 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 </div>
               )}
 
-              {/* Bottom section: map + dream apartment - mt-auto keeps map bottom-aligned */}
-              <div className="mt-auto flex flex-col flex-shrink-0 w-full">
+              {/* Spacer: pushes map block to the bottom */}
+              <div className="flex-1 min-h-[1rem]" aria-hidden="true" />
+
+              {/* Bottom section: map + dream apartment - always at bottom */}
+              <div className="flex flex-col flex-shrink-0 w-full">
                 {/* Mapbox 3D map with listing pin - always show frame; map or placeholder inside */}
-                <div className="w-full mt-4">
+                <div className="w-full">
                   <ListingMap
                     latitude={metadata?.latitude ?? null}
                     longitude={metadata?.longitude ?? null}
@@ -900,8 +892,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                 </div>
                 
                 {/* Dream Apartment: only show "Set up" prompt when not configured (summary/score are on image overlay) */}
-                <div className="relative mt-4">
                 {!hasDreamApartment && (
+                <div className="relative mt-4">
                   // Show prompt to set up dream apartment (when no dream apartment is set)
                   <div className="bg-gray-800/50 rounded-[20px] p-5 border border-gray-700/50">
                     <div className="flex items-center gap-4">
@@ -925,8 +917,8 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       </div>
                     </div>
                   </div>
-                )}
                 </div>
+                )}
               </div>
             </div>
           </div>
