@@ -114,41 +114,87 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
         mapRef.current = mapInstance
         console.log('MapView: Map instance created')
 
-        // Set time of day to dusk and animate zoom
-        mapInstance.on('load', () => {
-          console.log('MapView: Map loaded event fired')
-          if (!mounted || !mapInstance) {
-            console.log('MapView: Map load handler aborted - not mounted or no instance')
-            return
-          }
-          try {
-            mapInstance.setConfigProperty('basemap', 'lightPreset', 'dusk')
-            console.log('MapView: Dusk preset applied')
-          } catch (error) {
-            console.warn('Failed to set map light preset:', error)
-          }
+        // Clustering function: detect overlaps and create aggregated markers
+        const updateMarkers = () => {
+            if (!mounted || !mapInstance || listingsWithCoords.length === 0) {
+              // Still need to define it for the event listeners
+              return
+            }
 
-          // Create custom markers for each listing after map loads
-          const createMarkers = () => {
-            if (!mounted || !mapInstance || listingsWithCoords.length === 0) return
-            
-            listingsWithCoords.forEach(listing => {
-              if (!mounted || !mapInstance) return
-              
+            // Remove all existing markers
+            markersRef.current.forEach(({ marker }) => {
+              try {
+                marker.remove()
+              } catch (e) {
+                // Ignore cleanup errors
+              }
+            })
+            markersRef.current.clear()
+
+            // Prepare marker data with screen positions
+            const markerData = listingsWithCoords.map(listing => {
               const metadata = listing.listing_metadata?.[0]
-              if (!metadata?.latitude || !metadata?.longitude) return
+              if (!metadata?.latitude || !metadata?.longitude) return null
 
               const matchScore = hasDreamApartment ? listingComparisons.get(listing.id)?.score : undefined
+              const point = mapInstance!.project([metadata.longitude, metadata.latitude])
+              
+              return {
+                listing,
+                score: matchScore ?? 0,
+                lngLat: [metadata.longitude, metadata.latitude] as [number, number],
+                screenX: point.x,
+                screenY: point.y,
+                metadata
+              }
+            }).filter((item): item is NonNullable<typeof item> => item !== null)
 
-              // Create custom HTML element for marker (AI score tag)
+            // Cluster markers that overlap (within 50px of each other)
+            const CLUSTER_DISTANCE = 50
+            const clusters: Array<Array<typeof markerData[0]>> = []
+            const processed = new Set<number>()
+
+            markerData.forEach((marker, index) => {
+              if (processed.has(index)) return
+
+              const cluster = [marker]
+              processed.add(index)
+
+              // Find all markers within cluster distance
+              markerData.forEach((otherMarker, otherIndex) => {
+                if (processed.has(otherIndex) || index === otherIndex) return
+
+                const dx = marker.screenX - otherMarker.screenX
+                const dy = marker.screenY - otherMarker.screenY
+                const distance = Math.sqrt(dx * dx + dy * dy)
+
+                if (distance < CLUSTER_DISTANCE) {
+                  cluster.push(otherMarker)
+                  processed.add(otherIndex)
+                }
+              })
+
+              clusters.push(cluster)
+            })
+
+            // Create markers for each cluster
+            clusters.forEach(cluster => {
+              if (cluster.length === 0) return
+
+              // Sort by score (highest first) to get the best one
+              cluster.sort((a, b) => b.score - a.score)
+              const primaryMarker = cluster[0]
+              const hiddenCount = cluster.length - 1
+
+              // Create marker element
               const el = document.createElement('div')
               el.className = 'cursor-pointer'
               el.style.width = 'fit-content'
               el.style.height = 'fit-content'
 
-              if (hasDreamApartment && matchScore !== undefined) {
-                // Create AI score tag marker
-                const scoreColor = getScoreColor(matchScore)
+              if (hasDreamApartment && primaryMarker.score > 0) {
+                // Create AI score tag marker with +n if clustered
+                const scoreColor = getScoreColor(primaryMarker.score)
                 el.innerHTML = `
                   <div style="
                     display: flex;
@@ -173,7 +219,13 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
                       font-size: 0.875rem;
                       font-weight: 600;
                       color: white;
-                    ">${matchScore}</span>
+                    ">${primaryMarker.score}</span>
+                    ${hiddenCount > 0 ? `<span style="
+                      font-size: 0.75rem;
+                      font-weight: 500;
+                      color: rgba(255, 255, 255, 0.7);
+                      margin-left: 0.125rem;
+                    ">+${hiddenCount}</span>` : ''}
                   </div>
                 `
               } else {
@@ -191,23 +243,36 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
                 `
               }
 
-              // Add click handler - use a stable reference
+              // Add click handler - open the primary (highest score) listing
               const handleClick = (e: MouseEvent) => {
                 e.stopPropagation()
-                onListingClick(listing)
+                onListingClick(primaryMarker.listing)
               }
               el.addEventListener('click', handleClick)
-              
-              // Store handler for cleanup
               ;(el as any)._clickHandler = handleClick
 
-              // Create marker
+              // Create marker at the primary marker's location
               const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
-                .setLngLat([metadata.longitude, metadata.latitude])
+                .setLngLat(primaryMarker.lngLat)
                 .addTo(mapInstance!)
 
-              markersRef.current.set(listing.id, { marker, element: el })
+              // Store using primary marker's listing ID
+              markersRef.current.set(primaryMarker.listing.id, { marker, element: el })
             })
+          }
+
+        // Set time of day to dusk and animate zoom
+        mapInstance.on('load', () => {
+          console.log('MapView: Map loaded event fired')
+          if (!mounted || !mapInstance) {
+            console.log('MapView: Map load handler aborted - not mounted or no instance')
+            return
+          }
+          try {
+            mapInstance.setConfigProperty('basemap', 'lightPreset', 'dusk')
+            console.log('MapView: Dusk preset applied')
+          } catch (error) {
+            console.warn('Failed to set map light preset:', error)
           }
 
           // Animate zoom from globe level to target zoom, then create markers
@@ -229,7 +294,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
             // Create markers after zoom animation completes
             setTimeout(() => {
-              createMarkers()
+              updateMarkers()
             }, 4100) // Slightly longer than animation duration
           }, 500) // Small delay after map loads
         })
@@ -248,6 +313,23 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             console.log('MapView: Map rendered and loaded')
           }
         })
+
+        // Recalculate clusters when map moves or zooms
+        const updateClusters = () => {
+          if (!mounted || !mapInstance) return
+          // Small debounce to avoid too many recalculations
+          clearTimeout((mapInstance as any)._clusterUpdateTimer)
+          ;(mapInstance as any)._clusterUpdateTimer = setTimeout(() => {
+            if (mounted && mapInstance) {
+              updateMarkers()
+            }
+          }, 100)
+        }
+
+        mapInstance.on('moveend', updateClusters)
+        mapInstance.on('zoomend', updateClusters)
+        mapInstance.on('rotateend', updateClusters)
+        mapInstance.on('pitchend', updateClusters)
       } catch (error) {
         console.error('MapView: Error initializing map:', error)
       }
