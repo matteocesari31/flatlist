@@ -14,7 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle, House, List, Map as MapIcon } from 'lucide-react'
+import { MessageCircle, House, List, Map as MapIcon, Sparkles } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
 import MapView from '@/components/MapView'
 
@@ -1653,11 +1653,12 @@ export default function Home() {
           <button
             ref={dreamApartmentButtonRef}
             onClick={() => setShowDreamApartmentModal(true)}
-            className="px-4 py-3 backdrop-blur-md bg-white/10 border border-white/20 text-white rounded-[30px] text-sm font-medium hover:bg-white/20 transition-colors"
+            className="px-4 py-3 backdrop-blur-md bg-white/10 border border-white/20 text-white rounded-[30px] text-sm font-medium hover:bg-white/20 transition-colors flex items-center gap-2"
             style={{ backdropFilter: 'blur(12px)' }}
-            title="My Dream Apartment"
+            title="Describe your dream apartment"
           >
-            My Dream Apartment
+            <Sparkles className="w-4 h-4" strokeWidth={2} />
+            Describe your dream apartment...
           </button>
         </div>
 
