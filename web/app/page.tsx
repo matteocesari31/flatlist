@@ -1594,38 +1594,9 @@ export default function Home() {
                     setShowHelpPopover(false)
                   }}
                 />
-                {/* Wrapper: help panel on the left, profile on the right */}
+                {/* Wrapper: profile next to button (right), help panel to the left when open */}
                 <div className="absolute right-0 top-full z-50 mt-2 flex flex-row-reverse items-stretch gap-2">
-                  {/* Help panel - to the left of profile when open */}
-                  {showHelpPopover && (
-                    <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
-                      <p className="text-sm text-gray-200">
-                        Have questions, suggestions, or want to report a bug?
-                      </p>
-                      <p className="mt-2 text-sm text-gray-300">
-                        Write to us at{' '}
-                        <button
-                          onClick={async (e) => {
-                            e.preventDefault()
-                            try {
-                              await navigator.clipboard.writeText('team@flatlist.app')
-                              setEmailCopied(true)
-                              setTimeout(() => {
-                                setEmailCopied(false)
-                                setShowHelpPopover(false)
-                              }, 1500)
-                            } catch (err) {
-                              console.error('Failed to copy:', err)
-                            }
-                          }}
-                          className="font-medium text-white hover:underline"
-                        >
-                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
-                        </button>
-                      </p>
-                    </div>
-                  )}
-                  {/* Profile panel - dark theme */}
+                  {/* Profile panel - dark theme (stays next to M button) */}
                   <div className="min-w-[260px] rounded-xl border border-gray-700 bg-[#0B0B0B] shadow-lg">
                     <div className="border-b border-gray-700 p-4">
                       <div className="text-sm font-medium text-white">{user?.email}</div>
@@ -1685,6 +1656,35 @@ export default function Home() {
                       </button>
                     </div>
                   </div>
+                  {/* Help panel - to the left of profile when open */}
+                  {showHelpPopover && (
+                    <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
+                      <p className="text-sm text-gray-200">
+                        Have questions, suggestions, or want to report a bug?
+                      </p>
+                      <p className="mt-2 text-sm text-gray-300">
+                        Write to us at{' '}
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault()
+                            try {
+                              await navigator.clipboard.writeText('team@flatlist.app')
+                              setEmailCopied(true)
+                              setTimeout(() => {
+                                setEmailCopied(false)
+                                setShowHelpPopover(false)
+                              }, 1500)
+                            } catch (err) {
+                              console.error('Failed to copy:', err)
+                            }
+                          }}
+                          className="font-medium text-white hover:underline"
+                        >
+                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
+                        </button>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </>
             )}
