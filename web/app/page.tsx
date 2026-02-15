@@ -1610,8 +1610,17 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen bg-[#0D0D0D] flex flex-col items-center justify-center">
+        <video
+          src="/flatlist rotating logo.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-32 h-32 object-contain"
+          aria-hidden
+        />
+        <div className="mt-4 text-lg text-white">Loading...</div>
       </div>
     )
   }
