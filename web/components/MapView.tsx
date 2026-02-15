@@ -42,10 +42,6 @@ function getListingImage(listing: ListingWithMetadata): string | null {
   return imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
 }
 
-const TRANSIT_SOURCE_ID = 'transit-line-highlight'
-const TRANSIT_GLOW_LAYER_ID = 'transit-line-highlight-glow'
-const TRANSIT_LINE_LAYER_ID = 'transit-line-highlight-line'
-
 export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, dreamApartmentDescription, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('mapbox-gl').Map | null>(null)
@@ -57,6 +53,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
   const setMapReadyRef = useRef(setMapReady)
   setMapReadyRef.current = setMapReady
   const [transitGeo, setTransitGeo] = useState<GeoJSON.FeatureCollection | null>(null)
+  const [transitOverlay, setTransitOverlay] = useState<{ paths: string[]; width: number; height: number } | null>(null)
 
   // When switching back to map view, resize the map so it fills the container (it was hidden with display:none)
   useEffect(() => {
@@ -106,60 +103,43 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
     }
   }, [dreamApartmentDescription, listings])
 
-  // Add or remove transit highlight layer when map is ready and transit geo is available
+  // Draw transit line in an SVG overlay above the map so it keeps true colors (not affected by map style)
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !mapReady) return
-
-    const removeLayers = () => {
-      try {
-        if (map.getLayer(TRANSIT_LINE_LAYER_ID)) map.removeLayer(TRANSIT_LINE_LAYER_ID)
-        if (map.getLayer(TRANSIT_GLOW_LAYER_ID)) map.removeLayer(TRANSIT_GLOW_LAYER_ID)
-        if (map.getSource(TRANSIT_SOURCE_ID)) map.removeSource(TRANSIT_SOURCE_ID)
-      } catch (_) {}
+    const container = containerRef.current
+    if (!map || !mapReady || !container) return
+    if (!transitGeo || transitGeo.features.length === 0) {
+      setTransitOverlay(null)
+      return
     }
 
-    if (transitGeo && transitGeo.features.length > 0) {
-      removeLayers()
-      map.addSource(TRANSIT_SOURCE_ID, {
-        type: 'geojson',
-        data: transitGeo,
-      })
-      // Light blue highlight with glow underneath
-      map.addLayer({
-        id: TRANSIT_GLOW_LAYER_ID,
-        type: 'line',
-        source: TRANSIT_SOURCE_ID,
-        paint: {
-          'line-color': '#7dd3fc',
-          'line-width': 14,
-          'line-opacity': 0.4,
-          'line-blur': 0.5,
-        },
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-      })
-      // Core line: light blue, full opacity
-      map.addLayer({
-        id: TRANSIT_LINE_LAYER_ID,
-        type: 'line',
-        source: TRANSIT_SOURCE_ID,
-        paint: {
-          'line-color': '#7dd3fc',
-          'line-width': 5,
-          'line-opacity': 1,
-        },
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-      })
-    } else {
-      removeLayers()
+    const updateOverlay = () => {
+      const m = mapRef.current
+      const c = containerRef.current
+      if (!m || !c || !transitGeo) return
+      const w = c.offsetWidth
+      const h = c.offsetHeight
+      const paths: string[] = []
+      for (const feature of transitGeo.features) {
+        const geom = feature.geometry
+        if (geom.type !== 'LineString' || !geom.coordinates.length) continue
+        const pts = geom.coordinates.map((coord: number[]) => m.project([coord[0], coord[1]]))
+        const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+        paths.push(d)
+      }
+      if (paths.length) setTransitOverlay({ paths, width: w, height: h })
     }
-    return removeLayers
+
+    updateOverlay()
+    map.on('move', updateOverlay)
+    map.on('moveend', updateOverlay)
+    map.on('resize', updateOverlay)
+    return () => {
+      map.off('move', updateOverlay)
+      map.off('moveend', updateOverlay)
+      map.off('resize', updateOverlay)
+      setTransitOverlay(null)
+    }
   }, [mapReady, transitGeo])
 
   const token = (() => {
@@ -555,6 +535,45 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
         className="fixed inset-0 z-10"
         style={{ width: '100vw', height: '100vh' }}
       />
+      {/* Transit line SVG overlay: sits above the map so color is not affected by map style */}
+      {transitOverlay && transitOverlay.paths.length > 0 && (
+        <div
+          className="fixed inset-0 z-20 pointer-events-none"
+          style={{ width: '100vw', height: '100vh' }}
+          aria-hidden
+        >
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${transitOverlay.width} ${transitOverlay.height}`}
+            preserveAspectRatio="none"
+            className="block w-full h-full"
+          >
+            {transitOverlay.paths.map((d, i) => (
+              <g key={i}>
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="#7dd3fc"
+                  strokeWidth={14}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={0.4}
+                />
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="#7dd3fc"
+                  strokeWidth={5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={1}
+                />
+              </g>
+            ))}
+          </svg>
+        </div>
+      )}
       {hoverPreview && (
         <div
           className="fixed z-20 pointer-events-none"
