@@ -5,7 +5,6 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis, House, Sparkles } from 'lucide-react'
 import ListingMap from './ListingMap'
-import Tooltip from '@/components/Tooltip'
 
 interface MetadataViewerProps {
   listing: ListingWithMetadata | null
@@ -681,7 +680,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
         {/* Delete button */}
         {onDelete && listing && (
-          <Tooltip content="Delete listing">
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -705,7 +703,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               />
             </svg>
           </button>
-          </Tooltip>
         )}
 
         {/* Content */}

@@ -1,11 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 const TOOLTIP_OFFSET = 8
 const TOOLTIP_EDGE_PADDING = 12
-const TOOLTIP_MAX_WIDTH = 280
 
 type Placement = 'top' | 'bottom'
 
@@ -19,20 +18,18 @@ interface TooltipProps {
 
 export default function Tooltip({ content, children, placement = 'top', showWhen = true }: TooltipProps) {
   const triggerRef = useRef<HTMLDivElement>(null)
+  const tooltipBodyRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [coords, setCoords] = useState<{ top: number; left: number; placement: Placement } | null>(null)
+  const [positionReady, setPositionReady] = useState(false)
 
   const updatePosition = useCallback(() => {
     const el = triggerRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const viewW = typeof window !== 'undefined' ? window.innerWidth : 800
     let top: number
     let place: Placement = placement
-    let left = rect.left + rect.width / 2
-    const minLeft = TOOLTIP_MAX_WIDTH / 2 + TOOLTIP_EDGE_PADDING
-    const maxLeft = viewW - TOOLTIP_MAX_WIDTH / 2 - TOOLTIP_EDGE_PADDING
-    left = Math.max(minLeft, Math.min(maxLeft, left))
+    const left = rect.left + rect.width / 2
     const spaceAbove = rect.top
     if (placement === 'top' && spaceAbove >= 40) {
       top = rect.top - TOOLTIP_OFFSET
@@ -45,6 +42,7 @@ export default function Tooltip({ content, children, placement = 'top', showWhen
       place = 'top'
     }
     setCoords({ top, left, placement: place })
+    setPositionReady(false)
   }, [placement])
 
   const show = useCallback(() => {
@@ -53,7 +51,27 @@ export default function Tooltip({ content, children, placement = 'top', showWhen
     setVisible(true)
   }, [showWhen, updatePosition])
 
-  const hide = useCallback(() => setVisible(false), [])
+  const hide = useCallback(() => {
+    setVisible(false)
+    setPositionReady(false)
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!visible || !coords || !tooltipBodyRef.current) return
+    const viewW = window.innerWidth
+    const width = tooltipBodyRef.current.offsetWidth
+    const halfWidth = width / 2
+    let left = coords.left
+    if (left - halfWidth < TOOLTIP_EDGE_PADDING) {
+      left = TOOLTIP_EDGE_PADDING + halfWidth
+    } else if (left + halfWidth > viewW - TOOLTIP_EDGE_PADDING) {
+      left = viewW - TOOLTIP_EDGE_PADDING - halfWidth
+    }
+    if (left !== coords.left) {
+      setCoords((prev) => prev ? { ...prev, left } : null)
+    }
+    setPositionReady(true)
+  }, [visible, coords?.top, coords?.placement])
 
   useEffect(() => {
     if (!visible) return
@@ -73,9 +91,11 @@ export default function Tooltip({ content, children, placement = 'top', showWhen
         left: coords.left,
         top: coords.top,
         transform: coords.placement === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+        opacity: positionReady ? 1 : 0,
       }}
     >
       <div
+        ref={tooltipBodyRef}
         className="rounded-[14px] backdrop-blur-md bg-black/60 border border-white/15 text-white text-xs font-medium px-2 py-1.5 shadow-lg whitespace-nowrap"
         style={{ backdropFilter: 'blur(12px)' }}
       >
