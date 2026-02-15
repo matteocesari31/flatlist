@@ -1515,27 +1515,7 @@ export default function Home() {
       <header className={`fixed top-0 left-0 right-0 h-16 flex items-center px-6 z-30 ${viewMode === 'map' ? 'bg-transparent' : 'bg-[#0B0B0B]'}`}>
         {/* Left Section: Logo */}
         <div className="flex items-center">
-          <button
-            onClick={() => {
-              setSearchQuery('')
-              setConfirmedLocation(null)
-              // Ensure listings are sorted by saved_at (most recent first)
-              const sortedAllListings = [...allListings].sort((a, b) => {
-                const dateA = new Date(a.saved_at || a.created_at || 0).getTime()
-                const dateB = new Date(b.saved_at || b.created_at || 0).getTime()
-                return dateB - dateA // Descending: most recent first
-              })
-              setListings(sortedAllListings)
-              setSearchExplanation('')
-              setSearchFilters({})
-              setSearchResultCount(0)
-            }}
-            className="cursor-pointer"
-          >
-            <Tooltip content="Clear search">
-              <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
-            </Tooltip>
-          </button>
+          <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
         </div>
 
         {/* Center Section: Dream Apartment Button */}

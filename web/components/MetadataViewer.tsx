@@ -729,7 +729,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                     <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md flex flex-col gap-2">
                       {/* AI Score tag - on top of panel */}
                       {matchScore !== undefined && (
-                        <Tooltip content={`Match score: ${matchScore}%`}>
                         <div 
                           className="self-start px-4 py-2 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
                           style={{ backdropFilter: 'blur(12px)' }}
@@ -737,7 +736,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
                           <span className="text-base font-semibold text-white">AI Score: {matchScore}</span>
                         </div>
-                        </Tooltip>
                       )}
                       {/* Glassmorphism panel with summary - same color as AI score tag */}
                       <div 

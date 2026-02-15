@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 const TOOLTIP_OFFSET = 8
+const TOOLTIP_EDGE_PADDING = 12
+const TOOLTIP_MAX_WIDTH = 280
 
 type Placement = 'top' | 'bottom'
 
@@ -24,11 +26,14 @@ export default function Tooltip({ content, children, placement = 'top', showWhen
     const el = triggerRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
+    const viewW = typeof window !== 'undefined' ? window.innerWidth : 800
     let top: number
     let place: Placement = placement
-    const left = rect.left + rect.width / 2
+    let left = rect.left + rect.width / 2
+    const minLeft = TOOLTIP_MAX_WIDTH / 2 + TOOLTIP_EDGE_PADDING
+    const maxLeft = viewW - TOOLTIP_MAX_WIDTH / 2 - TOOLTIP_EDGE_PADDING
+    left = Math.max(minLeft, Math.min(maxLeft, left))
     const spaceAbove = rect.top
-    const spaceBelow = typeof window !== 'undefined' ? window.innerHeight - rect.bottom : 999
     if (placement === 'top' && spaceAbove >= 40) {
       top = rect.top - TOOLTIP_OFFSET
       place = 'top'
