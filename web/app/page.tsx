@@ -1617,7 +1617,7 @@ export default function Home() {
           loop
           muted
           playsInline
-          className="w-32 h-32 object-contain"
+          className="w-48 h-48 object-contain"
           aria-hidden
         />
         <div className="mt-4 text-lg text-white">Loading...</div>
