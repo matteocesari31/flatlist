@@ -864,7 +864,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               
               {/* Go to Original Website Button - explicit spacing so layout never collapses */}
               {listing?.source_url && (
-                <div className="mt-6 mb-6 flex-shrink-0">
+                <div className="mt-10 mb-6 flex-shrink-0">
                   <a
                     href={listing.source_url}
                     target="_blank"
