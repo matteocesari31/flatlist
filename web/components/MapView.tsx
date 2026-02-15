@@ -130,7 +130,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           source: TRANSIT_SOURCE_ID,
           slot: 'top',
           paint: {
-            'line-color': '#7dd3fc',
+            'line-color': '#22d3ee',
             'line-width': 5,
             'line-opacity': 1,
           },
