@@ -128,7 +128,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
         type: 'line',
         source: TRANSIT_SOURCE_ID,
         paint: {
-          'line-color': '#facc15',
+          'line-color': '#ffeb3b',
           'line-width': 4,
           'line-opacity': 0.9,
         },
