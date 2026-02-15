@@ -272,21 +272,19 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
               el.addEventListener('click', handleClick)
               ;(el as any)._clickHandler = handleClick
 
-              // Hover preview: show listing image above cursor
-              const handleMouseEnter = (e: MouseEvent) => {
-                setHoverPreviewRef.current?.({ listing: primaryMarker.listing, x: e.clientX, y: e.clientY })
-              }
-              const handleMouseMove = (e: MouseEvent) => {
-                setHoverPreviewRef.current?.((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
+              // Hover preview: show listing image above the tag (position fixed when hover starts)
+              const handleMouseEnter = () => {
+                const rect = el.getBoundingClientRect()
+                const tagCenterX = rect.left + rect.width / 2
+                const tagTop = rect.top
+                setHoverPreviewRef.current?.({ listing: primaryMarker.listing, x: tagCenterX, y: tagTop })
               }
               const handleMouseLeave = () => {
                 setHoverPreviewRef.current?.(null)
               }
               el.addEventListener('mouseenter', handleMouseEnter)
-              el.addEventListener('mousemove', handleMouseMove)
               el.addEventListener('mouseleave', handleMouseLeave)
               ;(el as any)._mouseEnterHandler = handleMouseEnter
-              ;(el as any)._mouseMoveHandler = handleMouseMove
               ;(el as any)._mouseLeaveHandler = handleMouseLeave
 
               // Create marker at the primary marker's location
@@ -386,8 +384,6 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
           if (clickHandler) element.removeEventListener('click', clickHandler)
           const mouseEnter = (element as any)?._mouseEnterHandler
           if (mouseEnter) element.removeEventListener('mouseenter', mouseEnter)
-          const mouseMove = (element as any)?._mouseMoveHandler
-          if (mouseMove) element.removeEventListener('mousemove', mouseMove)
           const mouseLeave = (element as any)?._mouseLeaveHandler
           if (mouseLeave) element.removeEventListener('mouseleave', mouseLeave)
           marker.remove()
