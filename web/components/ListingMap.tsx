@@ -40,7 +40,7 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         bearing: -17,
         config: {
           basemap: {
-            lightPreset: 'dusk',
+            lightPreset: 'day',
           },
         },
       })

@@ -231,7 +231,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           bearing: 0,
           config: {
             basemap: {
-              lightPreset: 'dusk',
+              lightPreset: 'day',
             },
           },
         })
@@ -401,7 +401,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
             })
           }
 
-        // Animate zoom from globe level to target zoom, then create markers (dusk is set via config at init)
+        // Animate zoom from globe level to target zoom, then create markers (day preset is set via config at init)
         mapInstance.on('load', () => {
           console.log('MapView: Map loaded event fired')
           if (!mounted || !mapInstance) {
