@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ListingWithMetadata } from '@/lib/types'
 
 interface MapViewProps {
@@ -21,10 +21,31 @@ function getScoreColor(score: number): { bg: string; glow: string } {
   }
 }
 
+function getListingImage(listing: ListingWithMetadata): string | null {
+  let imagesArray: string[] | null = null
+  if (listing.images) {
+    if (Array.isArray(listing.images)) {
+      imagesArray = listing.images
+    } else if (typeof listing.images === 'string') {
+      try {
+        imagesArray = JSON.parse(listing.images)
+      } catch {
+        imagesArray = null
+      }
+    } else if (typeof listing.images === 'object' && listing.images !== null) {
+      imagesArray = Object.values(listing.images) as string[]
+    }
+  }
+  return imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
+}
+
 export default function MapView({ listings, listingComparisons, hasDreamApartment, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('mapbox-gl').Map | null>(null)
   const markersRef = useRef<Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>>(new Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>())
+  const [hoverPreview, setHoverPreview] = useState<{ listing: ListingWithMetadata; x: number; y: number } | null>(null)
+  const setHoverPreviewRef = useRef(setHoverPreview)
+  setHoverPreviewRef.current = setHoverPreview
 
   const token = (() => {
     const t = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -251,6 +272,23 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
               el.addEventListener('click', handleClick)
               ;(el as any)._clickHandler = handleClick
 
+              // Hover preview: show listing image above cursor
+              const handleMouseEnter = (e: MouseEvent) => {
+                setHoverPreviewRef.current?.({ listing: primaryMarker.listing, x: e.clientX, y: e.clientY })
+              }
+              const handleMouseMove = (e: MouseEvent) => {
+                setHoverPreviewRef.current?.((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
+              }
+              const handleMouseLeave = () => {
+                setHoverPreviewRef.current?.(null)
+              }
+              el.addEventListener('mouseenter', handleMouseEnter)
+              el.addEventListener('mousemove', handleMouseMove)
+              el.addEventListener('mouseleave', handleMouseLeave)
+              ;(el as any)._mouseEnterHandler = handleMouseEnter
+              ;(el as any)._mouseMoveHandler = handleMouseMove
+              ;(el as any)._mouseLeaveHandler = handleMouseLeave
+
               // Create marker at the primary marker's location
               const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
                 .setLngLat(primaryMarker.lngLat)
@@ -344,11 +382,14 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
       // Clean up markers
       markersRef.current.forEach(({ marker, element }) => {
         try {
-          // Remove click handler
-          const handler = (element as any)?._clickHandler
-          if (handler) {
-            element.removeEventListener('click', handler)
-          }
+          const clickHandler = (element as any)?._clickHandler
+          if (clickHandler) element.removeEventListener('click', clickHandler)
+          const mouseEnter = (element as any)?._mouseEnterHandler
+          if (mouseEnter) element.removeEventListener('mouseenter', mouseEnter)
+          const mouseMove = (element as any)?._mouseMoveHandler
+          if (mouseMove) element.removeEventListener('mousemove', mouseMove)
+          const mouseLeave = (element as any)?._mouseLeaveHandler
+          if (mouseLeave) element.removeEventListener('mouseleave', mouseLeave)
           marker.remove()
         } catch (e) {
           // Ignore cleanup errors
@@ -390,11 +431,44 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
     )
   }
 
+  const PREVIEW_WIDTH = 200
+  const PREVIEW_HEIGHT = 150
+  const PREVIEW_GAP = 12
+  const imageUrl = hoverPreview ? getListingImage(hoverPreview.listing) : null
+
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-10"
-      style={{ width: '100vw', height: '100vh' }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        className="fixed inset-0 z-10"
+        style={{ width: '100vw', height: '100vh' }}
+      />
+      {hoverPreview && (
+        <div
+          className="fixed z-20 pointer-events-none"
+          style={{
+            left: hoverPreview.x,
+            top: hoverPreview.y - PREVIEW_HEIGHT - PREVIEW_GAP,
+            width: PREVIEW_WIDTH,
+            height: PREVIEW_HEIGHT,
+            transform: 'translate(-50%, 0)',
+          }}
+        >
+          <div className="w-full h-full rounded-[30px] overflow-hidden bg-black/40 border border-white/15 shadow-xl">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">
+                No image
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
