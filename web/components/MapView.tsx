@@ -125,15 +125,15 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
         type: 'geojson',
         data: transitGeo,
       })
-      // Glow underneath: wide, semi-transparent, so the line pops on the dark map
+      // Light blue highlight with glow underneath
       map.addLayer({
         id: TRANSIT_GLOW_LAYER_ID,
         type: 'line',
         source: TRANSIT_SOURCE_ID,
         paint: {
-          'line-color': '#ffff00',
+          'line-color': '#7dd3fc',
           'line-width': 14,
-          'line-opacity': 0.35,
+          'line-opacity': 0.4,
           'line-blur': 0.5,
         },
         layout: {
@@ -141,13 +141,13 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           'line-cap': 'round',
         },
       })
-      // Core line: bright yellow, full opacity
+      // Core line: light blue, full opacity
       map.addLayer({
         id: TRANSIT_LINE_LAYER_ID,
         type: 'line',
         source: TRANSIT_SOURCE_ID,
         paint: {
-          'line-color': '#ffff00',
+          'line-color': '#7dd3fc',
           'line-width': 5,
           'line-opacity': 1,
         },
