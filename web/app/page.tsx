@@ -14,7 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle, House, List, Map as MapIcon, Sparkles } from 'lucide-react'
+import { MessageCircle, House, List, MapPinned, Sparkles } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
 import MapView from '@/components/MapView'
 
@@ -1561,7 +1561,7 @@ export default function Home() {
             title={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}
           >
             {viewMode === 'list' ? (
-              <MapIcon className="w-6 h-6" strokeWidth={2} />
+              <MapPinned className="w-6 h-6" strokeWidth={2} />
             ) : (
               <List className="w-6 h-6" strokeWidth={2} />
             )}
