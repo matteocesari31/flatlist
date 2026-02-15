@@ -1603,69 +1603,101 @@ export default function Home() {
                 {/* Backdrop to close on outside click */}
                 <div
                   className="fixed inset-0 z-40"
-                  onClick={() => setShowProfilePopover(false)}
+                  onClick={() => {
+                    setShowProfilePopover(false)
+                    setShowHelpPopover(false)
+                  }}
                 />
-                {/* Popover */}
-                <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[260px]">
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="text-sm font-medium text-gray-900">{user?.email}</div>
-                    {/* Subscription Status */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          subscription?.isPremium 
-                            ? 'bg-black text-white' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {subscription?.isPremium ? 'Premium' : 'Free Plan'}
-                        </span>
-                        {subscription?.isPremium && subscription.currentPeriodEnd && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                          </div>
-                        )}
+                {/* Wrapper: help panel on the left, profile on the right */}
+                <div className="absolute right-0 top-full z-50 mt-2 flex flex-row-reverse items-stretch gap-2">
+                  {/* Help panel - to the left of profile when open */}
+                  {showHelpPopover && (
+                    <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
+                      <p className="text-sm text-gray-200">
+                        Have questions, suggestions, or want to report a bug?
+                      </p>
+                      <p className="mt-2 text-sm text-gray-300">
+                        Write to us at{' '}
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault()
+                            try {
+                              await navigator.clipboard.writeText('team@flatlist.app')
+                              setEmailCopied(true)
+                              setTimeout(() => {
+                                setEmailCopied(false)
+                                setShowHelpPopover(false)
+                              }, 1500)
+                            } catch (err) {
+                              console.error('Failed to copy:', err)
+                            }
+                          }}
+                          className="font-medium text-white hover:underline"
+                        >
+                          {emailCopied ? 'Copied!' : 'team@flatlist.app'}
+                        </button>
+                      </p>
+                    </div>
+                  )}
+                  {/* Profile panel - dark theme */}
+                  <div className="min-w-[260px] rounded-xl border border-gray-700 bg-[#0B0B0B] shadow-lg">
+                    <div className="border-b border-gray-700 p-4">
+                      <div className="text-sm font-medium text-white">{user?.email}</div>
+                      {/* Subscription Status */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <div>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            subscription?.isPremium
+                              ? 'bg-white text-black'
+                              : 'bg-gray-700 text-gray-200'
+                          }`}>
+                            {subscription?.isPremium ? 'Premium' : 'Free Plan'}
+                          </span>
+                          {subscription?.isPremium && subscription.currentPeriodEnd && (
+                            <div className="mt-1 text-xs text-gray-400">
+                              Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                            </div>
+                          )}
+                          {!subscription?.isPremium && (
+                            <div className="mt-1 text-xs text-gray-400">
+                              {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
+                            </div>
+                          )}
+                        </div>
                         {!subscription?.isPremium && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
-                          </div>
+                          <button
+                            onClick={() => {
+                              setShowProfilePopover(false)
+                              setUpgradeModalTrigger('general')
+                              setShowUpgradeModal(true)
+                            }}
+                            className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-gray-200"
+                          >
+                            Upgrade
+                          </button>
                         )}
                       </div>
-                      {!subscription?.isPremium && (
-                        <button
-                          onClick={() => {
-                            setShowProfilePopover(false)
-                            setUpgradeModalTrigger('general')
-                            setShowUpgradeModal(true)
-                          }}
-                          className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                        >
-                          Upgrade
-                        </button>
-                      )}
                     </div>
-                  </div>
-                  <div className="p-2 border-b border-gray-100">
-                    {/* Questions/Help Button - moved inside profile panel */}
-                    <button
-                      onClick={() => {
-                        setShowHelpPopover(!showHelpPopover)
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
-                    >
-                      <MessageCircle className="w-4 h-4" strokeWidth={2} />
-                      Help & Feedback
-                    </button>
-                  </div>
-                  <div className="p-2">
-                    <button
-                      onClick={() => {
-                        setShowProfilePopover(false)
-                        handleSignOut()
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                    >
-                      Sign Out
-                    </button>
+                    <div className="border-b border-gray-700 p-2">
+                      <button
+                        onClick={() => setShowHelpPopover(!showHelpPopover)}
+                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800"
+                      >
+                        <MessageCircle className="h-4 w-4" strokeWidth={2} />
+                        Help & Feedback
+                      </button>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        onClick={() => {
+                          setShowProfilePopover(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 </div>
               </>
@@ -1673,42 +1705,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
-      {/* Help Popover - shown when clicked from profile panel */}
-      {showHelpPopover && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowHelpPopover(false)}
-          />
-          <div className="fixed right-6 top-[72px] z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 w-64">
-            <p className="text-sm text-black">
-              Have questions, suggestions, or want to report a bug?
-            </p>
-            <p className="text-sm mt-2 text-black">
-              Write to us at{' '}
-              <button
-                onClick={async (e) => {
-                  e.preventDefault()
-                  try {
-                    await navigator.clipboard.writeText('team@flatlist.app')
-                    setEmailCopied(true)
-                    setTimeout(() => {
-                      setEmailCopied(false)
-                      setShowHelpPopover(false)
-                    }, 1500)
-                  } catch (err) {
-                    console.error('Failed to copy:', err)
-                  }
-                }}
-                className="text-black font-medium hover:underline cursor-pointer"
-              >
-                {emailCopied ? 'Copied!' : 'team@flatlist.app'}
-              </button>
-            </p>
-          </div>
-        </>
-      )}
 
       <main className={`flex-1 ${viewMode === 'map' ? '' : 'px-6 sm:px-8 pt-24 pb-8'} ${allListings.length === 0 && viewMode !== 'map' ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
