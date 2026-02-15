@@ -624,7 +624,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
           onClick={cancelDelete}
         >
           <div
-            className="bg-[#0D0D0D] rounded-[30px] max-w-md w-full p-6 shadow-2xl border border-gray-700"
+            className="bg-[#0E0E0E] rounded-[30px] max-w-md w-full p-6 shadow-2xl border border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-semibold mb-4 text-white">Delete Listing</h2>
@@ -659,7 +659,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
       onClick={onClose}
     >
       <div
-        className="bg-[#0D0D0D] rounded-[30px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
+        className="bg-[#0E0E0E] rounded-[30px] max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl relative"
         style={{
           transform: isAnimating ? 'scale(0.9)' : 'scale(1)',
           opacity: isAnimating ? 0 : 1,
