@@ -1658,7 +1658,10 @@ export default function Home() {
                     </div>
                     <div className="border-b border-gray-700 p-2">
                       <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800">
-                        <span>Display suggested transit line</span>
+                        <span>
+                          <span className="block">Display suggested</span>
+                          <span className="block">transit line</span>
+                        </span>
                         <button
                           type="button"
                           role="switch"
@@ -1667,7 +1670,7 @@ export default function Home() {
                             e.preventDefault()
                             setShowTransitLinePersisted(!showTransitLine)
                           }}
-                          className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0B0B0B] ${showTransitLine ? 'bg-white' : 'bg-gray-600'}`}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${showTransitLine ? 'bg-white' : 'bg-gray-600'}`}
                         >
                           <span
                             className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow ring-0 transition ${showTransitLine ? 'translate-x-5' : 'translate-x-1'}`}
