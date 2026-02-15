@@ -42,8 +42,9 @@ function getListingImage(listing: ListingWithMetadata): string | null {
   return imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
 }
 
-const TRANSIT_LAYER_ID = 'transit-line-highlight'
 const TRANSIT_SOURCE_ID = 'transit-line-highlight'
+const TRANSIT_GLOW_LAYER_ID = 'transit-line-highlight-glow'
+const TRANSIT_LINE_LAYER_ID = 'transit-line-highlight-line'
 
 export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, dreamApartmentDescription, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -110,27 +111,45 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
     const map = mapRef.current
     if (!map || !mapReady) return
 
-    const removeLayer = () => {
+    const removeLayers = () => {
       try {
-        if (map.getLayer(TRANSIT_LAYER_ID)) map.removeLayer(TRANSIT_LAYER_ID)
+        if (map.getLayer(TRANSIT_LINE_LAYER_ID)) map.removeLayer(TRANSIT_LINE_LAYER_ID)
+        if (map.getLayer(TRANSIT_GLOW_LAYER_ID)) map.removeLayer(TRANSIT_GLOW_LAYER_ID)
         if (map.getSource(TRANSIT_SOURCE_ID)) map.removeSource(TRANSIT_SOURCE_ID)
       } catch (_) {}
     }
 
     if (transitGeo && transitGeo.features.length > 0) {
-      removeLayer()
+      removeLayers()
       map.addSource(TRANSIT_SOURCE_ID, {
         type: 'geojson',
         data: transitGeo,
       })
+      // Glow underneath: wide, semi-transparent, so the line pops on the dark map
       map.addLayer({
-        id: TRANSIT_LAYER_ID,
+        id: TRANSIT_GLOW_LAYER_ID,
         type: 'line',
         source: TRANSIT_SOURCE_ID,
         paint: {
-          'line-color': '#ffeb3b',
-          'line-width': 4,
-          'line-opacity': 0.9,
+          'line-color': '#ffff00',
+          'line-width': 14,
+          'line-opacity': 0.35,
+          'line-blur': 0.5,
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+      })
+      // Core line: bright yellow, full opacity
+      map.addLayer({
+        id: TRANSIT_LINE_LAYER_ID,
+        type: 'line',
+        source: TRANSIT_SOURCE_ID,
+        paint: {
+          'line-color': '#ffff00',
+          'line-width': 5,
+          'line-opacity': 1,
         },
         layout: {
           'line-join': 'round',
@@ -138,9 +157,9 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
         },
       })
     } else {
-      removeLayer()
+      removeLayers()
     }
-    return removeLayer
+    return removeLayers
   }, [mapReady, transitGeo])
 
   const token = (() => {
