@@ -204,32 +204,27 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
         onClick={onViewDetails || onClick}
         className="cursor-pointer flex flex-col"
       >
-      {/* Image section (on top) */}
-      <div className="relative">
+      {/* Image section (on top) - fixed aspect ratio for uniform grid */}
+      <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden rounded-[20px]">
         {thumbnailImage ? (
-          <div className="w-full bg-gray-100 overflow-hidden rounded-[20px]">
-            <img
-              src={thumbnailImage}
-              alt={listing.title || 'Listing image'}
-              className="w-full h-auto object-contain transition-transform duration-300 ease-out hover:scale-105"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          </div>
-        ) : (
-          <div className="w-full aspect-[4/3] bg-gray-100 rounded-[20px]"></div>
-        )}
-        
+          <img
+            src={thumbnailImage}
+            alt={listing.title || 'Listing image'}
+            className="w-full h-full object-cover transition-transform duration-300 ease-out hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+            }}
+          />
+        ) : null}
         {/* Match Score Badge */}
         {hasDreamApartment && matchScore !== undefined && (
           <div 
             className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
-              title={`Match score: ${matchScore}%`}
-              style={{ backdropFilter: 'blur(12px)' }}
-            >
-              <div className={`w-1.5 h-1.5 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
-              <span className="text-sm font-semibold text-white">{matchScore}</span>
+            title={`Match score: ${matchScore}%`}
+            style={{ backdropFilter: 'blur(12px)' }}
+          >
+            <div className={`w-1.5 h-1.5 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
+            <span className="text-sm font-semibold text-white">{matchScore}</span>
           </div>
         )}
       </div>

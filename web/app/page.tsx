@@ -68,127 +68,6 @@ export default function Home() {
   const router = useRouter()
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
-  const masonryContainerRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map<string, HTMLDivElement>())
-  const [masonryPositions, setMasonryPositions] = useState<Map<string, { top: number; left: number; width: number }>>(new Map<string, { top: number; left: number; width: number }>())
-  const [containerHeight, setContainerHeight] = useState<number>(0)
-
-  // Calculate masonry layout positions
-  useEffect(() => {
-    if (!masonryContainerRef.current || listings.length === 0) {
-      setMasonryPositions(new Map([]))
-      setContainerHeight(0)
-      return
-    }
-
-    const calculateMasonry = () => {
-      const container = masonryContainerRef.current
-      if (!container) return
-
-      const containerWidth = container.offsetWidth
-      // Match Tailwind gap values: gap-6 = 24px (1.5rem), gap-8 = 32px (2rem)
-      const gap = window.innerWidth >= 1024 ? 32 : window.innerWidth >= 768 ? 24 : 24
-      const columns = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1
-      const columnWidth = (containerWidth - (gap * (columns - 1))) / columns
-
-      const columnHeights = new Array(columns).fill(0)
-      const positions = new Map<string, { top: number; left: number; width: number }>([])
-      const spacing = 24
-
-      // Place cards in row-major order (left to right, then next row) so a single card in a row is always on the left
-      let placeIndex = 0
-      listings.forEach((listing) => {
-        const cardElement = cardRefs.current.get(listing.id)
-        if (!cardElement) {
-          return
-        }
-
-        let cardHeight = cardElement.offsetHeight
-        if (cardElement.style.position !== 'absolute') {
-          const originalWidth = cardElement.style.width
-          cardElement.style.width = `${columnWidth}px`
-          void cardElement.offsetHeight
-          cardHeight = cardElement.offsetHeight
-          cardElement.style.width = originalWidth
-        }
-
-        const columnIndex = placeIndex % columns
-        placeIndex += 1
-
-        const left = columnIndex * (columnWidth + gap)
-        const top = columnHeights[columnIndex]
-
-        positions.set(listing.id, {
-          top,
-          left,
-          width: columnWidth
-        })
-
-        columnHeights[columnIndex] += cardHeight + spacing
-      })
-
-      // Update positions (even if not all cards are measured yet)
-      if (positions.size > 0) {
-        setMasonryPositions(positions)
-        // Subtract the last spacing from container height (no spacing after last card)
-        const maxHeight = Math.max(...columnHeights)
-        setContainerHeight(maxHeight > spacing ? maxHeight - spacing : maxHeight)
-      }
-    }
-
-    // Use requestAnimationFrame to ensure DOM is ready
-    const rafId = requestAnimationFrame(() => {
-      // Wait a bit for cards to render, then calculate
-      setTimeout(() => {
-        // First calculation - cards should be rendered by now
-        calculateMasonry()
-        
-        // Also wait for images to load and recalculate
-        const images = masonryContainerRef.current?.querySelectorAll('img') || []
-        let loadedCount = 0
-        const totalImages = images.length
-
-        if (totalImages === 0) {
-          // No images, recalculate once more to ensure positions are set
-          setTimeout(calculateMasonry, 100)
-        } else {
-          images.forEach((img) => {
-            if (img.complete) {
-              loadedCount++
-              if (loadedCount === totalImages) {
-                setTimeout(calculateMasonry, 50)
-              }
-            } else {
-              img.onload = () => {
-                loadedCount++
-                if (loadedCount === totalImages) {
-                  setTimeout(calculateMasonry, 50)
-                }
-              }
-              img.onerror = () => {
-                loadedCount++
-                if (loadedCount === totalImages) {
-                  setTimeout(calculateMasonry, 50)
-                }
-              }
-            }
-          })
-        }
-      }, 100)
-    })
-
-    // Also calculate on window resize
-    const handleResize = () => {
-      setTimeout(calculateMasonry, 100)
-    }
-    window.addEventListener('resize', handleResize)
-    
-    return () => {
-      cancelAnimationFrame(rafId)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [listings])
-  
   // Detect location from query (called only during search)
   const detectLocationFromQuery = async (query: string): Promise<ConfirmedLocation | null> => {
     if (!query.trim() || query.trim().length < 8) {
@@ -2086,62 +1965,21 @@ export default function Home() {
                 <p className="text-gray-400">No listings match your search</p>
               </div>
             ) : (
-              <div 
-                ref={masonryContainerRef}
-                className={`relative pb-4 w-full ${masonryPositions.size === 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8' : ''}`}
-                style={{ height: containerHeight > 0 ? `${containerHeight}px` : 'auto' }}
-              >
-                {listings.map((listing) => {
-                  const position = masonryPositions.get(listing.id)
-                  
-                  // Calculate fallback width if position not available
-                  const getCardWidth = () => {
-                    if (position) return position.width
-                    // Calculate width based on container and breakpoints
-                    const container = masonryContainerRef.current
-                    if (!container) return undefined
-                    const containerWidth = container.offsetWidth
-                    const gap = window.innerWidth >= 1024 ? 32 : window.innerWidth >= 768 ? 24 : 24
-                    const columns = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1
-                    return (containerWidth - (gap * (columns - 1))) / columns
-                  }
-                  
-                  const cardWidth = getCardWidth()
-                  
-                  return (
-                    <div
-                      key={listing.id}
-                      ref={(el) => {
-                        if (el) {
-                          cardRefs.current.set(listing.id, el)
-                        } else {
-                          cardRefs.current.delete(listing.id)
-                        }
-                      }}
-                      style={{
-                        position: position ? 'absolute' : 'relative',
-                        top: position ? `${position.top}px` : 'auto',
-                        left: position ? `${position.left}px` : 'auto',
-                        width: cardWidth ? `${cardWidth}px` : undefined,
-                        opacity: 1, // Always visible
-                        transition: position ? 'opacity 0.2s ease-in-out' : 'none',
-                        marginBottom: position ? 0 : '0.5rem' // Only add margin when not positioned (fallback)
-                      }}
-                    >
-                      <ListingCard
-                        listing={listing}
-                        onViewDetails={() => handleViewDetails(listing)}
-                        onSaveNote={handleSaveNote}
-                        onDelete={handleDelete}
-                        onRetryEnrichment={handleRetryEnrichment}
-                        catalogMembers={catalogMembers}
-                        matchScore={listingComparisons.get(listing.id)?.score}
-                        hasDreamApartment={!!dreamApartmentDescription}
-                      />
-                    </div>
-                  )
-                })}
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-4 w-full">
+                {listings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    onViewDetails={() => handleViewDetails(listing)}
+                    onSaveNote={handleSaveNote}
+                    onDelete={handleDelete}
+                    onRetryEnrichment={handleRetryEnrichment}
+                    catalogMembers={catalogMembers}
+                    matchScore={listingComparisons.get(listing.id)?.score}
+                    hasDreamApartment={!!dreamApartmentDescription}
+                  />
+                ))}
+              </div>
             ) ) : null}
           </>
         )}
