@@ -130,7 +130,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           source: TRANSIT_SOURCE_ID,
           slot: 'top',
           paint: {
-            'line-color': '#ffffff',
+            'line-color': '#00e5ff',
             'line-width': 5,
             'line-opacity': 1,
           },
@@ -231,7 +231,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           bearing: 0,
           config: {
             basemap: {
-              lightPreset: 'dawn',
+              lightPreset: 'dusk',
             },
           },
         })
@@ -401,7 +401,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
             })
           }
 
-        // Animate zoom from globe level to target zoom, then create markers (dawn preset is set via config at init)
+        // Animate zoom from globe level to target zoom, then create markers (dusk preset is set via config at init)
         mapInstance.on('load', () => {
           console.log('MapView: Map loaded event fired')
           if (!mounted || !mapInstance) {
