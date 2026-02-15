@@ -17,6 +17,7 @@ import { SubscriptionPlan } from '@/lib/types'
 import { MessageCircle, House, List, MapPinned, Sparkles } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
 import MapView from '@/components/MapView'
+import Tooltip from '@/components/Tooltip'
 
 interface SubscriptionInfo {
   plan: SubscriptionPlan
@@ -1530,35 +1531,37 @@ export default function Home() {
               setSearchResultCount(0)
             }}
             className="cursor-pointer"
-            title="Clear search"
           >
-            <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
+            <Tooltip content="Clear search">
+              <img src="/flatlist outline logo.svg" alt="flatlist" className="h-8" />
+            </Tooltip>
           </button>
         </div>
 
         {/* Center Section: Dream Apartment Button */}
         <div className="flex-1 flex items-center justify-center">
+          <Tooltip content="Describe your dream apartment" showWhen={!dreamApartmentDescription?.trim()}>
           <button
             ref={dreamApartmentButtonRef}
             onClick={() => setShowDreamApartmentModal(true)}
             className="px-4 py-3 backdrop-blur-md bg-black/60 border border-white/15 text-white rounded-[30px] text-sm font-medium hover:bg-black/70 transition-colors flex items-center gap-2 shadow-lg"
             style={{ backdropFilter: 'blur(12px)' }}
-            title={dreamApartmentDescription?.trim() ? undefined : 'Describe your dream apartment'}
           >
             <Sparkles className="w-4 h-4" strokeWidth={2} />
             {dreamApartmentDescription?.trim()
               ? dreamApartmentDescription.trim().split(/\s+/).filter(Boolean).slice(0, 4).join(' ') + ' ...'
               : 'Describe your dream apartment ...'}
           </button>
+          </Tooltip>
         </div>
 
         {/* Right Section: View Toggle, Plus and Profile */}
         <div className="flex items-center gap-6">
           {/* View Toggle Button */}
+          <Tooltip content={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}>
           <button
             onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
             className="text-white hover:opacity-70 transition-opacity"
-            title={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}
           >
             {viewMode === 'list' ? (
               <MapPinned className="w-6 h-6" strokeWidth={2} />
@@ -1566,8 +1569,10 @@ export default function Home() {
               <List className="w-6 h-6" strokeWidth={2} />
             )}
           </button>
+          </Tooltip>
 
           {/* Plus (Add) Button */}
+          <Tooltip content={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}>
           <button
             onClick={() => {
               if (subscription?.canInvite) {
@@ -1578,24 +1583,25 @@ export default function Home() {
               }
             }}
             className="text-white hover:opacity-70 transition-opacity"
-            title={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
+          </Tooltip>
           
           {/* Profile Button */}
           <div className="relative">
+            <Tooltip content={user?.email || 'Profile'}>
             <button
               ref={profileButtonRef}
               onClick={() => setShowProfilePopover(!showProfilePopover)}
               className="h-[40px] w-[40px] rounded-full flex items-center justify-center text-white text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
               style={{ backgroundColor: user?.id ? getUserColor(user.id) : '#9CA3AF' }}
-              title={user?.email || 'Profile'}
             >
               {user?.email?.charAt(0).toUpperCase() || '?'}
             </button>
+            </Tooltip>
             
             {/* Profile Popover */}
             {showProfilePopover && (
@@ -1743,7 +1749,7 @@ export default function Home() {
                   {searchFilters.noise_level && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       noise level: {searchFilters.noise_level}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.noise_level
@@ -1751,18 +1757,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.student_friendly === true && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       student-friendly
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.student_friendly
@@ -1770,18 +1775,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.natural_light && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       natural light: {searchFilters.natural_light}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.natural_light
@@ -1789,18 +1793,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.floor_type && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       {searchFilters.floor_type} floors
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.floor_type
@@ -1808,18 +1811,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.price_max && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       under {searchFilters.price_max.toLocaleString('it-IT')}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.price_max
@@ -1827,18 +1829,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.price_min && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       over {searchFilters.price_min.toLocaleString('it-IT')}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.price_min
@@ -1846,18 +1847,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.bedrooms_min && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       {searchFilters.bedrooms_min}+ bedrooms
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.bedrooms_min
@@ -1865,18 +1865,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.bathrooms_min && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       {searchFilters.bathrooms_min}+ bathrooms
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.bathrooms_min
@@ -1884,18 +1883,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.location_keywords && searchFilters.location_keywords.length > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       near {searchFilters.location_keywords.join(', ')}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.location_keywords
@@ -1903,18 +1901,17 @@ export default function Home() {
                           performSearchWithFilters(newFilters, confirmedLocation)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                   {searchFilters.distance_max && searchFilters.distance_reference && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-normal">
                       within {searchFilters.distance_max}km from {searchFilters.distance_reference}
-                      <button
+                      <Tooltip content="Remove filter"><button
                         onClick={() => {
                           const newFilters = { ...searchFilters }
                           delete newFilters.distance_max
@@ -1924,12 +1921,11 @@ export default function Home() {
                           performSearchWithFilters(newFilters, null)
                         }}
                         className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                        title="Remove filter"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </button></Tooltip>
                     </span>
                   )}
                 </div>

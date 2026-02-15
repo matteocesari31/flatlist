@@ -5,6 +5,7 @@ import { ListingWithMetadata } from '@/lib/types'
 import { createClient } from '@/lib/supabase'
 import { getUserColor } from '@/lib/user-colors'
 import { BedDouble, Bath, Building } from 'lucide-react'
+import Tooltip from '@/components/Tooltip'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
@@ -218,14 +219,15 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
         ) : null}
         {/* Match Score Badge */}
         {hasDreamApartment && matchScore !== undefined && (
+          <Tooltip content={`Match score: ${matchScore}%`}>
           <div 
             className="absolute top-2 right-2 px-3 py-1.5 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
-            title={`Match score: ${matchScore}%`}
             style={{ backdropFilter: 'blur(12px)' }}
           >
             <div className={`w-1.5 h-1.5 rounded-full ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
             <span className="text-sm font-semibold text-white">{matchScore}</span>
           </div>
+          </Tooltip>
         )}
       </div>
 

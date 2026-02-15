@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { BedDouble, Bath, Building, MapPin, GraduationCap, Square, Sun, Volume1, PaintRoller, Fence, PawPrint, Armchair, Ellipsis, House, Sparkles } from 'lucide-react'
 import ListingMap from './ListingMap'
+import Tooltip from '@/components/Tooltip'
 
 interface MetadataViewerProps {
   listing: ListingWithMetadata | null
@@ -680,6 +681,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
 
         {/* Delete button */}
         {onDelete && listing && (
+          <Tooltip content="Delete listing">
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -687,7 +689,6 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
             }}
             className="absolute top-2 right-12 z-10 p-1.5 hover:bg-gray-800 rounded-full transition-colors text-gray-300 hover:text-red-400"
             aria-label="Delete listing"
-            title="Delete listing"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -704,6 +705,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               />
             </svg>
           </button>
+          </Tooltip>
         )}
 
         {/* Content */}
@@ -727,14 +729,15 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                     <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md flex flex-col gap-2">
                       {/* AI Score tag - on top of panel */}
                       {matchScore !== undefined && (
+                        <Tooltip content={`Match score: ${matchScore}%`}>
                         <div 
                           className="self-start px-4 py-2 rounded-[30px] flex items-center gap-2 backdrop-blur-md bg-black/60 border border-white/15 shadow-lg"
-                          title={`Match score: ${matchScore}%`}
                           style={{ backdropFilter: 'blur(12px)' }}
                         >
                           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getScoreColor(matchScore).bg}`} style={{ boxShadow: getScoreColor(matchScore).glow }}></div>
                           <span className="text-base font-semibold text-white">AI Score: {matchScore}</span>
                         </div>
+                        </Tooltip>
                       )}
                       {/* Glassmorphism panel with summary - same color as AI score tag */}
                       <div 
