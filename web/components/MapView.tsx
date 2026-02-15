@@ -10,6 +10,7 @@ export interface MapViewProps {
   listingComparisons: Map<string, { score: number; summary: string }>
   hasDreamApartment: boolean
   dreamApartmentDescription: string | null
+  showTransitLine?: boolean
   onListingClick: (listing: ListingWithMetadata) => void
 }
 
@@ -45,7 +46,7 @@ function getListingImage(listing: ListingWithMetadata): string | null {
 const TRANSIT_SOURCE_ID = 'transit-line-highlight'
 const TRANSIT_LAYER_ID = 'transit-line-highlight'
 
-export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, dreamApartmentDescription, onListingClick }: MapViewProps) {
+export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, dreamApartmentDescription, showTransitLine = true, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('mapbox-gl').Map | null>(null)
   const markersRef = useRef<Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>>(new Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>())
@@ -117,7 +118,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
       } catch (_) {}
     }
 
-    if (transitGeo && transitGeo.features.length > 0) {
+    if (showTransitLine && transitGeo && transitGeo.features.length > 0) {
       removeLayer()
       map.addSource(TRANSIT_SOURCE_ID, {
         type: 'geojson',
@@ -144,7 +145,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
       removeLayer()
     }
     return removeLayer
-  }, [mapReady, transitGeo])
+  }, [mapReady, transitGeo, showTransitLine])
 
   const token = (() => {
     const t = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN

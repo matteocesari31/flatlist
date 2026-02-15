@@ -62,6 +62,7 @@ export default function Home() {
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map')
+  const [showTransitLine, setShowTransitLine] = useState(true)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -69,6 +70,17 @@ export default function Home() {
   const router = useRouter()
   const listingsRef = useRef<ListingWithMetadata[]>([])
   const catalogIdsRef = useRef<string[]>([])
+
+  // Persist transit line preference
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('flatlist_show_transit_line') : null
+    setShowTransitLine(stored !== 'false')
+  }, [])
+  const setShowTransitLinePersisted = useCallback((value: boolean) => {
+    setShowTransitLine(value)
+    if (typeof window !== 'undefined') localStorage.setItem('flatlist_show_transit_line', String(value))
+  }, [])
+
   // Detect location from query (called only during search)
   const detectLocationFromQuery = async (query: string): Promise<ConfirmedLocation | null> => {
     if (!query.trim() || query.trim().length < 8) {
@@ -1644,6 +1656,25 @@ export default function Home() {
                         Help & Feedback
                       </button>
                     </div>
+                    <div className="border-b border-gray-700 p-2">
+                      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800">
+                        <span>Display suggested transit line</span>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={showTransitLine}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setShowTransitLinePersisted(!showTransitLine)
+                          }}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0B0B0B] ${showTransitLine ? 'bg-white' : 'bg-gray-600'}`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow ring-0 transition ${showTransitLine ? 'translate-x-5' : 'translate-x-1'}`}
+                          />
+                        </button>
+                      </label>
+                    </div>
                     <div className="p-2">
                       <button
                         onClick={() => {
@@ -1924,6 +1955,7 @@ export default function Home() {
                 listingComparisons={listingComparisons}
                 hasDreamApartment={!!dreamApartmentDescription}
                 dreamApartmentDescription={dreamApartmentDescription}
+                showTransitLine={showTransitLine}
                 onListingClick={handleViewDetails}
               />
             </div>
