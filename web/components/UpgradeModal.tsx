@@ -143,7 +143,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
               Recommended
             </div>
             <div className="text-sm font-medium text-gray-400 mb-1">Premium</div>
-            <div className="text-2xl font-bold mb-1 text-white">€19.99<span className="text-sm font-normal text-gray-400">/year</span></div>
+            <div className="text-2xl font-bold mb-1 text-white">€5.99<span className="text-sm font-normal text-gray-400">/month</span></div>
             <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
