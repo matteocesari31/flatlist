@@ -1610,7 +1610,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0D0D0D] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#0E0E0E] flex flex-col items-center justify-center">
         <video
           src="/flatlist rotating logo.mp4"
           autoPlay
