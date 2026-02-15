@@ -40,11 +40,11 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         bearing: -17,
       })
 
-      // Set time of day to dawn after map loads
+      // Set time of day to dusk after map loads
       map.on('load', () => {
         // Use setConfigProperty to set lightPreset for Mapbox Standard style
         try {
-          map.setConfigProperty('basemap', 'lightPreset', 'dawn')
+          map.setConfigProperty('basemap', 'lightPreset', 'dusk')
         } catch (error) {
           console.warn('Failed to set map light preset:', error)
         }

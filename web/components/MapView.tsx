@@ -261,7 +261,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             })
           }
 
-        // Set time of day to dawn and animate zoom
+        // Set time of day to dusk and animate zoom
         mapInstance.on('load', () => {
           console.log('MapView: Map loaded event fired')
           if (!mounted || !mapInstance) {
@@ -269,7 +269,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
             return
           }
           try {
-            mapInstance.setConfigProperty('basemap', 'lightPreset', 'dawn')
+            mapInstance.setConfigProperty('basemap', 'lightPreset', 'dusk')
             console.log('MapView: Dusk preset applied')
           } catch (error) {
             console.warn('Failed to set map light preset:', error)
