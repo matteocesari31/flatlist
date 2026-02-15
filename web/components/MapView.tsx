@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ListingWithMetadata } from '@/lib/types'
 
-interface MapViewProps {
+export interface MapViewProps {
+  viewMode: 'list' | 'map'
   listings: ListingWithMetadata[]
   listingComparisons: Map<string, { score: number; summary: string }>
   hasDreamApartment: boolean
@@ -39,13 +40,20 @@ function getListingImage(listing: ListingWithMetadata): string | null {
   return imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
 }
 
-export default function MapView({ listings, listingComparisons, hasDreamApartment, onListingClick }: MapViewProps) {
+export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('mapbox-gl').Map | null>(null)
   const markersRef = useRef<Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>>(new Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>())
   const [hoverPreview, setHoverPreview] = useState<{ listing: ListingWithMetadata; x: number; y: number } | null>(null)
   const setHoverPreviewRef = useRef(setHoverPreview)
   setHoverPreviewRef.current = setHoverPreview
+
+  // When switching back to map view, resize the map so it fills the container (it was hidden with display:none)
+  useEffect(() => {
+    if (viewMode === 'map' && mapRef.current) {
+      mapRef.current.resize()
+    }
+  }, [viewMode])
 
   const token = (() => {
     const t = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN

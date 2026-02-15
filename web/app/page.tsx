@@ -60,7 +60,7 @@ export default function Home() {
   const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map<string, { score: number; summary: string }>())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map')
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -2050,15 +2050,22 @@ export default function Home() {
               </div>
             )}
 
-            {/* Listings View */}
-            {viewMode === 'map' ? (
+            {/* Map: always mounted when we have listings so it keeps state when switching views; hidden when in list mode */}
+            <div
+              className="fixed inset-0 z-10"
+              style={{ display: viewMode === 'map' ? 'block' : 'none' }}
+              aria-hidden={viewMode !== 'map'}
+            >
               <MapView
+                viewMode={viewMode}
                 listings={listings}
                 listingComparisons={listingComparisons}
                 hasDreamApartment={!!dreamApartmentDescription}
                 onListingClick={handleViewDetails}
               />
-            ) : searchLoading ? (
+            </div>
+            {/* List view */}
+            {viewMode === 'list' ? (searchLoading ? (
               <div className="text-center py-12">
                 <div className="text-lg">Searching...</div>
               </div>
@@ -2123,7 +2130,7 @@ export default function Home() {
                   )
                 })}
         </div>
-            )}
+            ) ) : null}
           </>
         )}
       </main>
