@@ -370,7 +370,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
   if (!token) {
     return (
-      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
+      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
         Add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to show map
       </div>
     )
@@ -384,7 +384,7 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
 
   if (listingsWithCoords.length === 0) {
     return (
-      <div className="fixed inset-0 top-16 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
+      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0D0D0D] z-10">
         No listings with location data available ({listings.length} total listings)
       </div>
     )
@@ -393,8 +393,8 @@ export default function MapView({ listings, listingComparisons, hasDreamApartmen
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 top-16 left-0 right-0 bottom-0 bg-[#0D0D0D] z-10"
-      style={{ width: '100vw', height: 'calc(100vh - 4rem)' }}
+      className="fixed inset-0 z-10"
+      style={{ width: '100vw', height: '100vh' }}
     />
   )
 }
