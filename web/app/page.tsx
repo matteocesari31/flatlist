@@ -1623,7 +1623,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col">
       {/* Top Bar */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0D0D0D] flex items-center px-6 z-30">
+      <header className={`fixed top-0 left-0 right-0 h-16 flex items-center px-6 z-30 ${viewMode === 'map' ? 'bg-transparent' : 'bg-[#0D0D0D]'}`}>
         {/* Left Section: Logo */}
         <div className="flex items-center">
           <button
