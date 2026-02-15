@@ -1664,10 +1664,12 @@ export default function Home() {
             onClick={() => setShowDreamApartmentModal(true)}
             className="px-4 py-3 backdrop-blur-md bg-black/60 border border-white/15 text-white rounded-[30px] text-sm font-medium hover:bg-black/70 transition-colors flex items-center gap-2 shadow-lg"
             style={{ backdropFilter: 'blur(12px)' }}
-            title="Describe your dream apartment"
+            title={dreamApartmentDescription?.trim() ? undefined : 'Describe your dream apartment'}
           >
             <Sparkles className="w-4 h-4" strokeWidth={2} />
-            Describe your dream apartment ...
+            {dreamApartmentDescription?.trim()
+              ? dreamApartmentDescription.trim().split(/\s+/).filter(Boolean).slice(0, 4).join(' ') + ' ...'
+              : 'Describe your dream apartment ...'}
           </button>
         </div>
 
