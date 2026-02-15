@@ -2061,6 +2061,7 @@ export default function Home() {
                 listings={listings}
                 listingComparisons={listingComparisons}
                 hasDreamApartment={!!dreamApartmentDescription}
+                dreamApartmentDescription={dreamApartmentDescription}
                 onListingClick={handleViewDetails}
               />
             </div>

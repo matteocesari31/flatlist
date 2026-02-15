@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ListingWithMetadata } from '@/lib/types'
+import { parseTransitLineFromText, fetchTransitRouteGeometry } from '@/lib/transit-line'
 
 export interface MapViewProps {
   viewMode: 'list' | 'map'
   listings: ListingWithMetadata[]
   listingComparisons: Map<string, { score: number; summary: string }>
   hasDreamApartment: boolean
+  dreamApartmentDescription: string | null
   onListingClick: (listing: ListingWithMetadata) => void
 }
 
@@ -40,13 +42,20 @@ function getListingImage(listing: ListingWithMetadata): string | null {
   return imagesArray && imagesArray.length > 0 ? imagesArray[0] : null
 }
 
-export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, onListingClick }: MapViewProps) {
+const TRANSIT_LAYER_ID = 'transit-line-highlight'
+const TRANSIT_SOURCE_ID = 'transit-line-highlight'
+
+export default function MapView({ viewMode, listings, listingComparisons, hasDreamApartment, dreamApartmentDescription, onListingClick }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('mapbox-gl').Map | null>(null)
   const markersRef = useRef<Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>>(new Map<string, { marker: import('mapbox-gl').Marker; element: HTMLDivElement }>())
   const [hoverPreview, setHoverPreview] = useState<{ listing: ListingWithMetadata; x: number; y: number } | null>(null)
   const setHoverPreviewRef = useRef(setHoverPreview)
   setHoverPreviewRef.current = setHoverPreview
+  const [mapReady, setMapReady] = useState(false)
+  const setMapReadyRef = useRef(setMapReady)
+  setMapReadyRef.current = setMapReady
+  const [transitGeo, setTransitGeo] = useState<GeoJSON.FeatureCollection | null>(null)
 
   // When switching back to map view, resize the map so it fills the container (it was hidden with display:none)
   useEffect(() => {
@@ -54,6 +63,85 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
       mapRef.current.resize()
     }
   }, [viewMode])
+
+  // Parse dream apartment text for transit line and fetch route geometry from OSM
+  useEffect(() => {
+    const parsed = parseTransitLineFromText(dreamApartmentDescription)
+    if (!parsed) {
+      setTransitGeo(null)
+      return
+    }
+    const listingsWithCoords = listings.filter((listing) => {
+      const metadata = listing.listing_metadata?.[0]
+      return metadata?.latitude != null && metadata?.longitude != null
+    })
+    let bbox: [number, number, number, number] | undefined
+    if (listingsWithCoords.length > 0) {
+      const lngs: number[] = []
+      const lats: number[] = []
+      for (const l of listingsWithCoords) {
+        const m = l.listing_metadata?.[0]
+        if (m?.longitude != null && m?.latitude != null) {
+          lngs.push(m.longitude)
+          lats.push(m.latitude)
+        }
+      }
+      if (lngs.length && lats.length) {
+        const pad = 0.05
+        bbox = [
+          Math.min(...lngs) - pad,
+          Math.min(...lats) - pad,
+          Math.max(...lngs) + pad,
+          Math.max(...lats) + pad,
+        ]
+      }
+    }
+    let cancelled = false
+    fetchTransitRouteGeometry(parsed.routeType, parsed.ref, bbox).then((fc) => {
+      if (!cancelled) setTransitGeo(fc)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [dreamApartmentDescription, listings])
+
+  // Add or remove transit highlight layer when map is ready and transit geo is available
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+
+    const removeLayer = () => {
+      try {
+        if (map.getLayer(TRANSIT_LAYER_ID)) map.removeLayer(TRANSIT_LAYER_ID)
+        if (map.getSource(TRANSIT_SOURCE_ID)) map.removeSource(TRANSIT_SOURCE_ID)
+      } catch (_) {}
+    }
+
+    if (transitGeo && transitGeo.features.length > 0) {
+      removeLayer()
+      map.addSource(TRANSIT_SOURCE_ID, {
+        type: 'geojson',
+        data: transitGeo,
+      })
+      map.addLayer({
+        id: TRANSIT_LAYER_ID,
+        type: 'line',
+        source: TRANSIT_SOURCE_ID,
+        paint: {
+          'line-color': '#facc15',
+          'line-width': 4,
+          'line-opacity': 0.9,
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+      })
+    } else {
+      removeLayer()
+    }
+    return removeLayer
+  }, [mapReady, transitGeo])
 
   const token = (() => {
     const t = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -317,6 +405,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
             console.log('MapView: Map load handler aborted - not mounted or no instance')
             return
           }
+          setMapReadyRef.current?.(true)
 
           // Animate zoom from globe level to target zoom, then create markers
           setTimeout(() => {
@@ -383,6 +472,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
 
     return () => {
       mounted = false
+      setMapReadyRef.current?.(false)
       clearTimeout(timer)
       // Clean up markers
       markersRef.current.forEach(({ marker, element }) => {
