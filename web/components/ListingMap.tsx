@@ -38,16 +38,11 @@ export default function ListingMap({ latitude, longitude, className = '' }: List
         zoom: 16.5,
         pitch: 60,
         bearing: -17,
-      })
-
-      // Set time of day to dusk after map loads
-      map.on('load', () => {
-        // Use setConfigProperty to set lightPreset for Mapbox Standard style
-        try {
-          map.setConfigProperty('basemap', 'lightPreset', 'dusk')
-        } catch (error) {
-          console.warn('Failed to set map light preset:', error)
-        }
+        config: {
+          basemap: {
+            lightPreset: 'dusk',
+          },
+        },
       })
 
       const marker = new mapboxgl.Marker({ color: '#ef4444' })

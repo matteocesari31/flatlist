@@ -138,6 +138,11 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           zoom: 1, // Globe level
           pitch: 0,
           bearing: 0,
+          config: {
+            basemap: {
+              lightPreset: 'dusk',
+            },
+          },
         })
 
         mapRef.current = mapInstance
@@ -305,18 +310,12 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
             })
           }
 
-        // Set time of day to dusk and animate zoom
+        // Animate zoom from globe level to target zoom, then create markers (dusk is set via config at init)
         mapInstance.on('load', () => {
           console.log('MapView: Map loaded event fired')
           if (!mounted || !mapInstance) {
             console.log('MapView: Map load handler aborted - not mounted or no instance')
             return
-          }
-          try {
-            mapInstance.setConfigProperty('basemap', 'lightPreset', 'dusk')
-            console.log('MapView: Dusk preset applied')
-          } catch (error) {
-            console.warn('Failed to set map light preset:', error)
           }
 
           // Animate zoom from globe level to target zoom, then create markers
