@@ -1610,7 +1610,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0E0E0E] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#0B0B0B] flex flex-col items-center justify-center">
         <video
           src="/flatlist rotating logo.mp4"
           autoPlay
@@ -1630,9 +1630,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0E0E0E] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col">
       {/* Top Bar */}
-      <header className={`fixed top-0 left-0 right-0 h-16 flex items-center px-6 z-30 ${viewMode === 'map' ? 'bg-transparent' : 'bg-[#0E0E0E]'}`}>
+      <header className={`fixed top-0 left-0 right-0 h-16 flex items-center px-6 z-30 ${viewMode === 'map' ? 'bg-transparent' : 'bg-[#0B0B0B]'}`}>
         {/* Left Section: Logo */}
         <div className="flex items-center">
           <button

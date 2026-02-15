@@ -507,7 +507,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
 
   if (!token) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0E0E0E] z-10">
+      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0B0B0B] z-10">
         Add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to show map
       </div>
     )
@@ -521,7 +521,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
 
   if (listingsWithCoords.length === 0) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0E0E0E] z-10">
+      <div className="fixed inset-0 flex items-center justify-center text-gray-400 text-sm bg-[#0B0B0B] z-10">
         No listings with location data available ({listings.length} total listings)
       </div>
     )

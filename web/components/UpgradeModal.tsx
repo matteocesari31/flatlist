@@ -78,7 +78,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
       onClick={onClose}
     >
       <div
-        className="bg-[#0E0E0E] rounded-[20px] max-w-lg w-full p-6 shadow-2xl border border-gray-700"
+        className="bg-[#0B0B0B] rounded-[20px] max-w-lg w-full p-6 shadow-2xl border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
