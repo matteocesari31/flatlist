@@ -61,7 +61,15 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <img src="/logo.svg" alt="flatlist" className="h-10 mx-auto" />
+          <video
+            src="/flatlist rotating logo.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-10 mx-auto object-contain"
+            aria-label="flatlist"
+          />
         </div>
         
         {/* Show invitation context */}
