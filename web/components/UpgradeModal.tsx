@@ -126,7 +126,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
                 <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                AI-powered search
+                AI-powered rating
               </li>
               <li className="flex items-center gap-2 text-gray-500">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,25 +149,25 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <strong className="text-white">Unlimited</strong> listings
+                Unlimited listings
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                AI-powered search
-              </li>
-              <li className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <strong className="text-white">Multiplayer mode</strong>
+                AI-powered rating
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Invite collaborators
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                1 week free trial
               </li>
             </ul>
           </div>

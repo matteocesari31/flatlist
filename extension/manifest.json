@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Flatlist - Smart Apartment Hunting",
   "version": "1.0.1",
-  "description": "Save apartment listings with one click, then use AI to search and compare them intelligently.",
+  "description": "Save apartment listings instantly and find your perfect home with AI-powered analysis, dream apartment matching, and interactive map views.",
   "permissions": [
     "storage",
     "activeTab",
