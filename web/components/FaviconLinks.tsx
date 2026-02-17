@@ -2,31 +2,30 @@
 
 import { useEffect } from 'react'
 
-export default function FaviconLinks() {
-  useEffect(() => {
-    // Remove any existing favicon links
-    const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')
-    existingLinks.forEach(link => link.remove())
+function updateFavicons() {
+  // Remove any existing favicon links (including those from Next.js metadata)
+  const existingLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')
+  existingLinks.forEach(link => link.remove())
 
-    // Add light mode favicon
-    const lightIcon = document.createElement('link')
-    lightIcon.rel = 'icon'
-    lightIcon.href = '/flatlist light mode logo.svg'
-    lightIcon.media = '(prefers-color-scheme: light)'
-    document.head.appendChild(lightIcon)
+  // Add light mode favicon (must come first)
+  const lightIcon = document.createElement('link')
+  lightIcon.rel = 'icon'
+  lightIcon.href = '/flatlist light mode logo.svg'
+  lightIcon.media = '(prefers-color-scheme: light)'
+  document.head.appendChild(lightIcon)
 
-    // Add dark mode favicon
-    const darkIcon = document.createElement('link')
-    darkIcon.rel = 'icon'
-    darkIcon.href = '/flatlist dark mode logo.svg'
-    darkIcon.media = '(prefers-color-scheme: dark)'
-    document.head.appendChild(darkIcon)
+  // Add dark mode favicon
+  const darkIcon = document.createElement('link')
+  darkIcon.rel = 'icon'
+  darkIcon.href = '/flatlist dark mode logo.svg'
+  darkIcon.media = '(prefers-color-scheme: dark)'
+  document.head.appendChild(darkIcon)
 
-    // Add fallback favicon
-    const fallbackIcon = document.createElement('link')
-    fallbackIcon.rel = 'icon'
-    fallbackIcon.href = '/logo.svg'
-    document.head.appendChild(fallbackIcon)
+  // Add fallback favicon (must come last)
+  const fallbackIcon = document.createElement('link')
+  fallbackIcon.rel = 'icon'
+  fallbackIcon.href = '/logo.svg'
+  document.head.appendChild(fallbackIcon)
 
     // Add shortcut icons (for older browsers)
     const lightShortcut = document.createElement('link')
@@ -63,7 +62,48 @@ export default function FaviconLinks() {
     fallbackApple.rel = 'apple-touch-icon'
     fallbackApple.href = '/logo.svg'
     document.head.appendChild(fallbackApple)
+}
+
+export default function FaviconLinks() {
+  useEffect(() => {
+    updateFavicons()
   }, [])
 
-  return null
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function() {
+            function updateFavicons() {
+              const existingLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+              existingLinks.forEach(link => link.remove());
+              
+              const lightIcon = document.createElement('link');
+              lightIcon.rel = 'icon';
+              lightIcon.href = '/flatlist light mode logo.svg';
+              lightIcon.media = '(prefers-color-scheme: light)';
+              document.head.appendChild(lightIcon);
+              
+              const darkIcon = document.createElement('link');
+              darkIcon.rel = 'icon';
+              darkIcon.href = '/flatlist dark mode logo.svg';
+              darkIcon.media = '(prefers-color-scheme: dark)';
+              document.head.appendChild(darkIcon);
+              
+              const fallbackIcon = document.createElement('link');
+              fallbackIcon.rel = 'icon';
+              fallbackIcon.href = '/logo.svg';
+              document.head.appendChild(fallbackIcon);
+            }
+            
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', updateFavicons);
+            } else {
+              updateFavicons();
+            }
+          })();
+        `,
+      }}
+    />
+  )
 }

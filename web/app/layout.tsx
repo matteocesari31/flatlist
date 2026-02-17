@@ -27,11 +27,7 @@ const satoshi = localFont({
 export const metadata: Metadata = {
   title: "Flatlist - Smart Apartment Hunting",
   description: "Save apartment listings from anywhere, then use AI to search and compare them intelligently.",
-  icons: {
-    icon: '/logo.svg', // Fallback - dynamic icons handled by FaviconLinks component
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
-  },
+  // Icons are handled dynamically by FaviconLinks component based on color scheme
 };
 
 export default function RootLayout({
