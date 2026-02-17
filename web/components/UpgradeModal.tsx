@@ -112,10 +112,10 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
         {/* Plan Comparison */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Free Plan */}
-          <div className="p-4 border border-gray-700 rounded-xl bg-gray-900/50">
-            <div className="text-sm font-medium text-gray-400 mb-1">Free</div>
-            <div className="text-2xl font-bold mb-3 text-white">€0</div>
-            <ul className="space-y-2 text-sm text-gray-300">
+          <div className="p-5 border border-gray-700 rounded-xl bg-gray-900/50">
+            <div className="text-sm font-medium text-gray-400 mb-2">Free</div>
+            <div className="text-2xl font-bold mb-4 text-white">€0</div>
+            <ul className="space-y-2.5 text-sm text-gray-300">
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -138,13 +138,13 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
           </div>
 
           {/* Premium Plan */}
-          <div className="p-4 border-2 border-white rounded-xl bg-gray-900/50 relative">
+          <div className="p-5 border-2 border-white rounded-xl bg-gray-900/50 relative">
             <div className="absolute -top-2.5 left-4 bg-white text-black text-xs px-2 py-0.5 rounded-full font-medium">
               Recommended
             </div>
-            <div className="text-sm font-medium text-gray-400 mb-1">Premium</div>
-            <div className="text-2xl font-bold mb-1 text-white">€5.99<span className="text-sm font-normal text-gray-400">/month</span></div>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <div className="text-sm font-medium text-gray-400 mb-2">Premium</div>
+            <div className="text-2xl font-bold mb-4 text-white">€5.99<span className="text-sm font-normal text-gray-400">/month</span></div>
+            <ul className="space-y-2.5 text-sm text-gray-300">
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -202,7 +202,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'general' }: U
                 Processing...
               </span>
             ) : (
-              'Upgrade to Premium'
+              'Try Premium'
             )}
           </button>
         </div>
