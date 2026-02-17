@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import FaviconLinks from "@/components/FaviconLinks";
 
 const satoshi = localFont({
   src: [
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   title: "Flatlist - Smart Apartment Hunting",
   description: "Save apartment listings from anywhere, then use AI to search and compare them intelligently.",
   icons: {
-    icon: '/logo.svg',
+    icon: '/logo.svg', // Fallback - dynamic icons handled by FaviconLinks component
     shortcut: '/logo.svg',
     apple: '/logo.svg',
   },
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${satoshi.variable} font-sans antialiased`}>
+        <FaviconLinks />
         {children}
       </body>
     </html>
