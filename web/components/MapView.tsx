@@ -205,7 +205,7 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
                  Number.isFinite(metadata.latitude) && Number.isFinite(metadata.longitude)
         })
 
-        // Calculate bounds from all listings
+        // Calculate bounds from all listings (no padding - fitBounds will add minimal padding)
         let bounds: [[number, number], [number, number]] | null = null
         if (listingsWithCoords.length > 0) {
           const lngs: number[] = []
@@ -218,12 +218,10 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
             }
           })
           if (lngs.length > 0 && lats.length > 0) {
-            // Add padding to bounds (10% on each side)
-            const lngPadding = (Math.max(...lngs) - Math.min(...lngs)) * 0.1
-            const latPadding = (Math.max(...lats) - Math.min(...lats)) * 0.1
+            // Use exact bounds - fitBounds will add minimal padding
             bounds = [
-              [Math.min(...lngs) - lngPadding, Math.min(...lats) - latPadding],
-              [Math.max(...lngs) + lngPadding, Math.max(...lats) + latPadding]
+              [Math.min(...lngs), Math.min(...lats)],
+              [Math.max(...lngs), Math.max(...lats)]
             ]
           }
         }
@@ -442,9 +440,9 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
               // Fit bounds to show all listings
               console.log('MapView: Fitting bounds to show all listings', bounds)
               
-              // Fit bounds with animation
+              // Fit bounds with animation - minimal padding to zoom in as much as possible
               mapInstance.fitBounds(bounds, {
-                padding: { top: 50, bottom: 50, left: 50, right: 50 }, // Padding in pixels
+                padding: { top: 20, bottom: 20, left: 20, right: 20 }, // Minimal padding to keep pins visible
                 duration: 4000, // 4 second animation
                 easing: (t) => {
                   // Ease-out cubic function for smooth deceleration
