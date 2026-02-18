@@ -440,30 +440,34 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
               // Fit bounds to show all listings
               console.log('MapView: Fitting bounds to show all listings', bounds)
               
-              // Set pitch and bearing first, then fit bounds after a brief delay
-              mapInstance.setPitch(60)
-              mapInstance.setBearing(-17)
-              
-              // Small delay to let pitch/bearing apply before fitBounds
+              // Fit bounds first (this may reset pitch/bearing, so we'll restore them after)
+              mapInstance.fitBounds(bounds, {
+                padding: { top: 5, bottom: 5, left: 5, right: 5 }, // Very minimal padding
+                duration: 4000, // 4 second animation
+                easing: (t) => {
+                  // Ease-out cubic function for smooth deceleration
+                  return 1 - Math.pow(1 - t, 3)
+                },
+                maxZoom: 18 // Allow zooming in quite a bit
+              })
+
+              // Apply pitch and bearing after fitBounds animation completes
               setTimeout(() => {
                 if (!mounted || !mapInstance) return
-                
-                // Fit bounds with minimal padding - zoom in as much as possible
-                mapInstance.fitBounds(bounds, {
-                  padding: { top: 5, bottom: 5, left: 5, right: 5 }, // Very minimal padding
-                  duration: 4000, // 4 second animation
+                mapInstance.easeTo({
+                  pitch: 60,   // Angled view like detail panel (ListingMap)
+                  bearing: -17,
+                  duration: 2000, // 2 second animation for pitch/bearing
                   easing: (t) => {
-                    // Ease-out cubic function for smooth deceleration
                     return 1 - Math.pow(1 - t, 3)
-                  },
-                  maxZoom: 18 // Allow zooming in quite a bit
+                  }
                 })
-              }, 100)
+              }, 4100) // After fitBounds animation completes
 
-              // Create markers after zoom animation completes
+              // Create markers after all animations complete (fitBounds + pitch/bearing)
               setTimeout(() => {
                 updateMarkers()
-              }, 4100) // Slightly longer than animation duration
+              }, 6100) // After both fitBounds (4000ms) and pitch/bearing (2000ms) animations
             } else {
               // Fallback to center/zoom if no bounds
               console.log('MapView: Animating zoom from 1 to', targetZoom, 'at center', [centerLng, centerLat])
