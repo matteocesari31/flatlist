@@ -440,28 +440,25 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
               // Fit bounds to show all listings
               console.log('MapView: Fitting bounds to show all listings', bounds)
               
-              // Fit bounds with animation - minimal padding to zoom in as much as possible
-              mapInstance.fitBounds(bounds, {
-                padding: { top: 20, bottom: 20, left: 20, right: 20 }, // Minimal padding to keep pins visible
-                duration: 4000, // 4 second animation
-                easing: (t) => {
-                  // Ease-out cubic function for smooth deceleration
-                  return 1 - Math.pow(1 - t, 3)
-                }
-              })
-
-              // Apply pitch and bearing after fitBounds starts (with slight delay to let it settle)
+              // Set pitch and bearing first, then fit bounds after a brief delay
+              mapInstance.setPitch(60)
+              mapInstance.setBearing(-17)
+              
+              // Small delay to let pitch/bearing apply before fitBounds
               setTimeout(() => {
                 if (!mounted || !mapInstance) return
-                mapInstance.easeTo({
-                  pitch: 60,   // Angled view like detail panel (ListingMap)
-                  bearing: -17,
-                  duration: 2000, // 2 second animation for pitch/bearing
+                
+                // Fit bounds with minimal padding - zoom in as much as possible
+                mapInstance.fitBounds(bounds, {
+                  padding: { top: 5, bottom: 5, left: 5, right: 5 }, // Very minimal padding
+                  duration: 4000, // 4 second animation
                   easing: (t) => {
+                    // Ease-out cubic function for smooth deceleration
                     return 1 - Math.pow(1 - t, 3)
-                  }
+                  },
+                  maxZoom: 18 // Allow zooming in quite a bit
                 })
-              }, 500)
+              }, 100)
 
               // Create markers after zoom animation completes
               setTimeout(() => {
