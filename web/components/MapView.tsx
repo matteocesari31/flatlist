@@ -205,10 +205,33 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
                  Number.isFinite(metadata.latitude) && Number.isFinite(metadata.longitude)
         })
 
+        // Calculate bounds from all listings
+        let bounds: [[number, number], [number, number]] | null = null
+        if (listingsWithCoords.length > 0) {
+          const lngs: number[] = []
+          const lats: number[] = []
+          listingsWithCoords.forEach(listing => {
+            const metadata = listing.listing_metadata?.[0]
+            if (metadata?.longitude != null && metadata?.latitude != null) {
+              lngs.push(metadata.longitude)
+              lats.push(metadata.latitude)
+            }
+          })
+          if (lngs.length > 0 && lats.length > 0) {
+            // Add padding to bounds (10% on each side)
+            const lngPadding = (Math.max(...lngs) - Math.min(...lngs)) * 0.1
+            const latPadding = (Math.max(...lats) - Math.min(...lats)) * 0.1
+            bounds = [
+              [Math.min(...lngs) - lngPadding, Math.min(...lats) - latPadding],
+              [Math.max(...lngs) + lngPadding, Math.max(...lats) + latPadding]
+            ]
+          }
+        }
+
         // Default center (Milan) if no listings with coords
         let centerLng = 9.1859
         let centerLat = 45.4642
-        const targetZoom = 12 // Target zoom level after animation
+        const targetZoom = 12 // Target zoom level after animation (fallback if no bounds)
 
         if (!mounted || !containerRef.current) {
           console.log('MapView: Aborted before map creation')
@@ -411,27 +434,61 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
           }
           setMapReadyRef.current?.(true)
 
-          // Animate zoom from globe level to target zoom, then create markers
+          // Animate zoom from globe level to fit bounds or target zoom, then create markers
           setTimeout(() => {
             if (!mounted || !mapInstance) return
 
-            console.log('MapView: Animating zoom from 1 to', targetZoom, 'at center', [centerLng, centerLat])
-            mapInstance.easeTo({
-              center: [centerLng, centerLat],
-              zoom: targetZoom,
-              pitch: 60,   // Angled view like detail panel (ListingMap)
-              bearing: -17,
-              duration: 4000, // 4 second animation
-              easing: (t) => {
-                // Ease-out cubic function for smooth deceleration
-                return 1 - Math.pow(1 - t, 3)
-              }
-            })
+            if (bounds && listingsWithCoords.length > 0) {
+              // Fit bounds to show all listings
+              console.log('MapView: Fitting bounds to show all listings', bounds)
+              
+              // Fit bounds with animation
+              mapInstance.fitBounds(bounds, {
+                padding: { top: 50, bottom: 50, left: 50, right: 50 }, // Padding in pixels
+                duration: 4000, // 4 second animation
+                easing: (t) => {
+                  // Ease-out cubic function for smooth deceleration
+                  return 1 - Math.pow(1 - t, 3)
+                }
+              })
 
-            // Create markers after zoom animation completes
-            setTimeout(() => {
-              updateMarkers()
-            }, 4100) // Slightly longer than animation duration
+              // Apply pitch and bearing after fitBounds starts (with slight delay to let it settle)
+              setTimeout(() => {
+                if (!mounted || !mapInstance) return
+                mapInstance.easeTo({
+                  pitch: 60,   // Angled view like detail panel (ListingMap)
+                  bearing: -17,
+                  duration: 2000, // 2 second animation for pitch/bearing
+                  easing: (t) => {
+                    return 1 - Math.pow(1 - t, 3)
+                  }
+                })
+              }, 500)
+
+              // Create markers after zoom animation completes
+              setTimeout(() => {
+                updateMarkers()
+              }, 4100) // Slightly longer than animation duration
+            } else {
+              // Fallback to center/zoom if no bounds
+              console.log('MapView: Animating zoom from 1 to', targetZoom, 'at center', [centerLng, centerLat])
+              mapInstance.easeTo({
+                center: [centerLng, centerLat],
+                zoom: targetZoom,
+                pitch: 60,   // Angled view like detail panel (ListingMap)
+                bearing: -17,
+                duration: 4000, // 4 second animation
+                easing: (t) => {
+                  // Ease-out cubic function for smooth deceleration
+                  return 1 - Math.pow(1 - t, 3)
+                }
+              })
+
+              // Create markers after zoom animation completes
+              setTimeout(() => {
+                updateMarkers()
+              }, 4100) // Slightly longer than animation duration
+            }
           }, 500) // Small delay after map loads
         })
 
