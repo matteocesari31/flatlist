@@ -106,27 +106,24 @@ export async function POST(request: NextRequest) {
         let userId = subscription.metadata?.user_id
         
         if (!userId && customerEmail) {
-          // Look up user by email
-          const { data: users } = await supabase
-            .from('auth.users')
-            .select('id')
-            .eq('email', customerEmail)
-            .limit(1)
-          
-          // Fallback: query using auth admin API
-          if (!users || users.length === 0) {
-            // Try finding existing subscription by customer_id
+          // Look up user by email via Auth Admin API (auth.users is not queryable via .from())
+          const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+          const match = listData?.users?.find(
+            (u) => u.email?.toLowerCase() === customerEmail.toLowerCase()
+          )
+          if (match) {
+            userId = match.id
+          }
+          // Fallback: try finding existing subscription by customer_id (e.g. returning customer)
+          if (!userId) {
             const { data: existingSub } = await supabase
               .from('user_subscriptions')
               .select('user_id')
               .eq('polar_customer_id', customerId)
               .maybeSingle()
-            
             if (existingSub) {
               userId = existingSub.user_id
             }
-          } else {
-            userId = users[0].id
           }
         }
         

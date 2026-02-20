@@ -663,6 +663,16 @@ export default function Home() {
         window.history.replaceState({}, '', newUrl)
       }
       
+      // If returning from Polar checkout, refetch subscription and clear URL
+      const checkoutSuccess = urlParams.get('checkout') === 'success'
+      if (checkoutSuccess) {
+        window.history.replaceState({}, '', window.location.pathname)
+        // Refetch immediately and again after delays (webhook may still be processing)
+        fetchSubscription()
+        setTimeout(() => fetchSubscription(), 2000)
+        setTimeout(() => fetchSubscription(), 5000)
+      }
+      
       // Fetch subscription status
       fetchSubscription()
       
@@ -750,6 +760,17 @@ export default function Home() {
       subscription.unsubscribe()
     }
   }, [router, fetchListings])
+
+  // Refetch subscription when tab becomes visible (e.g. user returned from checkout in another tab)
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSubscription()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [fetchSubscription])
 
   // Set up real-time subscriptions when currentCatalogId is available
   useEffect(() => {
