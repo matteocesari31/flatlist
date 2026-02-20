@@ -148,3 +148,70 @@ export async function getCustomerPortalUrl(
     return null
   }
 }
+
+// Find Polar customer ID by email (for subscription sync)
+export async function findCustomerIdByEmail(
+  customerEmail: string
+): Promise<string | null> {
+  try {
+    const polar = createPolarClient()
+    const orgId = getOrganizationId()
+    const list = await polar.customers.list({
+      organizationId: orgId,
+      email: customerEmail,
+      limit: 1,
+    })
+    // SDK may return { result: { items } } or async iterable; support both
+    const items = (list as any).result?.items ?? (list as any).items ?? []
+    const customer = Array.isArray(items) ? items[0] : undefined
+    return customer?.id ?? null
+  } catch (error) {
+    console.error('Error finding Polar customer by email:', error)
+    return null
+  }
+}
+
+// List subscriptions for a Polar customer and return the active one if any
+export async function getActiveSubscriptionForCustomer(
+  customerId: string
+): Promise<{
+  id: string
+  status: string
+  current_period_end: string | null
+} | null> {
+  try {
+    const polar = createPolarClient()
+    const orgId = getOrganizationId()
+    const productId = getPremiumProductId()
+    const list = await polar.subscriptions.list({
+      organizationId: orgId,
+      customerId: [customerId],
+      productId: [productId],
+      active: true,
+      limit: 1,
+    })
+    // SDK may return async iterable (for await) or object with result.items
+    let items: any[] = []
+    if (typeof (list as any)[Symbol.asyncIterator] === 'function') {
+      for await (const page of list as AsyncIterable<{ items?: any[] }>) {
+        items = page.items ?? []
+        break
+      }
+    } else {
+      items = (list as any).result?.items ?? (list as any).items ?? []
+    }
+    const sub = Array.isArray(items) ? items[0] : undefined
+    if (!sub) return null
+    const active = isSubscriptionActive(String(sub.status))
+    if (!active) return null
+    const periodEnd = sub.current_period_end ?? sub.currentPeriodEnd ?? null
+    return {
+      id: sub.id,
+      status: String(sub.status),
+      current_period_end: periodEnd,
+    }
+  } catch (error) {
+    console.error('Error listing Polar subscriptions:', error)
+    return null
+  }
+}

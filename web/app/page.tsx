@@ -63,6 +63,7 @@ export default function Home() {
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const [showTransitLine, setShowTransitLine] = useState(true)
+  const [syncingSubscription, setSyncingSubscription] = useState(false)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -1667,6 +1668,24 @@ export default function Home() {
                           </button>
                         )}
                       </div>
+                      <button
+                        onClick={async () => {
+                          setSyncingSubscription(true)
+                          try {
+                            const res = await fetch('/api/subscription/sync', { method: 'POST' })
+                            const data = await res.json().catch(() => ({}))
+                            if (res.ok) {
+                              await fetchSubscription()
+                            }
+                          } finally {
+                            setSyncingSubscription(false)
+                          }
+                        }}
+                        disabled={syncingSubscription}
+                        className="mt-2 w-full rounded-md border border-gray-600 px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 disabled:opacity-50"
+                      >
+                        {syncingSubscription ? 'Syncing…' : 'Sync subscription'}
+                      </button>
                     </div>
                     <div className="border-b border-gray-700 p-2">
                       <button
