@@ -249,8 +249,9 @@ serve(async (req) => {
     const inviterEmail = user.email || 'someone'
     const inviterName = inviterEmail.split('@')[0] || 'Someone'
 
-    // Build invitation URL (use invitation token)
-    const siteUrl = Deno.env.get('SITE_URL') || 'https://my.flatlist.app'
+    // Build invitation URL (use invitation token). Never use localhost so invitation emails always point to production.
+    const rawSiteUrl = Deno.env.get('SITE_URL') || ''
+    const siteUrl = (rawSiteUrl && !rawSiteUrl.includes('localhost')) ? rawSiteUrl : 'https://my.flatlist.app'
     const acceptUrl = `${siteUrl}/invite/accept?token=${invitation.token}`
 
     // Helper function to escape HTML

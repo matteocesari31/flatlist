@@ -17,7 +17,6 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
   const [isResend, setIsResend] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
   const [emailSent, setEmailSent] = useState(true)
-  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +26,6 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
       setSuccess(false)
       setIsResend(false)
       setInviteLink(null)
-      setLinkCopied(false)
       setEmailSent(true)
     } else {
       document.body.style.overflow = 'unset'
@@ -99,12 +97,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
       const url = responseData.acceptUrl ?? responseData.invitation?.acceptUrl
       if (url) setInviteLink(url)
       // Only treat as "email sent" when the backend explicitly says so (newer Edge Function)
-      const sent = responseData.emailSent === true
-      setEmailSent(sent)
-      if (!sent && url) {
-        // Email was not sent or backend doesn't report it; keep modal open so user can copy the link
-        return
-      }
+      setEmailSent(responseData.emailSent === true)
       if (responseData.resend) {
         setTimeout(() => {
           onClose()
@@ -192,53 +185,6 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
               <p className="text-sm text-gray-400 mt-2">
                 The invitation link has been updated and sent again.
               </p>
-            )}
-            {inviteLink && (
-              <div className="mt-4 text-left">
-                {!emailSent && (
-                  <p className="text-sm text-gray-400 mb-2">
-                    Share this link with the invitee so they can accept:
-                  </p>
-                )}
-                {emailSent && (
-                  <p className="text-sm text-gray-400 mb-2">
-                    If they don&apos;t receive the email, share this link:
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={inviteLink}
-                    className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white text-sm focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(inviteLink)
-                      setLinkCopied(true)
-                      setTimeout(() => setLinkCopied(false), 2000)
-                    }}
-                    className="shrink-0 px-3 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-gray-200 transition-colors"
-                  >
-                    {linkCopied ? 'Copied!' : 'Copy link'}
-                  </button>
-                </div>
-                {!emailSent && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    You can send them this link by email or any messaging app.
-                  </p>
-                )}
-                {!emailSent && (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="mt-4 w-full py-2 rounded-xl bg-white text-black font-medium hover:bg-gray-200 transition-colors"
-                  >
-                    Done
-                  </button>
-                )}
-              </div>
             )}
           </div>
         ) : (
