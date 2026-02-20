@@ -263,9 +263,10 @@ serve(async (req) => {
         .replace(/'/g, '&#039;')
     }
 
-    // Send email using Resend
+    // Send email using Resend (requires RESEND_API_KEY and verified domain for production)
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev'
+    let emailSent = false
 
     if (resendApiKey) {
       try {
@@ -388,30 +389,27 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
             errorMessage = errorData || `HTTP ${resendResponse.status}`
           }
           console.error('Resend API error:', resendResponse.status, errorMessage)
-          // Don't fail the invitation creation if email fails
-          // The invitation is still created and can be accessed via the URL
+          emailSent = false
         } else {
           try {
             const resendData = await resendResponse.json()
             console.log('Email sent successfully via Resend:', resendData.id)
+            emailSent = true
           } catch (e) {
             console.error('Failed to parse Resend response:', e)
+            emailSent = false
           }
         }
       } catch (emailError: any) {
         console.error('Error sending email via Resend:', emailError)
-        // Don't fail the invitation creation if email fails
-        // Log the error but continue
+        emailSent = false
       }
     } else {
-      // Log invitation details if Resend is not configured (for development/testing)
-      console.log('RESEND_API_KEY not configured. Invitation created:', {
-        token: invitation.token,
+      console.log('RESEND_API_KEY not configured. Invitation created (no email sent):', {
         invitedEmail: invitedEmail.toLowerCase(),
         catalogName: catalog.name,
         acceptUrl,
-        isResend,
-        note: 'Configure RESEND_API_KEY to enable email sending',
+        note: 'Set RESEND_API_KEY in Supabase Edge Function secrets and verify your domain in Resend to send invitation emails.',
       })
     }
 
@@ -419,10 +417,11 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
       JSON.stringify({
         success: true,
         resend: isResend,
+        emailSent,
+        acceptUrl,
         invitation: {
           id: invitation.id,
           token: invitation.token,
-          acceptUrl, // Return URL for testing
         },
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

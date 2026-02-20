@@ -15,6 +15,9 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isResend, setIsResend] = useState(false)
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [emailSent, setEmailSent] = useState(true)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -23,6 +26,9 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
       setError(null)
       setSuccess(false)
       setIsResend(false)
+      setInviteLink(null)
+      setLinkCopied(false)
+      setEmailSent(true)
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -90,21 +96,28 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
       setIsResend(responseData.resend || false)
       setSuccess(true)
       setEmail('')
-      
-      // Show success message with resend info if applicable
+      setEmailSent(responseData.emailSent !== false)
+      if (responseData.acceptUrl) {
+        setInviteLink(responseData.acceptUrl)
+      }
+      if (responseData.emailSent === false && responseData.acceptUrl) {
+        // Email was not sent; keep modal open so user can copy the link
+        return
+      }
+      // Email was sent (or we don't know); auto-close after delay
       if (responseData.resend) {
-        // Keep success state visible longer for resend
         setTimeout(() => {
           onClose()
           setSuccess(false)
           setIsResend(false)
+          setInviteLink(null)
         }, 3000)
       } else {
-        // Close modal after 2 seconds for new invitations
         setTimeout(() => {
           onClose()
           setSuccess(false)
           setIsResend(false)
+          setInviteLink(null)
         }, 2000)
       }
     } catch (err: any) {
@@ -169,12 +182,52 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
               </svg>
             </div>
             <p className="text-white font-medium">
-              {isResend ? 'Invitation resent successfully!' : 'Invitation sent successfully!'}
+              {inviteLink && !emailSent
+                ? 'Invitation created. The email could not be sent.'
+                : isResend
+                  ? 'Invitation resent successfully!'
+                  : 'Invitation sent successfully!'}
             </p>
-            {isResend && (
+            {isResend && emailSent && (
               <p className="text-sm text-gray-400 mt-2">
                 The invitation link has been updated and sent again.
               </p>
+            )}
+            {inviteLink && !emailSent && (
+              <div className="mt-4 text-left">
+                <p className="text-sm text-gray-400 mb-2">
+                  Share this link with the invitee so they can accept:
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={inviteLink}
+                    className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white text-sm focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteLink)
+                      setLinkCopied(true)
+                      setTimeout(() => setLinkCopied(false), 2000)
+                    }}
+                    className="shrink-0 px-3 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    {linkCopied ? 'Copied!' : 'Copy link'}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  You can send them this link by email or any messaging app.
+                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mt-4 w-full py-2 rounded-xl bg-white text-black font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
             )}
           </div>
         ) : (
