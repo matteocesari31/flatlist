@@ -1637,7 +1637,7 @@ export default function Home() {
                       <div className="text-sm font-medium text-white">{user?.email}</div>
                       {/* Subscription Status */}
                       <div className="mt-3 flex items-center justify-between">
-                        <div>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             subscription?.isPremium
                               ? 'bg-white text-black'
@@ -1646,9 +1646,9 @@ export default function Home() {
                             {subscription?.isPremium ? 'Premium' : 'Free Plan'}
                           </span>
                           {subscription?.isPremium && subscription.currentPeriodEnd && (
-                            <div className="mt-1 text-xs text-gray-400">
+                            <span className="ml-2 text-xs text-gray-400 whitespace-nowrap">
                               Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                            </div>
+                            </span>
                           )}
                           {!subscription?.isPremium && (
                             <div className="mt-1 text-xs text-gray-400">
