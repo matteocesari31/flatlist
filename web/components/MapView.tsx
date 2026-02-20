@@ -617,6 +617,16 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
 
   return (
     <>
+      {/* Globe background */}
+      <div
+        className="fixed inset-0 z-0 opacity-10"
+        style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 500'%3E%3Cdefs%3E%3CradialGradient id='globeGrad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.3'/%3E%3Cstop offset='100%25' stop-color='%23ffffff' stop-opacity='0.05'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='500' cy='250' rx='450' ry='250' fill='url(%23globeGrad)'/%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' opacity='0.3' d='M50 250 Q250 200 500 200 T950 250'/%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' opacity='0.3' d='M50 250 Q250 300 500 300 T950 250'/%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.2' d='M500 0v500M0 250h1000'/%3E%3Ccircle cx='500' cy='250' r='450' fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
       <div
         ref={containerRef}
         className="fixed inset-0 z-10"

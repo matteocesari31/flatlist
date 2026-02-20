@@ -61,7 +61,7 @@ export default function Home() {
   const [listingComparisons, setListingComparisons] = useState<Map<string, { score: number; summary: string }>>(new Map<string, { score: number; summary: string }>())
   const [isEvaluatingListings, setIsEvaluatingListings] = useState(false)
   const [evaluatingListingId, setEvaluatingListingId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('map')
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const [showTransitLine, setShowTransitLine] = useState(true)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
@@ -1726,9 +1726,9 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`flex-1 ${viewMode === 'map' ? '' : 'px-6 sm:px-8 pt-24 pb-8'} ${allListings.length === 0 && viewMode !== 'map' ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
+      <main className={`flex-1 ${viewMode === 'map' ? '' : 'px-6 sm:px-8 pt-24 pb-8'} ${allListings.length === 0 ? 'flex items-center justify-center min-h-[calc(100vh-200px)]' : ''}`}>
         {allListings.length === 0 ? (
-          <div className="bg-gray-900 rounded-[30px] shadow-sm p-8 text-center border border-gray-800">
+          <div className={`backdrop-blur-md bg-black/60 border border-white/15 rounded-[30px] shadow-lg p-8 text-center ${viewMode === 'map' ? 'w-full max-w-md mx-auto' : 'w-full max-w-md'}`} style={{ backdropFilter: 'blur(12px)' }}>
             <h2 className="text-xl font-semibold mb-2 text-white">Let's start your hunt.</h2>
             <p className="text-gray-300 mb-8">
               Your collection is looking a little empty.<br />
