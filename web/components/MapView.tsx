@@ -440,14 +440,28 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
               // Fit bounds to show all listings
               console.log('MapView: Fitting bounds to show all listings', bounds)
               
-              // Calculate camera options for bounds, then animate with pitch/bearing
+              // Calculate padding proportional to viewport size
+              // The angled view (pitch 60) requires very generous padding because:
+              // 1. Perspective distortion makes edge features appear closer to viewport edges
+              // 2. cameraForBounds calculates for top-down view, so we need extra padding
+              //    to compensate for the angled perspective
+              const container = mapInstance.getContainer()
+              const paddingPercent = 0.45 // 45% padding to ensure all pins fit with pitch 60°
+              
+              // Calculate camera options for bounds with generous padding
               const cameraOptions = mapInstance.cameraForBounds(bounds, {
-                padding: { top: 5, bottom: 5, left: 5, right: 5 }, // Very minimal padding
-                maxZoom: 18 // Allow zooming in quite a bit
+                padding: { 
+                  top: container.clientHeight * paddingPercent, 
+                  bottom: container.clientHeight * paddingPercent, 
+                  left: container.clientWidth * paddingPercent, 
+                  right: container.clientWidth * paddingPercent 
+                },
+                maxZoom: 18
               })
               
               if (cameraOptions) {
-                // Animate to the calculated camera position with pitch and bearing
+                // Animate directly to the calculated camera position with pitch and bearing
+                // This ensures we arrive at the correct position in one smooth animation
                 mapInstance.easeTo({
                   center: cameraOptions.center,
                   zoom: cameraOptions.zoom,
@@ -474,9 +488,10 @@ export default function MapView({ viewMode, listings, listingComparisons, hasDre
                   }
                 })
               }
-
-              // Create markers after zoom animation completes
+              
+              // Create markers after animation completes
               setTimeout(() => {
+                if (!mounted || !mapInstance) return
                 updateMarkers()
               }, 4100) // After animation completes
             } else {
