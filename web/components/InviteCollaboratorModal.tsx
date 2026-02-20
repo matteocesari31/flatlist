@@ -117,18 +117,20 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/50 p-4"
+      style={{ backdropFilter: 'blur(12px)' }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-md w-full p-6 shadow-2xl"
+        className="backdrop-blur-md bg-black/80 border border-white/15 rounded-[30px] max-w-md w-full p-6 shadow-2xl"
+        style={{ backdropFilter: 'blur(12px)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Invite Collaborator</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-semibold text-white">Invite Collaborator</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="rounded-lg p-1 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
             aria-label="Close"
           >
             <svg
@@ -150,7 +152,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
 
         {success ? (
           <div className="text-center py-4">
-            <div className="text-green-600 mb-2">
+            <div className="text-green-400 mb-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-12 w-12 mx-auto"
@@ -166,11 +168,11 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
                 />
               </svg>
             </div>
-            <p className="text-gray-700">
+            <p className="text-white font-medium">
               {isResend ? 'Invitation resent successfully!' : 'Invitation sent successfully!'}
             </p>
             {isResend && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-400 mt-2">
                 The invitation link has been updated and sent again.
               </p>
             )}
@@ -178,32 +180,32 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="invite-email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address
               </label>
               <input
-                id="email"
+                id="invite-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
+                className="w-full px-4 py-2.5 bg-black/40 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500"
                 placeholder="collaborator@example.com"
                 disabled={loading}
               />
             </div>
 
             {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">
+              <div className="p-3 bg-red-900/30 text-red-300 border border-red-800 rounded-xl text-sm">
                 {error}
               </div>
             )}
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-end pt-1">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-4 py-2.5 text-gray-200 border border-white/20 rounded-xl hover:bg-white/10 transition-colors font-medium"
                 disabled={loading}
               >
                 Cancel
@@ -211,7 +213,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 bg-white text-black rounded-xl hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {loading ? 'Sending...' : 'Send Invitation'}
               </button>
