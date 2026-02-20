@@ -355,7 +355,8 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
         `.trim()
 
         // Send email via Resend API
-        console.log('Attempting to send email via Resend to:', invitedEmail.toLowerCase())
+        const toEmail = invitedEmail.toLowerCase()
+        console.log('Attempting to send email via Resend:', { to: toEmail, from: fromEmail })
         const resendResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -364,36 +365,30 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
           },
           body: JSON.stringify({
             from: `flatlist <${fromEmail}>`,
-            to: [invitedEmail.toLowerCase()],
+            to: [toEmail],
             subject: `You've been invited to collaborate on "${catalog.name}"`,
             html: emailHtml,
             text: emailText,
           }),
         })
 
-        console.log('Resend API response status:', resendResponse.status)
+        const responseBody = await resendResponse.text()
+        console.log('Resend API response:', { status: resendResponse.status, body: responseBody })
 
         if (!resendResponse.ok) {
-          let errorData: string
-          try {
-            errorData = await resendResponse.text()
-          } catch (e) {
-            errorData = `Failed to read error response: ${e}`
-          }
-          
           let errorMessage = 'Failed to send email'
           try {
-            const errorJson = JSON.parse(errorData)
-            errorMessage = errorJson.message || errorJson.error?.message || errorData
+            const errorJson = JSON.parse(responseBody)
+            errorMessage = errorJson.message || errorJson.error?.message || responseBody
           } catch {
-            errorMessage = errorData || `HTTP ${resendResponse.status}`
+            errorMessage = responseBody || `HTTP ${resendResponse.status}`
           }
           console.error('Resend API error:', resendResponse.status, errorMessage)
           emailSent = false
         } else {
           try {
-            const resendData = await resendResponse.json()
-            console.log('Email sent successfully via Resend:', resendData.id)
+            const resendData = JSON.parse(responseBody)
+            console.log('Resend accepted email:', { id: resendData.id, to: toEmail })
             emailSent = true
           } catch (e) {
             console.error('Failed to parse Resend response:', e)
