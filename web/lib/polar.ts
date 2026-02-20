@@ -149,6 +149,20 @@ export async function getCustomerPortalUrl(
   }
 }
 
+// Polar SDK list() returns an async iterable; consume first page and get items
+async function firstPageItems(list: unknown): Promise<unknown[]> {
+  const anyList = list as { result?: { items?: unknown[] }; items?: unknown[]; [Symbol.asyncIterator]?: () => AsyncIterator<unknown> }
+  if (typeof anyList?.[Symbol.asyncIterator] === 'function') {
+    for await (const page of anyList as AsyncIterable<{ result?: { items?: unknown[] }; items?: unknown[] }>) {
+      const items = page?.items ?? page?.result?.items
+      return Array.isArray(items) ? items : []
+    }
+    return []
+  }
+  const items = anyList?.result?.items ?? anyList?.items
+  return Array.isArray(items) ? items : []
+}
+
 // Find Polar customer ID by email (for subscription sync)
 export async function findCustomerIdByEmail(
   customerEmail: string
@@ -156,14 +170,13 @@ export async function findCustomerIdByEmail(
   try {
     const polar = createPolarClient()
     const orgId = getOrganizationId()
-    const list = await polar.customers.list({
+    const listResult = await polar.customers.list({
       organizationId: orgId,
       email: customerEmail,
       limit: 1,
     })
-    // SDK may return { result: { items } } or async iterable; support both
-    const items = (list as any).result?.items ?? (list as any).items ?? []
-    const customer = Array.isArray(items) ? items[0] : undefined
+    const items = await firstPageItems(listResult)
+    const customer = items[0] as { id?: string } | undefined
     return customer?.id ?? null
   } catch (error) {
     console.error('Error finding Polar customer by email:', error)
@@ -171,7 +184,7 @@ export async function findCustomerIdByEmail(
   }
 }
 
-// List subscriptions for a Polar customer and return the active one if any
+// List subscriptions for a Polar customer and return the active one if any (includes trialing)
 export async function getActiveSubscriptionForCustomer(
   customerId: string
 ): Promise<{
@@ -183,24 +196,15 @@ export async function getActiveSubscriptionForCustomer(
     const polar = createPolarClient()
     const orgId = getOrganizationId()
     const productId = getPremiumProductId()
-    const list = await polar.subscriptions.list({
+    // Don't filter by active: true so we include trialing subscriptions
+    const listResult = await polar.subscriptions.list({
       organizationId: orgId,
       customerId: [customerId],
       productId: [productId],
-      active: true,
-      limit: 1,
+      limit: 10,
     })
-    // SDK may return async iterable (for await) or object with result.items
-    let items: any[] = []
-    if (typeof (list as any)[Symbol.asyncIterator] === 'function') {
-      for await (const page of list as AsyncIterable<{ items?: any[] }>) {
-        items = page.items ?? []
-        break
-      }
-    } else {
-      items = (list as any).result?.items ?? (list as any).items ?? []
-    }
-    const sub = Array.isArray(items) ? items[0] : undefined
+    const items = await firstPageItems(listResult) as Array<{ id: string; status: string; current_period_end?: string | null; currentPeriodEnd?: string | null }>
+    const sub = items[0]
     if (!sub) return null
     const active = isSubscriptionActive(String(sub.status))
     if (!active) return null

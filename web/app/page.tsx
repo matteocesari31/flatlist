@@ -64,6 +64,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const [showTransitLine, setShowTransitLine] = useState(true)
   const [syncingSubscription, setSyncingSubscription] = useState(false)
+  const [syncSubscriptionMessage, setSyncSubscriptionMessage] = useState<string | null>(null)
   const catalogInputRef = useRef<HTMLInputElement>(null)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -1670,13 +1671,25 @@ export default function Home() {
                       </div>
                       <button
                         onClick={async () => {
+                          setSyncSubscriptionMessage(null)
                           setSyncingSubscription(true)
                           try {
                             const res = await fetch('/api/subscription/sync', { method: 'POST' })
                             const data = await res.json().catch(() => ({}))
                             if (res.ok) {
                               await fetchSubscription()
+                              if (data.synced && data.isPremium) {
+                                setSyncSubscriptionMessage('Premium synced.')
+                              } else if (data.message) {
+                                setSyncSubscriptionMessage(data.message)
+                              }
+                            } else {
+                              setSyncSubscriptionMessage(data?.error || 'Sync failed')
                             }
+                            setTimeout(() => setSyncSubscriptionMessage(null), 5000)
+                          } catch (e) {
+                            setSyncSubscriptionMessage('Sync failed')
+                            setTimeout(() => setSyncSubscriptionMessage(null), 5000)
                           } finally {
                             setSyncingSubscription(false)
                           }
@@ -1686,6 +1699,9 @@ export default function Home() {
                       >
                         {syncingSubscription ? 'Syncing…' : 'Sync subscription'}
                       </button>
+                      {syncSubscriptionMessage && (
+                        <p className="mt-1.5 text-xs text-gray-400">{syncSubscriptionMessage}</p>
+                      )}
                     </div>
                     <div className="border-b border-gray-700 p-2">
                       <button
