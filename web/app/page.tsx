@@ -14,7 +14,7 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useRouter } from 'next/navigation'
 import { getUserColor } from '@/lib/user-colors'
 import { SubscriptionPlan } from '@/lib/types'
-import { MessageCircle, House, List, Globe, Sparkles } from 'lucide-react'
+import { MessageCircle, House, List, Earth, Sparkles } from 'lucide-react'
 import DreamApartmentModal from '@/components/DreamApartmentModal'
 import MapView from '@/components/MapView'
 import Tooltip from '@/components/Tooltip'
@@ -1579,7 +1579,7 @@ export default function Home() {
             className="text-white hover:opacity-70 transition-opacity"
           >
             {viewMode === 'list' ? (
-              <Globe className="w-6 h-6" strokeWidth={2} />
+              <Earth className="w-6 h-6" strokeWidth={2} />
             ) : (
               <List className="w-6 h-6" strokeWidth={2} />
             )}
