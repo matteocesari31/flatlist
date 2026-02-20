@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const { returnUrl } = body
     
     // Build success URL
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://my.flatlist.app'
     const successUrl = returnUrl || `${siteUrl}/?checkout=success`
     
     // Create checkout session

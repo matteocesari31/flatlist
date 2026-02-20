@@ -250,7 +250,7 @@ serve(async (req) => {
     const inviterName = inviterEmail.split('@')[0] || 'Someone'
 
     // Build invitation URL (use invitation token)
-    const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:3000'
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://my.flatlist.app'
     const acceptUrl = `${siteUrl}/invite/accept?token=${invitation.token}`
 
     // Helper function to escape HTML
@@ -265,7 +265,14 @@ serve(async (req) => {
 
     // Send email using Resend (requires RESEND_API_KEY and verified domain for production)
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev'
+    const rawFrom = (Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev').trim()
+    // Resend requires: "email@example.com" or "Name <email@example.com>"
+    // If rawFrom is already "Name <email>", extract just the email; otherwise use as email
+    const emailMatch = rawFrom.match(/<([^>]+)>/)
+    const fromEmailOnly = emailMatch ? emailMatch[1].trim() : rawFrom
+    const fromField = fromEmailOnly.includes('@')
+      ? `flatlist <${fromEmailOnly}>`
+      : 'flatlist <onboarding@resend.dev>'
     let emailSent = false
 
     if (resendApiKey) {
@@ -273,7 +280,6 @@ serve(async (req) => {
         // Escape variables for HTML
         const safeInviterName = escapeHtml(inviterName)
         const safeInviterEmail = escapeHtml(inviterEmail)
-        const safeCatalogName = escapeHtml(catalog.name)
         const safeAcceptUrl = escapeHtml(acceptUrl)
 
         // Create HTML email template
@@ -285,57 +291,59 @@ serve(async (req) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>You've been invited to collaborate</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <td align="center" style="padding: 40px 20px; background-color: #ffffff;">
+        <div style="max-width: 600px; margin: 0 auto; border-radius: 30px; overflow: hidden; background-color: #0B0B0B; border: 1px solid rgba(0,0,0,0.15);">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #0B0B0B;">
           <!-- Header -->
           <tr>
-            <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid #e5e5e5;">
-              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #FF5C5C;">flatlist</h1>
+            <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.15);">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff;">flatlist</h1>
             </td>
           </tr>
           <!-- Content -->
           <tr>
             <td style="padding: 40px;">
-              <h2 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #1a1a1a;">
+              <h2 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #ffffff;">
                 You've been invited to collaborate!
               </h2>
-              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
-                <strong>${safeInviterName}</strong> (${safeInviterEmail}) has invited you to collaborate on the catalog <strong>"${safeCatalogName}"</strong>.
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #ffffff;">
+                <strong>${safeInviterName}</strong> (${safeInviterEmail}) has invited you to collaborate on their catalog.
               </p>
-              <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
+              <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #ffffff;">
                 Click the button below to accept the invitation and start sharing listings together.
               </p>
               <!-- CTA Button -->
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center" style="padding: 0 0 30px;">
-                    <a href="${acceptUrl}" style="display: inline-block; padding: 14px 32px; background-color: #FF5C5C; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600; text-align: center;">
+                    <a href="${acceptUrl}" style="display: inline-block; padding: 14px 32px; background-color: #ffffff; color: #000000; text-decoration: none; border-radius: 30px; font-size: 16px; font-weight: 600; text-align: center;">
                       Accept Invitation
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #8a8a8a;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.7);">
                 Or copy and paste this link into your browser:<br>
-                <a href="${acceptUrl}" style="color: #FF5C5C; word-break: break-all;">${safeAcceptUrl}</a>
+                <a href="${acceptUrl}" style="color: #ffffff; word-break: break-all; text-decoration: underline;">${safeAcceptUrl}</a>
               </p>
-              <p style="margin: 20px 0 0; font-size: 12px; line-height: 1.6; color: #8a8a8a;">
+              <p style="margin: 20px 0 0; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.6);">
                 This invitation will expire in 30 days. If you didn't expect this invitation, you can safely ignore this email.
               </p>
             </td>
           </tr>
           <!-- Footer -->
           <tr>
-            <td style="padding: 20px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9f9f9;">
-              <p style="margin: 0; font-size: 12px; color: #8a8a8a;">
+            <td style="padding: 20px 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.15);">
+              <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6);">
                 This email was sent by flatlist. If you have any questions, please contact the person who invited you.
               </p>
             </td>
           </tr>
         </table>
+        </div>
       </td>
     </tr>
   </table>
@@ -346,7 +354,7 @@ serve(async (req) => {
         const emailText = `
 You've been invited to collaborate!
 
-${inviterName} (${inviterEmail}) has invited you to collaborate on the catalog "${catalog.name}".
+${inviterName} (${inviterEmail}) has invited you to collaborate on their catalog.
 
 Click the link below to accept the invitation:
 ${acceptUrl}
@@ -356,7 +364,7 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
 
         // Send email via Resend API
         const toEmail = invitedEmail.toLowerCase()
-        console.log('Attempting to send email via Resend:', { to: toEmail, from: fromEmail })
+        console.log('Attempting to send email via Resend:', { to: toEmail, from: fromField })
         const resendResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -364,7 +372,7 @@ This invitation will expire in 30 days. If you didn't expect this invitation, yo
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `flatlist <${fromEmail}>`,
+            from: fromField,
             to: [toEmail],
             subject: `You've been invited to collaborate on "${catalog.name}"`,
             html: emailHtml,
