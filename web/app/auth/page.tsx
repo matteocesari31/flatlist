@@ -197,7 +197,7 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 bg-transparent border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500"
+                className="w-full px-4 py-2 bg-transparent border border-[#2A2A2B] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder:text-[#979797]"
                 placeholder="your@email.com"
                 disabled={loading}
               />
@@ -214,7 +214,7 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-2 pr-10 bg-transparent border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500"
+                  className="w-full px-4 py-2 pr-10 bg-transparent border border-[#2A2A2B] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder:text-[#979797]"
                   placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
                   disabled={loading}
                 />
@@ -241,7 +241,7 @@ export default function AuthPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2 pr-10 bg-transparent border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500"
+                    className="w-full px-4 py-2 pr-10 bg-transparent border border-[#2A2A2B] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder:text-[#979797]"
                     placeholder="Confirm your password"
                     disabled={loading}
                   />
