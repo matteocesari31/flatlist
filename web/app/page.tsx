@@ -51,7 +51,6 @@ export default function Home() {
   const [memberToRemove, setMemberToRemove] = useState<{ user_id: string; email: string | null } | null>(null)
   const [showLeaveCatalogConfirm, setShowLeaveCatalogConfirm] = useState(false)
   const [leavingCatalog, setLeavingCatalog] = useState(false)
-  const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(false)
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [showHelpPopover, setShowHelpPopover] = useState(false)
@@ -1662,7 +1661,6 @@ export default function Home() {
                   onClick={() => {
                     setShowProfilePopover(false)
                     setShowHelpPopover(false)
-                    setShowSubscriptionPanel(false)
                   }}
                 />
                 {/* Wrapper: profile next to button (right), help panel to the left when open */}
@@ -1677,13 +1675,26 @@ export default function Home() {
                           {subscription?.isPremium ? (
                             <button
                               type="button"
-                              onClick={() => {
-                                setShowHelpPopover(false)
-                                setShowSubscriptionPanel(true)
+                              disabled={loadingPortal}
+                              onClick={async () => {
+                                setLoadingPortal(true)
+                                try {
+                                  const res = await fetch('/api/checkout')
+                                  const data = await res.json().catch(() => ({}))
+                                  if (res.ok && data.portalUrl) {
+                                    window.location.href = data.portalUrl
+                                    return
+                                  }
+                                  alert(data.error || 'Could not open subscription portal')
+                                } catch (e) {
+                                  alert('Failed to open subscription portal')
+                                } finally {
+                                  setLoadingPortal(false)
+                                }
                               }}
-                              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors cursor-pointer"
+                              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-wait"
                             >
-                              Premium
+                              {loadingPortal ? 'Opening…' : 'Premium'}
                             </button>
                           ) : (
                             <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-700 text-gray-200">
@@ -1804,55 +1815,6 @@ export default function Home() {
                       </button>
                     </div>
                   </div>
-                  {/* Subscription management panel - to the left of profile when open */}
-                  {showSubscriptionPanel && subscription?.isPremium && (
-                    <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-white">Manage subscription</h3>
-                        <button
-                          type="button"
-                          onClick={() => setShowSubscriptionPanel(false)}
-                          className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-                          aria-label="Close"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-4">
-                        Update your payment method, view invoices, or cancel your subscription from the portal.
-                      </p>
-                      {subscription?.currentPeriodEnd && (
-                        <p className="text-xs text-gray-500 mb-4">
-                          Your plan renews on {new Date(subscription.currentPeriodEnd).toLocaleDateString()}.
-                        </p>
-                      )}
-                      <button
-                        type="button"
-                        disabled={loadingPortal}
-                        onClick={async () => {
-                          setLoadingPortal(true)
-                          try {
-                            const res = await fetch('/api/checkout')
-                            const data = await res.json().catch(() => ({}))
-                            if (res.ok && data.portalUrl) {
-                              window.location.href = data.portalUrl
-                              return
-                            }
-                            alert(data.error || 'Could not open subscription portal')
-                          } catch (e) {
-                            alert('Failed to open subscription portal')
-                          } finally {
-                            setLoadingPortal(false)
-                          }
-                        }}
-                        className="w-full rounded-lg bg-white px-3 py-2 text-sm font-medium text-black hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {loadingPortal ? 'Opening…' : 'Open subscription portal'}
-                      </button>
-                    </div>
-                  )}
                   {/* Help panel - to the left of profile when open */}
                   {showHelpPopover && (
                     <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
