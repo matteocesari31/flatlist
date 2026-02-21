@@ -1697,7 +1697,7 @@ export default function Home() {
                               {loadingPortal ? 'Opening…' : 'Premium'}
                             </button>
                           ) : (
-                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-700 text-gray-200">
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#979797] text-white">
                               Free Plan
                             </span>
                           )}
@@ -1726,7 +1726,7 @@ export default function Home() {
                         )}
                       </div>
                     </div>
-                    {currentCatalogId && catalogMembers.length > 0 && (
+                    {currentCatalogId && catalogMembers.length > 0 && (subscription?.isPremium || !isOwner) && (
                       <div className="border-b border-[#2A2A2B] p-2">
                         <div className="px-3 py-2 text-xs font-medium text-[#979797] uppercase tracking-wide">Collaborators</div>
                         {catalogMembers.map((member) => (
