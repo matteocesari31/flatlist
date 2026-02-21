@@ -188,6 +188,9 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-sm text-[#979797]">
+              Premium lets you invite up to 3 collaborators. Each has full editor access—they can add, edit, and remove listings in this catalog.
+            </p>
             <div>
               <label htmlFor="invite-email" className="block text-sm font-medium text-[#979797] mb-2">
                 Email Address
