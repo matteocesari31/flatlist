@@ -123,8 +123,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/50 p-4"
-      style={{ backdropFilter: 'blur(12px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 p-4"
       onClick={onClose}
     >
       <div
