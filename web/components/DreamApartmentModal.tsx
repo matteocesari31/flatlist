@@ -249,7 +249,7 @@ export default function DreamApartmentModal({
             )}
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-xs text-gray-400">
+              <div className="flex items-center gap-1 text-xs text-[#979797]">
                 <Sparkles className="w-3 h-3" />
                 <span>AI-powered matching</span>
               </div>

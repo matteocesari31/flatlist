@@ -198,7 +198,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-black/40 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500"
+                className="w-full px-4 py-2.5 bg-black/40 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-[#979797]"
                 placeholder="collaborator@example.com"
                 disabled={loading}
               />
