@@ -153,7 +153,19 @@ export async function getCustomerPortalUrl(
     return { error: 'Portal URL not in response' }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
+    const raw = JSON.stringify(error)
     console.error('Error getting customer portal URL:', error)
+    // Polar 403 insufficient_scope: token needs customer_sessions:write
+    if (
+      message.includes('insufficient_scope') ||
+      message.includes('403') ||
+      raw.includes('insufficient_scope')
+    ) {
+      return {
+        error:
+          'Your Polar API token is missing the customer_sessions:write scope. In Polar: Settings → API Keys → edit your token and add the scope customer_sessions:write, then update POLAR_ACCESS_TOKEN in your app.',
+      }
+    }
     return { error: message }
   }
 }

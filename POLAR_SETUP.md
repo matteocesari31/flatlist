@@ -42,6 +42,7 @@ This guide explains how to set up Polar.sh for the flatlist premium/free subscri
    - `checkouts:write`
    - `customers:read`
    - `customers:write`
+   - **`customer_sessions:write`** (required for the subscription management portal — “Open subscription portal” in the app)
 3. Copy the **Access Token** (you won't see it again)
 
 ## Step 4: Configure Webhook
