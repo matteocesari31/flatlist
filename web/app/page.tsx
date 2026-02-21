@@ -1741,7 +1741,7 @@ export default function Home() {
                               >
                                 {(member.email || '?').charAt(0).toUpperCase()}
                               </div>
-                              <span className="truncate text-[#979797]">{member.email || 'Unknown'}</span>
+                              <span className="truncate text-[#E6E7EB]">{member.email || 'Unknown'}</span>
                               <span className="shrink-0 text-xs text-[#979797]">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
                             </div>
                             {isOwner && member.user_id !== user?.id && (
