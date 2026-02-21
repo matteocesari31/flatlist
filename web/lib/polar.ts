@@ -135,17 +135,26 @@ export async function createCheckoutSession(
 
 // Get customer portal URL for managing subscription
 export async function getCustomerPortalUrl(
-  customerId: string
-): Promise<string | null> {
+  customerId: string,
+  returnUrl?: string | null
+): Promise<{ url: string } | { error: string }> {
   try {
     const polar = createPolarClient()
     const session = await polar.customerSessions.create({
       customerId,
+      returnUrl: returnUrl ?? undefined,
     })
-    return session.customerPortalUrl
-  } catch (error) {
+    // SDK may return camelCase or snake_case
+    const url =
+      (session as { customerPortalUrl?: string }).customerPortalUrl ??
+      (session as { customer_portal_url?: string }).customer_portal_url
+    if (url) return { url }
+    console.error('Polar session missing portal URL:', session)
+    return { error: 'Portal URL not in response' }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
     console.error('Error getting customer portal URL:', error)
-    return null
+    return { error: message }
   }
 }
 
