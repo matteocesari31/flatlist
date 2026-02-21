@@ -189,7 +189,7 @@ export default function InviteCollaboratorModal({ isOpen, onClose, catalogId }: 
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="invite-email" className="block text-sm font-medium text-[#555555] mb-2">
+              <label htmlFor="invite-email" className="block text-sm font-medium text-[#979797] mb-2">
                 Email Address
               </label>
               <input

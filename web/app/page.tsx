@@ -1702,12 +1702,12 @@ export default function Home() {
                             </span>
                           )}
                           {subscription?.isPremium && subscription.currentPeriodEnd && (
-                            <span className="ml-2 text-xs text-[#555555] whitespace-nowrap">
+                            <span className="ml-2 text-xs text-[#979797] whitespace-nowrap">
                               Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                             </span>
                           )}
                           {!subscription?.isPremium && (
-                            <div className="mt-1 text-xs text-[#555555]">
+                            <div className="mt-1 text-xs text-[#979797]">
                               {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
                             </div>
                           )}
@@ -1728,7 +1728,7 @@ export default function Home() {
                     </div>
                     {currentCatalogId && catalogMembers.length > 0 && (
                       <div className="border-b border-[#2A2A2B] p-2">
-                        <div className="px-3 py-2 text-xs font-medium text-[#555555] uppercase tracking-wide">Collaborators</div>
+                        <div className="px-3 py-2 text-xs font-medium text-[#979797] uppercase tracking-wide">Collaborators</div>
                         {catalogMembers.map((member) => (
                           <div
                             key={member.user_id}
@@ -1741,8 +1741,8 @@ export default function Home() {
                               >
                                 {(member.email || '?').charAt(0).toUpperCase()}
                               </div>
-                              <span className="truncate text-[#555555]">{member.email || 'Unknown'}</span>
-                              <span className="shrink-0 text-xs text-[#555555]">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
+                              <span className="truncate text-[#979797]">{member.email || 'Unknown'}</span>
+                              <span className="shrink-0 text-xs text-[#979797]">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
                             </div>
                             {isOwner && member.user_id !== user?.id && (
                               <button
