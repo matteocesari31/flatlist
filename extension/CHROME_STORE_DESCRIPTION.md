@@ -20,7 +20,7 @@ Switch seamlessly between an interactive map view to see listings geographically
 All your listings are automatically organized in one place. Add personal notes, compare prices, and track your favorites with match scores.
 
 🔹 Collaboration Made Easy
-Invite roommates, partners, or friends to collaborate on finding your next home together. Share catalogs and compare notes in real-time.
+Invite roommates, partners, or friends to collaborate on finding your next home together. Share catalogs and manage listings as a team.
 
 🔹 Works Everywhere
 Compatible with major real estate websites including Immobiliare.it, Casa.it, Idealista.it, Subito.it, and more.

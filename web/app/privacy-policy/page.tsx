@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li><strong>Email Address:</strong> Used to create your account and send you notifications about your listings and invitations</li>
               <li><strong>Listing Data:</strong> Information about apartment listings you save, including URLs, titles, descriptions, images, and prices</li>
-              <li><strong>Notes and Comments:</strong> Any notes or comments you add to listings</li>
+              <li><strong>Notes:</strong> Any notes you add to listings</li>
             </ul>
 
             <h3 className="text-xl font-medium text-gray-900 mt-6 mb-3">Information Collected Automatically</h3>

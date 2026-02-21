@@ -152,6 +152,23 @@ serve(async (req) => {
       )
     }
 
+    // Cap at 3 collaborators (non-owner members) per catalog
+    const { count: nonOwnerCount, error: countError } = await supabase
+      .from('catalog_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('catalog_id', catalogId)
+      .neq('role', 'owner')
+
+    if (!countError && nonOwnerCount !== null && nonOwnerCount >= 3) {
+      return new Response(
+        JSON.stringify({
+          error: 'Collaborator limit reached',
+          message: 'You can have up to 3 collaborators. Remove one to invite someone new.',
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Check for existing pending invitation (including expired ones that we can resend)
     console.log('Checking for existing invitations...')
     const { data: existingInvitation, error: existingInvitationError } = await supabase

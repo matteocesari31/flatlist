@@ -49,6 +49,8 @@ export default function Home() {
   const [isOwner, setIsOwner] = useState(false)
   const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [memberToRemove, setMemberToRemove] = useState<{ user_id: string; email: string | null } | null>(null)
+  const [showLeaveCatalogConfirm, setShowLeaveCatalogConfirm] = useState(false)
+  const [leavingCatalog, setLeavingCatalog] = useState(false)
   const [showProfilePopover, setShowProfilePopover] = useState(false)
   const [showHelpPopover, setShowHelpPopover] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
@@ -1238,6 +1240,32 @@ export default function Home() {
     }
   }
 
+  const handleConfirmLeaveCatalog = async () => {
+    if (!currentCatalogId) return
+    setLeavingCatalog(true)
+    try {
+      const response = await fetch('/api/leave-catalog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ catalogId: currentCatalogId }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        alert(data.error || 'Failed to leave catalog')
+        return
+      }
+      setShowLeaveCatalogConfirm(false)
+      setShowProfilePopover(false)
+      setCurrentCatalogId(null)
+      fetchListings()
+    } catch (err: any) {
+      console.error('Error leaving catalog:', err)
+      alert('Failed to leave catalog. Please try again.')
+    } finally {
+      setLeavingCatalog(false)
+    }
+  }
+
   const handleRetryEnrichment = async (listingId: string) => {
     try {
       // Reset status to pending first
@@ -1587,17 +1615,24 @@ export default function Home() {
           </Tooltip>
 
           {/* Plus (Add) Button */}
-          <Tooltip content={subscription?.canInvite ? 'Add collaborator' : 'Upgrade to invite'}>
+          <Tooltip content={
+            !subscription?.canInvite ? 'Upgrade to invite' :
+            (isOwner && catalogMembers.filter(m => m.role !== 'owner').length >= 3) ? '3/3 collaborators' :
+            'Add collaborator'
+          }>
           <button
             onClick={() => {
-              if (subscription?.canInvite) {
-                setShowInviteModal(true)
-              } else {
+              if (!subscription?.canInvite) {
                 setUpgradeModalTrigger('invite')
                 setShowUpgradeModal(true)
+              } else if (isOwner && catalogMembers.filter(m => m.role !== 'owner').length >= 3) {
+                // At limit, don't open
+              } else {
+                setShowInviteModal(true)
               }
             }}
-            className="text-white hover:opacity-70 transition-opacity"
+            className="text-white hover:opacity-70 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!!(subscription?.canInvite && isOwner && catalogMembers.filter(m => m.role !== 'owner').length >= 3)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1703,6 +1738,52 @@ export default function Home() {
                         <p className="mt-1.5 text-xs text-gray-400">{syncSubscriptionMessage}</p>
                       )}
                     </div>
+                    {currentCatalogId && catalogMembers.length > 0 && (
+                      <div className="border-b border-gray-700 p-2">
+                        <div className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Collaborators</div>
+                        {catalogMembers.map((member) => (
+                          <div
+                            key={member.user_id}
+                            className="flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm text-gray-200 hover:bg-gray-800/50"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div
+                                className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                                style={{ backgroundColor: getUserColor(member.user_id) }}
+                              >
+                                {(member.email || '?').charAt(0).toUpperCase()}
+                              </div>
+                              <span className="truncate">{member.email || 'Unknown'}</span>
+                              <span className="shrink-0 text-xs text-gray-500">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
+                            </div>
+                            {isOwner && member.user_id !== user?.id && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowProfilePopover(false)
+                                  handleRemoveMemberClick(member.user_id)
+                                }}
+                                className="shrink-0 text-xs text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {!isOwner && currentCatalogId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowProfilePopover(false)
+                              setShowLeaveCatalogConfirm(true)
+                            }}
+                            className="mt-2 w-full rounded-md px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-900/20"
+                          >
+                            Leave catalog
+                          </button>
+                        )}
+                      </div>
+                    )}
                     <div className="border-b border-gray-700 p-2">
                       <button
                         onClick={() => setShowHelpPopover(!showHelpPopover)}
@@ -2138,6 +2219,52 @@ export default function Home() {
                     </>
                   ) : (
                     'Remove'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Catalog Confirmation Modal */}
+      {showLeaveCatalogConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/50 p-4"
+          onClick={() => !leavingCatalog && setShowLeaveCatalogConfirm(false)}
+        >
+          <div
+            className="bg-gray-900 rounded-[20px] max-w-sm w-full p-6 shadow-2xl border border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-white mb-2">Leave catalog?</h3>
+              <p className="text-gray-300 mb-6">
+                You will lose access to all listings in this catalog. You can rejoin if invited again.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => !leavingCatalog && setShowLeaveCatalogConfirm(false)}
+                  disabled={leavingCatalog}
+                  className="px-4 py-2 text-gray-200 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmLeaveCatalog}
+                  disabled={leavingCatalog}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {leavingCatalog ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Leaving...
+                    </>
+                  ) : (
+                    'Leave'
                   )}
                 </button>
               </div>

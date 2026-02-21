@@ -96,7 +96,7 @@ supabase secrets set POLAR_ACCESS_TOKEN=polar_at_xxxxxxxxxxxxx
 
 ## Multiplayer Rules
 
-- **Only Premium users can invite** others to collaborate
-- **Premium invitee**: Can add listings + comment (role: `editor`)
-- **Free invitee**: Can only comment on listings (role: `commenter`)
-- **New users invited**: Choose Free or Premium during signup, then join with appropriate role
+- **Only Premium users can invite** others to collaborate (up to 3 collaborators per catalog)
+- **Invitees** get full editor access (add and manage listings) in the shared catalog without paying (role: `editor`)
+- **Catalog owner** can remove collaborators; **editors** can leave the catalog
+- **New users invited**: After signup, they join as editor and can add/manage listings in that catalog

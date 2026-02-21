@@ -118,12 +118,7 @@ export async function GET(request: Request) {
 
 3. **Test Shared Catalog:**
    - Both users should see the same listings
-   - Both users can add notes (with different colored borders)
-   - Both users can add new listings
-
-4. **Test Note Colors:**
-   - Each user's notes should have a consistent color border
-   - Notes should show user identification
+   - Both users can add and manage listings in the shared catalog
 
 ## Step 6: Configure Email Sending (Optional but Recommended)
 
