@@ -245,7 +245,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
                 <div className="text-xl font-bold text-white">
                   {formatPrice(metadata?.price || basicInfo?.price, isRental(), metadata?.currency || null)}
                   {!metadata && basicInfo?.price && (
-                    <span className="text-xs font-normal text-gray-400 ml-2">(extracted)</span>
+                    <span className="text-xs font-normal text-[#555555] ml-2">(extracted)</span>
                   )}
                 </div>
               </div>
@@ -256,14 +256,14 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
               <div className="text-sm text-gray-200">
                 {metadata?.address || basicInfo?.address}
                 {!metadata && basicInfo?.address && (
-                  <span className="text-xs text-gray-500 ml-1">(from title)</span>
+                  <span className="text-xs text-[#555555] ml-1">(from title)</span>
                 )}
               </div>
             )}
 
             {/* Metadata - grey text, spaced */}
             {metadata && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#555555]">
                 {metadata.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
                   <span>{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                 )}
@@ -298,7 +298,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
             {/* Show distance even without metadata */}
             {!metadata && listing.distanceFromReference !== undefined && (
-              <div className="mt-2 text-xs text-gray-400">
+              <div className="mt-2 text-xs text-[#555555]">
                 {listing.distanceFromReference < 1 
                   ? `${Math.round(listing.distanceFromReference * 1000)} m away`
                   : `${listing.distanceFromReference.toFixed(1)} km away`
@@ -308,7 +308,7 @@ export default function ListingCard({ listing, onClick, onViewDetails, onSaveNot
 
             {/* Show enrichment status message if pending/processing */}
             {!metadata && status !== 'failed' && (
-              <div className="text-xs text-gray-400 mt-2">
+              <div className="text-xs text-[#555555] mt-2">
                 {status === 'processing' 
                   ? 'AI enrichment in progress...'
                   : 'Waiting for AI enrichment...'}

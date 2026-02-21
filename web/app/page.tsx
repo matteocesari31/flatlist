@@ -1666,8 +1666,8 @@ export default function Home() {
                 {/* Wrapper: profile next to button (right), help panel to the left when open */}
                 <div className="absolute right-0 top-full z-50 mt-2 flex flex-row-reverse items-stretch gap-2">
                   {/* Profile panel - dark theme (stays next to M button) */}
-                  <div className="min-w-[260px] rounded-xl border border-gray-700 bg-[#0B0B0B] shadow-lg">
-                    <div className="border-b border-gray-700 p-4">
+                  <div className="min-w-[260px] rounded-xl border border-[#2A2A2B] bg-[#0B0B0B] shadow-lg">
+                    <div className="border-b border-[#2A2A2B] p-4">
                       <div className="text-sm font-medium text-white">{user?.email}</div>
                       {/* Subscription Status */}
                       <div className="mt-3 flex items-center justify-between">
@@ -1702,12 +1702,12 @@ export default function Home() {
                             </span>
                           )}
                           {subscription?.isPremium && subscription.currentPeriodEnd && (
-                            <span className="ml-2 text-xs text-gray-400 whitespace-nowrap">
+                            <span className="ml-2 text-xs text-[#555555] whitespace-nowrap">
                               Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                             </span>
                           )}
                           {!subscription?.isPremium && (
-                            <div className="mt-1 text-xs text-gray-400">
+                            <div className="mt-1 text-xs text-[#555555]">
                               {subscription?.listingsCount || 0} / {subscription?.listingsLimit || 12} listings
                             </div>
                           )}
@@ -1727,8 +1727,8 @@ export default function Home() {
                       </div>
                     </div>
                     {currentCatalogId && catalogMembers.length > 0 && (
-                      <div className="border-b border-gray-700 p-2">
-                        <div className="px-3 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Collaborators</div>
+                      <div className="border-b border-[#2A2A2B] p-2">
+                        <div className="px-3 py-2 text-xs font-medium text-[#555555] uppercase tracking-wide">Collaborators</div>
                         {catalogMembers.map((member) => (
                           <div
                             key={member.user_id}
@@ -1741,8 +1741,8 @@ export default function Home() {
                               >
                                 {(member.email || '?').charAt(0).toUpperCase()}
                               </div>
-                              <span className="truncate">{member.email || 'Unknown'}</span>
-                              <span className="shrink-0 text-xs text-gray-500">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
+                              <span className="truncate text-[#555555]">{member.email || 'Unknown'}</span>
+                              <span className="shrink-0 text-xs text-[#555555]">({member.role === 'owner' ? 'Owner' : 'Editor'})</span>
                             </div>
                             {isOwner && member.user_id !== user?.id && (
                               <button
@@ -1772,7 +1772,7 @@ export default function Home() {
                         )}
                       </div>
                     )}
-                    <div className="border-b border-gray-700 p-2">
+                    <div className="border-b border-[#2A2A2B] p-2">
                       <button
                         onClick={() => setShowHelpPopover(!showHelpPopover)}
                         className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800"
@@ -1781,7 +1781,7 @@ export default function Home() {
                         Help & Feedback
                       </button>
                     </div>
-                    <div className="border-b border-gray-700 p-2">
+                    <div className="border-b border-[#2A2A2B] p-2">
                       <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-gray-800">
                         <span>
                           <span className="block">Display suggested</span>
@@ -1817,7 +1817,7 @@ export default function Home() {
                   </div>
                   {/* Help panel - to the left of profile when open */}
                   {showHelpPopover && (
-                    <div className="w-64 shrink-0 rounded-xl border border-gray-700 bg-[#0B0B0B] p-4 shadow-lg">
+                    <div className="w-64 shrink-0 rounded-xl border border-[#2A2A2B] bg-[#0B0B0B] p-4 shadow-lg">
                       <p className="text-sm text-gray-200">
                         Have questions, suggestions, or want to report a bug?
                       </p>

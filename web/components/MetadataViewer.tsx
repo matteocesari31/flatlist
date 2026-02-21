@@ -396,7 +396,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('student_friendly')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -415,7 +415,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('floor_type')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -434,7 +434,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('natural_light')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -453,7 +453,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('noise_level')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -472,7 +472,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('renovation_state')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -498,7 +498,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('furnishing')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-[#555555]">
               {bedsSingle && <div>{bedsSingle}</div>}
               {bedsDouble && <div>{bedsDouble}</div>}
             </div>
@@ -542,7 +542,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('pet_friendly')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -585,7 +585,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               {getCardIcon('balcony')}
               <span className="text-sm text-gray-200 font-medium">{title}</span>
             </div>
-            {evidence && <p className="text-sm text-gray-400">{evidence}</p>}
+            {evidence && <p className="text-sm text-[#555555]">{evidence}</p>}
           </>
         )
       })
@@ -742,7 +742,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                         {comparisonSummary ? (
                           <p className="text-sm text-white leading-relaxed">{renderSummaryWithBold(comparisonSummary)}</p>
                         ) : matchScore !== undefined ? (
-                          <p className="text-sm text-gray-400 italic">Comparison complete. Summary being generated...</p>
+                          <p className="text-sm text-[#555555] italic">Comparison complete. Summary being generated...</p>
                         ) : isEvaluatingListing ? (
                           <p className="text-sm text-gray-300">Evaluating this listing… usually 15–30 seconds.</p>
                         ) : onEvaluateListing ? (
@@ -758,7 +758,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                             </button>
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-400 italic">AI is evaluating this listing. This may take a moment…</p>
+                          <p className="text-sm text-[#555555] italic">AI is evaluating this listing. This may take a moment…</p>
                         )}
                       </div>
                     </div>
@@ -831,7 +831,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
               
               {/* Basic Information - grey text, spaced */}
               <div className="mt-3">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-400">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555555]">
                   {metadata?.size_sqm && formatSize(metadata.size_sqm, metadata.size_unit) && (
                     <span>{formatSize(metadata.size_sqm, metadata.size_unit)}</span>
                   )}
@@ -900,7 +900,7 @@ export default function MetadataViewer({ listing, isOpen, onClose, matchScore, c
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-200 mb-1">Describe your dream apartment</h4>
-                        <p className="text-sm text-gray-400 mb-3">
+                        <p className="text-sm text-[#555555] mb-3">
                           Get AI-powered match scores for each listing based on your ideal home.
                         </p>
                         {onOpenDreamApartment && (
