@@ -28,7 +28,7 @@ async function getAuthenticatedUser() {
   return user
 }
 
-// GET: Fetch user's dream apartment description
+// GET: Fetch user's dream apartment description (or catalog owner's when viewing as collaborator)
 export async function GET(req: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
@@ -51,11 +51,37 @@ export async function GET(req: NextRequest) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const { searchParams } = new URL(req.url)
+    const catalogId = searchParams.get('catalog_id')
+
+    let userIdToFetch = user.id
+
+    // When catalog_id is provided, check if user is a collaborator; if so, return owner's preferences
+    if (catalogId) {
+      const { data: catalog, error: catalogError } = await supabase
+        .from('catalogs')
+        .select('created_by')
+        .eq('id', catalogId)
+        .single()
+
+      if (!catalogError && catalog) {
+        const { data: membership } = await supabase
+          .from('catalog_members')
+          .select('user_id')
+          .eq('catalog_id', catalogId)
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (membership && catalog.created_by !== user.id) {
+          userIdToFetch = catalog.created_by
+        }
+      }
+    }
 
     const { data, error } = await supabase
       .from('user_preferences')
       .select('dream_apartment_description, updated_at')
-      .eq('user_id', user.id)
+      .eq('user_id', userIdToFetch)
       .single()
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
@@ -68,7 +94,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       dream_apartment_description: data?.dream_apartment_description || null,
-      updated_at: data?.updated_at || null
+      updated_at: data?.updated_at || null,
+      is_owner: userIdToFetch === user.id
     })
 
   } catch (error: any) {

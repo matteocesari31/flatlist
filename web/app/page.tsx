@@ -44,6 +44,7 @@ export default function Home() {
   const [isEditingCatalogName, setIsEditingCatalogName] = useState(false)
   const [tempCatalogName, setTempCatalogName] = useState('')
   const [currentCatalogId, setCurrentCatalogId] = useState<string | null>(null)
+  const [catalogOwnerId, setCatalogOwnerId] = useState<string | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [catalogMembers, setCatalogMembers] = useState<Array<{ user_id: string; email: string | null; role: string }>>([])
   const [isOwner, setIsOwner] = useState(false)
@@ -403,6 +404,18 @@ export default function Home() {
       console.log('Fetching catalog members for catalog:', catalogIdToUse)
       
       if (catalogIdToUse) {
+        // Resolve catalog owner so collaborators can see owner's dream apartment and AI comparisons
+        const { data: catalogRow, error: catalogRowError } = await supabase
+          .from('catalogs')
+          .select('created_by')
+          .eq('id', catalogIdToUse)
+          .single()
+        if (!catalogRowError && catalogRow?.created_by) {
+          setCatalogOwnerId(catalogRow.created_by)
+        } else {
+          setCatalogOwnerId(null)
+        }
+
         const { data: members, error: membersError } = await supabase
           .from('catalog_members')
           .select('user_id, role')
@@ -481,6 +494,7 @@ export default function Home() {
       } else {
         console.log('No catalog ID available to fetch members')
         setCatalogMembers([])
+        setCatalogOwnerId(null)
       }
     } catch (error) {
       console.error('Unexpected error fetching listings:', error)
@@ -520,10 +534,11 @@ export default function Home() {
     }
   }, [])
 
-  // Fetch user's dream apartment description
-  const fetchDreamApartment = useCallback(async () => {
+  // Fetch dream apartment description (current user's or catalog owner's when viewing as collaborator)
+  const fetchDreamApartment = useCallback(async (catalogId: string | null = null) => {
     try {
-      const response = await fetch('/api/user-preferences')
+      const url = catalogId ? `/api/user-preferences?catalog_id=${encodeURIComponent(catalogId)}` : '/api/user-preferences'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setDreamApartmentDescription(data.dream_apartment_description)
@@ -533,17 +548,14 @@ export default function Home() {
     }
   }, [])
 
-  // Fetch listing comparisons for current user
-  const fetchListingComparisons = useCallback(async () => {
+  // Fetch listing comparisons for effective user (current user or catalog owner when collaborating)
+  const fetchListingComparisons = useCallback(async (effectiveUserId: string) => {
     try {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
       const { data, error } = await supabase
         .from('listing_comparisons')
         .select('listing_id, match_score, comparison_summary')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
 
       if (error) {
         console.error('Error fetching comparisons:', error)
@@ -679,9 +691,7 @@ export default function Home() {
       // Fetch subscription status
       fetchSubscription()
       
-      // Fetch dream apartment preferences and comparisons
-      fetchDreamApartment()
-      fetchListingComparisons()
+      // Dream apartment and comparisons are fetched when catalog owner is known (see effect below)
       
       // Fetch user's catalog (with error handling for missing tables)
       try {
@@ -970,21 +980,29 @@ export default function Home() {
     }
   }, [currentCatalogId, fetchListings])
 
-  // Real-time subscription for listing comparisons (separate channel for user-specific updates)
+  // When catalog and its owner are known, fetch dream apartment and comparisons (owner's when collaborating)
+  const effectiveUserId = catalogOwnerId ?? user?.id ?? null
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id || !currentCatalogId || !catalogOwnerId) return
+    fetchDreamApartment(currentCatalogId)
+    fetchListingComparisons(catalogOwnerId)
+  }, [currentCatalogId, catalogOwnerId, user?.id, fetchDreamApartment, fetchListingComparisons])
+
+  // Real-time subscription for listing comparisons (effective user: owner when collaborating)
+  useEffect(() => {
+    if (!effectiveUserId) return
 
     const supabase = createClient()
     
     const comparisonsChannel = supabase
-      .channel(`user-${user.id}-comparisons`)
+      .channel(`user-${effectiveUserId}-comparisons`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'listing_comparisons',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${effectiveUserId}`,
         },
         (payload) => {
           console.log('🏠 Listing comparison updated:', payload.eventType)
@@ -1023,7 +1041,7 @@ export default function Home() {
     return () => {
       supabase.removeChannel(comparisonsChannel)
     }
-  }, [user?.id])
+  }, [effectiveUserId])
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -1058,11 +1076,11 @@ export default function Home() {
     }
   }, [selectedListing, dreamApartmentDescription])
 
-  // When opening a listing that has no comparison yet, auto-trigger evaluation once
+  // When opening a listing that has no comparison yet, auto-trigger evaluation once (owner only)
   const hasTriggeredEvaluationRef = useRef<string | null>(null)
   useEffect(() => {
-    if (!selectedListing?.id) {
-      hasTriggeredEvaluationRef.current = null
+    if (!selectedListing?.id || !isOwner) {
+      if (!selectedListing?.id) hasTriggeredEvaluationRef.current = null
       return
     }
     if (!dreamApartmentDescription || evaluatingListingId) return
@@ -1078,7 +1096,7 @@ export default function Home() {
       .then(res => { if (!res.ok) setEvaluatingListingId(null) })
       .catch(() => setEvaluatingListingId(null))
     setTimeout(() => setEvaluatingListingId(null), 90000)
-  }, [selectedListing?.id, dreamApartmentDescription, evaluatingListingId, listingComparisons])
+  }, [selectedListing?.id, dreamApartmentDescription, evaluatingListingId, listingComparisons, isOwner])
 
   const handleStartEditingCatalogName = () => {
     setTempCatalogName(catalogName)
@@ -2126,7 +2144,7 @@ export default function Home() {
         comparisonSummary={selectedListing ? listingComparisons.get(selectedListing.id)?.summary : undefined}
         hasDreamApartment={!!dreamApartmentDescription}
         onOpenDreamApartment={() => setShowDreamApartmentModal(true)}
-        onEvaluateListing={handleEvaluateListing}
+        onEvaluateListing={isOwner ? handleEvaluateListing : undefined}
         isEvaluatingListing={!!selectedListing && evaluatingListingId === selectedListing.id}
         onDelete={handleDelete}
       />
@@ -2159,6 +2177,7 @@ export default function Home() {
         onSave={saveDreamApartment}
         isEvaluating={isEvaluatingListings}
         buttonRef={dreamApartmentButtonRef}
+        canEdit={isOwner}
       />
 
       {/* Remove Member Confirmation Modal */}

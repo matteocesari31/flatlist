@@ -10,6 +10,8 @@ interface DreamApartmentModalProps {
   onSave: (description: string) => Promise<void>
   isEvaluating?: boolean
   buttonRef?: React.RefObject<HTMLButtonElement | null>
+  /** When false (e.g. collaborator viewing owner's catalog), description is read-only */
+  canEdit?: boolean
 }
 
 export default function DreamApartmentModal({ 
@@ -18,7 +20,8 @@ export default function DreamApartmentModal({
   initialDescription, 
   onSave,
   isEvaluating = false,
-  buttonRef
+  buttonRef,
+  canEdit = true
 }: DreamApartmentModalProps) {
   const [description, setDescription] = useState(initialDescription || '')
   const [loading, setLoading] = useState(false)
@@ -219,7 +222,7 @@ export default function DreamApartmentModal({
               </p>
             )}
           </div>
-        ) : (
+        ) : canEdit ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <textarea
@@ -272,6 +275,18 @@ export default function DreamApartmentModal({
               </button>
             </div>
           </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="w-full px-0 py-3 text-white text-[18px] min-h-[200px] whitespace-pre-wrap">
+              {description.trim() || (
+                <span className="text-gray-500">No dream apartment description set for this catalog.</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-[#979797]">
+              <Sparkles className="w-3 h-3" />
+              <span>Catalog owner&apos;s criteria — view only</span>
+            </div>
+          </div>
         )}
       </div>
     </div>
