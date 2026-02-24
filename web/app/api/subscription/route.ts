@@ -16,6 +16,30 @@ export interface SubscriptionResponse {
 
 const FREE_LISTINGS_LIMIT = 12
 
+async function syncPolarInBackground(userId: string, email: string) {
+  const customerId = await findCustomerIdByEmail(email)
+  if (!customerId) return
+  const activeSub = await getActiveSubscriptionForCustomer(customerId)
+  if (!activeSub) return
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) return
+  const admin = createAdminClient(supabaseUrl, serviceKey)
+  await admin
+    .from('user_subscriptions')
+    .upsert(
+      {
+        user_id: userId,
+        plan: 'premium',
+        polar_customer_id: customerId,
+        polar_subscription_id: activeSub.id,
+        current_period_end: activeSub.current_period_end,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    )
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerClient()
@@ -42,44 +66,11 @@ export async function GET(request: NextRequest) {
       isPremium = periodEnd > new Date()
     }
 
-    // Auto-sync from Polar when we think the user might have upgraded (stored plan is free)
+    // When DB says free, sync from Polar in background so we return fast; client can refetch on visibility
     if (!isPremium && user.email) {
-      try {
-        const customerId = await findCustomerIdByEmail(user.email)
-        if (customerId) {
-          const activeSub = await getActiveSubscriptionForCustomer(customerId)
-          if (activeSub) {
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-            if (supabaseUrl && serviceKey) {
-              const admin = createAdminClient(supabaseUrl, serviceKey)
-              await admin
-                .from('user_subscriptions')
-                .upsert(
-                  {
-                    user_id: user.id,
-                    plan: 'premium',
-                    polar_customer_id: customerId,
-                    polar_subscription_id: activeSub.id,
-                    current_period_end: activeSub.current_period_end,
-                    updated_at: new Date().toISOString(),
-                  },
-                  { onConflict: 'user_id' }
-                )
-              const { data: updated } = await supabase
-                .from('user_subscriptions')
-                .select('*')
-                .eq('user_id', user.id)
-                .maybeSingle()
-              subscription = updated ?? subscription
-              isPremium = true
-            }
-          }
-        }
-      } catch (syncErr) {
-        // Non-fatal: return DB state if Polar sync fails
+      syncPolarInBackground(user.id, user.email).catch((syncErr) => {
         console.warn('Subscription auto-sync failed:', syncErr)
-      }
+      })
     }
 
     // Count user's listings

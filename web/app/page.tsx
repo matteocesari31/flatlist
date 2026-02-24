@@ -495,15 +495,18 @@ export default function Home() {
     }
   }, [currentCatalogId])
 
-  // Fetch user subscription status
-  const fetchSubscription = useCallback(async () => {
+  // Fetch user subscription status (call as soon as user is known for immediate UI)
+  const fetchSubscription = useCallback(async (options?: { refetchIfFreeAfterMs?: number }) => {
     try {
       const response = await fetch('/api/subscription')
       if (response.ok) {
         const data = await response.json()
         setSubscription(data)
+        // API returns fast with DB state; Polar sync runs in background. Refetch once if we got free so we pick up premium after sync.
+        if (options?.refetchIfFreeAfterMs != null && !data.isPremium) {
+          setTimeout(() => fetchSubscription(), options.refetchIfFreeAfterMs)
+        }
       } else {
-        // Default to free plan if fetch fails
         setSubscription({
           plan: 'free',
           isPremium: false,
@@ -524,6 +527,66 @@ export default function Home() {
         currentPeriodEnd: null,
       })
     }
+  }, [])
+
+  // Lightweight fetch: catalog owner + members only. Call as soon as catalog id is known so UI shows owner/editor status immediately.
+  const fetchCatalogStatus = useCallback(async (catalogId: string) => {
+    const supabase = createClient()
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    if (!currentUser) return
+
+    const { data: catalogRow, error: catalogError } = await supabase
+      .from('catalogs')
+      .select('created_by')
+      .eq('id', catalogId)
+      .single()
+
+    if (!catalogError && catalogRow?.created_by) {
+      setCatalogOwnerId(catalogRow.created_by)
+    } else {
+      setCatalogOwnerId(null)
+    }
+
+    const { data: members, error: membersError } = await supabase
+      .from('catalog_members')
+      .select('user_id, role')
+      .eq('catalog_id', catalogId)
+
+    if (membersError || !members?.length) {
+      setIsOwner(false)
+      setCatalogMembers([])
+      return
+    }
+
+    const currentUserMembership = members.find(m => m.user_id === currentUser.id)
+    setIsOwner(currentUserMembership?.role === 'owner')
+
+    const membersWithEmails = await Promise.all(
+      members.map(async (member) => {
+        let email: string | null = null
+        try {
+          const { data: emailData, error: emailError } = await supabase
+            .rpc('get_user_email', { user_uuid: member.user_id })
+          if (!emailError && emailData) {
+            email = typeof emailData === 'string' ? emailData : String(emailData)
+          }
+        } catch {
+          // ignore
+        }
+        return {
+          user_id: member.user_id,
+          email: (email || (member.user_id === currentUser.id ? currentUser.email : null)) ?? null,
+          role: member.role,
+        }
+      })
+    )
+
+    const sorted = membersWithEmails.sort((a, b) => {
+      if (a.user_id === currentUser.id) return -1
+      if (b.user_id === currentUser.id) return 1
+      return 0
+    })
+    setCatalogMembers(sorted)
   }, [])
 
   // Fetch dream apartment description (current user's or catalog owner's when viewing as collaborator)
@@ -658,34 +721,26 @@ export default function Home() {
         return
       }
       setUser(user)
-      
+
+      // Fire subscription immediately; if API returns "free", refetch once after 2.5s to pick up Polar sync
+      fetchSubscription({ refetchIfFreeAfterMs: 2500 })
+
       // Check for upgrade query parameter
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get('upgrade') === 'true') {
-        // Show upgrade modal and clean up URL
         setUpgradeModalTrigger('general')
         setShowUpgradeModal(true)
-        // Remove the query param from URL without reload
         const newUrl = window.location.pathname
         window.history.replaceState({}, '', newUrl)
       }
-      
-      // If returning from Polar checkout, refetch subscription and clear URL
-      const checkoutSuccess = urlParams.get('checkout') === 'success'
-      if (checkoutSuccess) {
+
+      if (urlParams.get('checkout') === 'success') {
         window.history.replaceState({}, '', window.location.pathname)
-        // Refetch immediately and again after delays (webhook may still be processing)
-        fetchSubscription()
         setTimeout(() => fetchSubscription(), 2000)
         setTimeout(() => fetchSubscription(), 5000)
       }
-      
-      // Fetch subscription status
-      fetchSubscription()
-      
-      // Dream apartment and comparisons are fetched when catalog owner is known (see effect below)
-      
-      // Fetch user's catalog (with error handling for missing tables)
+
+      // Resolve current catalog and set status immediately (so premium/owner/editor show without waiting for listings)
       try {
         const { data: catalogMember, error: memberError } = await supabase
           .from('catalog_members')
@@ -693,21 +748,23 @@ export default function Home() {
           .eq('user_id', user.id)
           .limit(1)
           .single()
-        
+
+        let resolvedCatalogId: string | null = null
+
         if (!memberError && catalogMember) {
-          setCurrentCatalogId(catalogMember.catalog_id)
+          resolvedCatalogId = catalogMember.catalog_id
+          setCurrentCatalogId(resolvedCatalogId)
         } else {
-          // If no catalog membership, get or create default catalog
           const { data: defaultCatalog, error: catalogError } = await supabase
             .from('catalogs')
             .select('id')
             .eq('created_by', user.id)
             .limit(1)
             .single()
-          
+
           if (!catalogError && defaultCatalog) {
-            setCurrentCatalogId(defaultCatalog.id)
-            // Ensure user is a member
+            resolvedCatalogId = defaultCatalog.id
+            setCurrentCatalogId(resolvedCatalogId)
             await supabase
               .from('catalog_members')
               .upsert({
@@ -718,8 +775,12 @@ export default function Home() {
               })
           }
         }
+
+        // Load catalog status (owner + members) immediately so UI shows "Premium" / "Owner" / "Editor" right away
+        if (resolvedCatalogId) {
+          fetchCatalogStatus(resolvedCatalogId)
+        }
       } catch (err) {
-        // Tables might not exist if migration hasn't been run
         console.warn('Could not fetch catalog (migration may not be run):', err)
       }
       
@@ -764,15 +825,17 @@ export default function Home() {
       clearInterval(pollInterval)
       subscription.unsubscribe()
     }
-  }, [router, fetchListings])
+  }, [router, fetchListings, fetchSubscription, fetchCatalogStatus])
 
-  // When currentCatalogId changes, refetch listings and members (top-level hook - do not nest inside other effects)
+  // When currentCatalogId changes, refetch listings and show catalog status immediately
   useEffect(() => {
-    if (currentCatalogId && currentCatalogId !== catalogIdRef.current) {
+    if (!currentCatalogId) return
+    if (currentCatalogId !== catalogIdRef.current) {
       catalogIdRef.current = currentCatalogId
+      fetchCatalogStatus(currentCatalogId)
       fetchListings()
     }
-  }, [currentCatalogId, fetchListings])
+  }, [currentCatalogId, fetchListings, fetchCatalogStatus])
 
   // Refetch subscription when tab becomes visible (e.g. user returned from checkout in another tab)
   useEffect(() => {
