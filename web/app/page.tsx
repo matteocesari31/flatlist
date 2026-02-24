@@ -740,19 +740,19 @@ export default function Home() {
         setTimeout(() => fetchSubscription(), 5000)
       }
 
-      // Resolve current catalog and set status immediately (so premium/owner/editor show without waiting for listings)
+      // Resolve current catalog: use most recently joined so after accepting an invite we show that catalog
       try {
-        const { data: catalogMember, error: memberError } = await supabase
+        const { data: memberships, error: memberError } = await supabase
           .from('catalog_members')
           .select('catalog_id')
           .eq('user_id', user.id)
-          .limit(1)
-          .single()
+          .order('joined_at', { ascending: false })
+          .limit(10)
 
         let resolvedCatalogId: string | null = null
 
-        if (!memberError && catalogMember) {
-          resolvedCatalogId = catalogMember.catalog_id
+        if (!memberError && memberships?.length) {
+          resolvedCatalogId = memberships[0].catalog_id
           setCurrentCatalogId(resolvedCatalogId)
         } else {
           const { data: defaultCatalog, error: catalogError } = await supabase
