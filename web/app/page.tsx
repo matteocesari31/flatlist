@@ -740,15 +740,6 @@ export default function Home() {
 
     fetchListings()
 
-    // When currentCatalogId changes, refetch listings and members
-    // This ensures collaborators see the catalog they're viewing
-    useEffect(() => {
-      if (currentCatalogId && currentCatalogId !== catalogIdRef.current) {
-        catalogIdRef.current = currentCatalogId
-        fetchListings()
-      }
-    }, [currentCatalogId, fetchListings])
-
     // Polling fallback: refresh listings every 3 seconds if there are pending/processing listings
     // OR if there are done listings without metadata (in case metadata was just saved)
     const pollInterval = setInterval(() => {
@@ -774,6 +765,14 @@ export default function Home() {
       subscription.unsubscribe()
     }
   }, [router, fetchListings])
+
+  // When currentCatalogId changes, refetch listings and members (top-level hook - do not nest inside other effects)
+  useEffect(() => {
+    if (currentCatalogId && currentCatalogId !== catalogIdRef.current) {
+      catalogIdRef.current = currentCatalogId
+      fetchListings()
+    }
+  }, [currentCatalogId, fetchListings])
 
   // Refetch subscription when tab becomes visible (e.g. user returned from checkout in another tab)
   useEffect(() => {
