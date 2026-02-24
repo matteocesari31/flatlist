@@ -77,8 +77,9 @@ export default function AuthPage() {
         setMessage('Please check your email to confirm your account')
         setIsError(false)
       } else {
-        // Auto-signed in, redirect
-        router.push('/')
+        // Auto-signed in: go to invite accept if they came from an invite, else home
+        const pendingToken = sessionStorage.getItem('pending_invite_token')
+        router.push(pendingToken ? `/invite/accept?token=${pendingToken}` : '/')
       }
     } catch (error: any) {
       if (error.message?.includes('already registered')) {
@@ -118,7 +119,8 @@ export default function AuthPage() {
       }
 
       if (data.session) {
-        router.push('/')
+        const pendingToken = sessionStorage.getItem('pending_invite_token')
+        router.push(pendingToken ? `/invite/accept?token=${pendingToken}` : '/')
       }
     } catch (error: any) {
       setMessage(error.message || 'Failed to sign in')
