@@ -73,6 +73,7 @@ export default function Home() {
   const dreamApartmentButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
   const listingsRef = useRef<ListingWithMetadata[]>([])
+  const catalogIdRef = useRef<string | null>(null)
   const catalogIdsRef = useRef<string[]>([])
 
   // Persist transit line preference
@@ -404,17 +405,8 @@ export default function Home() {
       console.log('Fetching catalog members for catalog:', catalogIdToUse)
       
       if (catalogIdToUse) {
-        // Resolve catalog owner so collaborators can see owner's dream apartment and AI comparisons
-        const { data: catalogRow, error: catalogRowError } = await supabase
-          .from('catalogs')
-          .select('created_by')
-          .eq('id', catalogIdToUse)
-          .single()
-        if (!catalogRowError && catalogRow?.created_by) {
-          setCatalogOwnerId(catalogRow.created_by)
-        } else {
-          setCatalogOwnerId(null)
-        }
+        // Note: catalogOwnerId is now fetched in a separate effect when currentCatalogId changes
+        // This ensures it's set immediately when catalog changes, not just when fetchListings runs
 
         const { data: members, error: membersError } = await supabase
           .from('catalog_members')
@@ -748,6 +740,15 @@ export default function Home() {
 
     fetchListings()
 
+    // When currentCatalogId changes, refetch listings and members
+    // This ensures collaborators see the catalog they're viewing
+    useEffect(() => {
+      if (currentCatalogId && currentCatalogId !== catalogIdRef.current) {
+        catalogIdRef.current = currentCatalogId
+        fetchListings()
+      }
+    }, [currentCatalogId, fetchListings])
+
     // Polling fallback: refresh listings every 3 seconds if there are pending/processing listings
     // OR if there are done listings without metadata (in case metadata was just saved)
     const pollInterval = setInterval(() => {
@@ -980,10 +981,42 @@ export default function Home() {
     }
   }, [currentCatalogId, fetchListings])
 
+  // When catalog is set, fetch its owner immediately
+  useEffect(() => {
+    if (!currentCatalogId) {
+      setCatalogOwnerId(null)
+      return
+    }
+    
+    const supabase = createClient()
+    const fetchOwner = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('catalogs')
+          .select('created_by')
+          .eq('id', currentCatalogId)
+          .single()
+        
+        if (!error && data?.created_by) {
+          setCatalogOwnerId(data.created_by)
+        } else {
+          setCatalogOwnerId(null)
+        }
+      } catch (err) {
+        console.error('Error fetching catalog owner:', err)
+        setCatalogOwnerId(null)
+      }
+    }
+    
+    fetchOwner()
+  }, [currentCatalogId])
+
   // When catalog and its owner are known, fetch dream apartment and comparisons (owner's when collaborating)
   const effectiveUserId = catalogOwnerId ?? user?.id ?? null
   useEffect(() => {
     if (!user?.id || !currentCatalogId || !catalogOwnerId) return
+    
+    // Fetch dream apartment and comparisons for the catalog owner (when collaborating) or current user (when owning)
     fetchDreamApartment(currentCatalogId)
     fetchListingComparisons(catalogOwnerId)
   }, [currentCatalogId, catalogOwnerId, user?.id, fetchDreamApartment, fetchListingComparisons])

@@ -181,32 +181,33 @@ export default function MergeCatalogModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/60 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-md w-full p-6 shadow-2xl"
+        className="backdrop-blur-md bg-black/80 border border-white/15 rounded-[30px] max-w-md w-full p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        style={{ backdropFilter: 'blur(12px)' }}
       >
-        <h2 className="text-xl font-semibold mb-4">Join Shared Catalog</h2>
+        <h2 className="text-xl font-semibold mb-4 text-white">Join Shared Catalog</h2>
 
         <div className="mb-4">
-          <p className="text-gray-700 mb-2">
+          <p className="text-white mb-2">
             You've been invited to collaborate on <strong>{catalogName}</strong>.
           </p>
           {existingListingsCount > 0 && (
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-gray-300 mb-2">
               You currently have {existingListingsCount} listing{existingListingsCount !== 1 ? 's' : ''} in your catalog.
             </p>
           )}
-          <p className="text-sm text-gray-600 mt-3">
+          <p className="text-sm text-gray-300 mt-3">
             You&apos;ll be able to add and manage listings in this shared catalog.
           </p>
         </div>
 
         {existingListingsCount > 0 && (
           <div className="mb-4 space-y-3">
-            <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+            <label className="flex items-start gap-3 p-3 border border-white/20 rounded-md cursor-pointer hover:bg-white/10 transition-colors">
               <input
                 type="radio"
                 name="mergeChoice"
@@ -216,14 +217,14 @@ export default function MergeCatalogModal({
                 className="mt-1"
               />
               <div>
-                <div className="font-medium">Merge my listings into shared catalog</div>
-                <div className="text-sm text-gray-600">
+                <div className="font-medium text-white">Merge my listings into shared catalog</div>
+                <div className="text-sm text-gray-300">
                   All your existing listings will be moved to the shared catalog.
                 </div>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+            <label className="flex items-start gap-3 p-3 border border-white/20 rounded-md cursor-pointer hover:bg-white/10 transition-colors">
               <input
                 type="radio"
                 name="mergeChoice"
@@ -233,8 +234,8 @@ export default function MergeCatalogModal({
                 className="mt-1"
               />
               <div>
-                <div className="font-medium">Keep my listings separate</div>
-                <div className="text-sm text-gray-600">
+                <div className="font-medium text-white">Keep my listings separate</div>
+                <div className="text-sm text-gray-300">
                   Your existing listings will stay in your personal catalog. Only new listings will be shared.
                 </div>
               </div>
@@ -243,7 +244,7 @@ export default function MergeCatalogModal({
         )}
 
         {error && (
-          <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm mb-4">
+          <div className="p-3 bg-red-900/30 text-red-300 border border-red-800 rounded-md text-sm mb-4">
             {error}
           </div>
         )}
@@ -252,7 +253,7 @@ export default function MergeCatalogModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-white border border-white/20 rounded-[30px] hover:bg-white/10 transition-colors"
             disabled={loading}
           >
             Cancel
@@ -260,7 +261,7 @@ export default function MergeCatalogModal({
           <button
             onClick={handleAccept}
             disabled={loading}
-            className="px-4 py-2 bg-[#FF5C5C] text-white rounded-md hover:bg-[#FF4A4A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-white text-black rounded-[30px] hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {loading ? 'Accepting...' : 'Accept Invitation'}
           </button>
