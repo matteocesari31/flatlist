@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "web"
+    "web",
+    "mobile"
   ],
   "scripts": {
     "dev": "cd web && npm run dev",
+    "dev:mobile": "cd mobile && npx expo start",
     "build": "cd web && npm run build",
     "start": "cd web && npm start"
   }
