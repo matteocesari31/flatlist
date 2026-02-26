@@ -66,6 +66,29 @@ export async function saveListingNote(listingId: string, userId: string, note: s
   }
 }
 
+export async function fetchListingComparisons(
+  userId: string
+): Promise<Map<string, { score: number; summary: string }>> {
+  const { data, error } = await supabase
+    .from('listing_comparisons')
+    .select('listing_id, match_score, comparison_summary')
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('Error fetching comparisons:', error)
+    return new Map()
+  }
+
+  const map = new Map<string, { score: number; summary: string }>()
+  data?.forEach((row: { listing_id: string; match_score: number; comparison_summary: string }) => {
+    map.set(row.listing_id, {
+      score: row.match_score,
+      summary: row.comparison_summary ?? '',
+    })
+  })
+  return map
+}
+
 export async function fetchDreamApartment(userId: string) {
   const { data, error } = await supabase
     .from('user_preferences')

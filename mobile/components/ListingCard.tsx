@@ -3,7 +3,14 @@ import { Text, XStack, YStack } from 'tamagui'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { BedDouble, Bath, Building2 } from 'lucide-react-native'
 import { ListingWithMetadata } from '../../shared/types'
-import { formatPrice, formatSize, isRental, getScoreColor, getListingImages } from '../../shared/helpers'
+import {
+  formatPrice,
+  formatSize,
+  isRental,
+  getScoreColor,
+  getListingImages,
+  extractBasicListingInfo,
+} from '../../shared/helpers'
 
 interface ListingCardProps {
   listing: ListingWithMetadata
@@ -21,6 +28,7 @@ export default function ListingCard({
   onPress,
 }: ListingCardProps) {
   const metadata = listing.listing_metadata?.[0]
+  const basicInfo = !metadata ? extractBasicListingInfo(listing) : null
   const images = getListingImages(listing.images)
   const thumbnail = images[0] || null
   const rent = isRental(listing.raw_content, listing.title, metadata?.listing_type)
@@ -47,15 +55,19 @@ export default function ListingCard({
         </View>
 
         <YStack paddingTop="$1.5">
-          {metadata?.price != null && (
+          {(metadata?.price != null || basicInfo?.price) && (
             <Text color="white" fontSize={20} fontWeight="700">
-              {formatPrice(metadata.price, rent, metadata.currency)}
+              {formatPrice(
+                metadata?.price ?? basicInfo?.price ?? null,
+                rent,
+                metadata?.currency ?? null
+              )}
             </Text>
           )}
 
-          {metadata?.address && (
+          {(metadata?.address || basicInfo?.address) && (
             <Text color="#E0E0E0" fontSize={14} numberOfLines={1} marginTop="$0.5">
-              {metadata.address}
+              {metadata?.address || basicInfo?.address}
             </Text>
           )}
 

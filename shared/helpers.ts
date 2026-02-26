@@ -1,4 +1,5 @@
 import { COLOR_PALETTE } from './constants'
+import type { ListingWithMetadata } from './types'
 
 export function getScoreColor(score: number): { bg: string; glow: string } {
   if (score >= 70) {
@@ -96,4 +97,64 @@ export function getListingImages(images: string[] | string | object | null): str
   }
   if (typeof images === 'object') return Object.values(images) as string[]
   return []
+}
+
+export function extractBasicListingInfo(
+  listing: Pick<ListingWithMetadata, 'raw_content' | 'title'>
+): { price: string | null; address: string | null } {
+  const extractPriceFromContent = (content: string): string | null => {
+    if (!content) return null
+    const priceRegex =
+      /€\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*€/i
+    const match = content.match(priceRegex)
+    if (match) {
+      return match[0]
+    }
+    return null
+  }
+
+  const price = extractPriceFromContent(listing.raw_content)
+  const addressMatch = listing.title?.match(
+    /(?:in|a|via|viale|piazza|piazzale)\s+([^,]+)/i
+  )
+  const address = addressMatch ? addressMatch[1].trim() : null
+
+  return { price, address }
+}
+
+export function getWebsiteName(url: string | null | undefined): string {
+  if (!url) return 'original website'
+  try {
+    const urlObj = new URL(url)
+    const hostname = urlObj.hostname
+    const cleanHostname = hostname.replace(/^www\./, '')
+    const multiPartTlds = [
+      'co.uk', 'com.au', 'co.za', 'co.nz', 'com.br', 'com.mx',
+      'co.jp', 'com.cn', 'com.hk', 'co.in', 'com.sg', 'com.my',
+      'co.th', 'com.vn', 'com.ph', 'co.id', 'com.tr', 'co.kr',
+    ]
+    let domainParts: string[] = []
+    let foundMultiPartTld = false
+    for (const tld of multiPartTlds) {
+      if (cleanHostname.endsWith('.' + tld)) {
+        const withoutTld = cleanHostname.slice(0, -(tld.length + 1))
+        domainParts = withoutTld.split('.')
+        domainParts.push(tld)
+        foundMultiPartTld = true
+        break
+      }
+    }
+    if (!foundMultiPartTld) {
+      domainParts = cleanHostname.split('.')
+    }
+    if (domainParts.length >= 2) {
+      const domainName = domainParts[domainParts.length - 2]
+      const tld = domainParts[domainParts.length - 1]
+      const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1)
+      return `${capitalizedDomain}.${tld}`
+    }
+    return cleanHostname.charAt(0).toUpperCase() + cleanHostname.slice(1)
+  } catch {
+    return 'original website'
+  }
 }

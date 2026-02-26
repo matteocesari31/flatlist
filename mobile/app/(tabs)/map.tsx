@@ -7,7 +7,7 @@ import MapView, { Marker, Region } from 'react-native-maps'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { useAuth } from '@/lib/auth-context'
-import { fetchListings, fetchUserCatalogs, fetchDreamApartment, compareListing } from '@/lib/api'
+import { fetchListings, fetchUserCatalogs, fetchDreamApartment, fetchListingComparisons } from '@/lib/api'
 import { ListingWithMetadata } from '../../../shared/types'
 import { getScoreColor, formatPrice, isRental, getListingImages } from '../../../shared/helpers'
 
@@ -29,6 +29,8 @@ export default function MapScreen() {
       setListings(data)
       const dream = await fetchDreamApartment(user.id)
       setDreamDescription(dream)
+      const comps = await fetchListingComparisons(user.id)
+      setComparisons(comps)
     })()
   }, [user])
 

@@ -14,7 +14,15 @@ import {
 import { useAuth } from '@/lib/auth-context'
 import { deleteListing, saveListingNote, compareListing } from '@/lib/api'
 import { ListingWithMetadata } from '../../../shared/types'
-import { formatPrice, formatSize, isRental, getScoreColor, getListingImages } from '../../../shared/helpers'
+import {
+  formatPrice,
+  formatSize,
+  isRental,
+  getScoreColor,
+  getListingImages,
+  extractBasicListingInfo,
+  getWebsiteName,
+} from '../../../shared/helpers'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
@@ -43,6 +51,7 @@ export default function ListingDetailScreen() {
   const [evaluating, setEvaluating] = useState(false)
 
   const metadata = listing?.listing_metadata?.[0]
+  const basicInfo = listing && !metadata ? extractBasicListingInfo(listing) : null
   const images = listing ? getListingImages(listing.images) : []
   const rent = listing ? isRental(listing.raw_content, listing.title, metadata?.listing_type) : false
 
@@ -152,15 +161,21 @@ export default function ListingDetailScreen() {
         {/* Price + Score */}
         <XStack justifyContent="space-between" alignItems="center">
           <YStack>
-            {metadata?.price != null && (
+            {(metadata?.price != null || basicInfo?.price) && (
               <Text color="white" fontSize={28} fontWeight="800">
-                {formatPrice(metadata.price, rent, metadata.currency)}
+                {formatPrice(
+                  metadata?.price ?? basicInfo?.price ?? null,
+                  rent,
+                  metadata?.currency ?? null
+                )}
               </Text>
             )}
-            {metadata?.address && (
+            {(metadata?.address || basicInfo?.address) && (
               <XStack gap="$1.5" alignItems="center" marginTop="$1">
                 <MapPin size={14} color="#979797" />
-                <Text color="#E0E0E0" fontSize={15}>{metadata.address}</Text>
+                <Text color="#E0E0E0" fontSize={15}>
+                  {metadata?.address || basicInfo?.address}
+                </Text>
               </XStack>
             )}
           </YStack>
@@ -168,7 +183,9 @@ export default function ListingDetailScreen() {
           {scoreVisible && matchScore !== undefined && (
             <Animated.View entering={ZoomIn.springify()} style={styles.scoreBadgeLarge}>
               <View style={[styles.scoreDotLarge, { backgroundColor: scoreColor!.bg }]} />
-              <Text color="white" fontSize={20} fontWeight="700">{matchScore}</Text>
+              <Text color="white" fontSize={20} fontWeight="700">
+                AI Score: {matchScore}
+              </Text>
             </Animated.View>
           )}
         </XStack>
@@ -272,7 +289,7 @@ export default function ListingDetailScreen() {
             pressStyle={{ backgroundColor: '#1A1A1A', scale: 0.98 }}
             disabledStyle={{ opacity: 0.5 }}
           >
-            {evaluating ? 'Evaluating...' : 'Evaluate with AI'}
+            {evaluating ? 'Evaluating…' : 'Get match score'}
           </Button>
         )}
 
@@ -322,7 +339,7 @@ export default function ListingDetailScreen() {
             icon={<ExternalLink size={16} color="white" />}
             pressStyle={{ backgroundColor: '#1A1A1A', scale: 0.98 }}
           >
-            Open Original
+            Go to {getWebsiteName(listing.source_url)}
           </Button>
           <Button
             onPress={handleDelete}
